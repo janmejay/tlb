@@ -1,0 +1,72 @@
+<project name="javasysmon" basedir="." default="package">
+
+    <path id="src.classpath">
+        <pathelement path="target/classes"/>
+        <pathelement path="lib/ant-1.7.1.jar"/>
+        <pathelement path="lib/commons-io-1.3.2.jar"/>
+    </path>
+
+    <path id="test.classpath">
+        <path refid="src.classpath"/>
+        <pathelement path="target/test-classes"/>
+        <pathelement path="test/lib/junit-4.7.jar"/>
+        <pathelement path="test/lib/mockito-all-1.8.2.jar"/>
+    </path>
+
+    <target name="init">
+        <mkdir dir="target/classes"/>
+        <mkdir dir="target/test-classes"/>
+        <mkdir dir="target/reports"/>
+    </target>
+
+    <target name="clean">
+        <delete dir="target" includeemptydirs="true"/>
+    </target>
+
+    <target name="compile" depends="init">
+        <javac destdir="target/classes" target="1.5" source="1.5" debug="true">
+            <classpath refid="src.classpath"/>
+            <src path="src"/>
+        </javac>
+    </target>
+
+    <target name="compile-tests" depends="compile, init">
+        <javac destdir="target/test-classes" target="1.5" source="1.5">
+            <classpath refid="test.classpath"/>
+            <src path="test"/>
+        </javac>
+        <copy todir="target/test-classes">
+            <fileset dir="test/resources"/>
+        </copy>
+    </target>
+
+    <target name="-load.short.rev">
+        <exec executable="git" outputproperty="short_rev">
+            <arg line="describe --always"/>
+        </exec>
+    </target>
+
+    <target name="package.src" depends="init, -load.short.rev">
+        <jar destfile="target/tlb-g${short_rev}-src.jar">
+            <fileset dir="src"/>
+        </jar>
+    </target>
+
+    <target name="package.jar" depends="init, compile, -load.short.rev">
+        <jar destfile="target/tlb-g${short_rev}.jar">
+            <fileset dir="target/classes"/>
+        </jar>
+    </target>
+
+    <target name="package" depends="clean, package.src, package.jar"/>
+
+    <target name="test" depends="compile, compile-tests">
+        <junit failureproperty="test.failure" printsummary="yes" haltonfailure="true" fork="true">
+            <classpath refid="test.classpath"/>
+            <batchtest todir="target/reports">
+                <fileset dir="target/test-classes" includes="**/*Test*"/>
+                <formatter type="plain"/>
+            </batchtest>
+        </junit>
+    </target>
+</project>
