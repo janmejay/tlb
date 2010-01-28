@@ -3,9 +3,11 @@ package com.thoughtworks.cruise.tlb;
 import org.junit.Test;
 import org.junit.Before;
 import org.junit.After;
+import org.junit.Assert;
 import static org.junit.internal.matchers.IsCollectionContaining.hasItem;
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.resources.FileResource;
 import org.apache.tools.ant.types.FileSet;
@@ -18,6 +20,7 @@ import java.io.File;
 
 import com.thoughtworks.cruise.tlb.utils.FileUtil;
 import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteria;
+import com.thoughtworks.cruise.tlb.splitter.CountBasedTestSplitterCriteria;
 
 public class LoadBalancedFileSetTest {
     private LoadBalancedFileSet fileSet;
@@ -70,5 +73,12 @@ public class LoadBalancedFileSetTest {
         assertThat(files.hasNext(), is(true));
         assertThat(((FileResource) files.next()).getFile(), is (included));
         assertThat(files.hasNext(), is(false));
+    }
+
+    @Test
+    public void shouldUseSystemPropertyToInstantiateCriteria() {
+        System.setProperty(LoadBalancedFileSet.TLB_CRITERIA, "count");
+        fileSet = new LoadBalancedFileSet();
+        assertThat(fileSet.getSplitterCriteria(), instanceOf(CountBasedTestSplitterCriteria.class));
     }
 }

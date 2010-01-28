@@ -9,19 +9,21 @@ import java.util.List;
 import java.util.ArrayList;
 
 import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteria;
+import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteriaFactory;
 
 /**
  * @understands splitting Junit test classes into groups
  */
 public class LoadBalancedFileSet extends FileSet {
     private final TestSplitterCriteria criteria;
+    protected static final String TLB_CRITERIA = "tlb.criteria";
 
     public LoadBalancedFileSet(TestSplitterCriteria criteria) {
         this.criteria = criteria;
     }
 
     public LoadBalancedFileSet() {
-        this(TestSplitterCriteria.MATCH_ALL_FILE_SET);
+        this(TestSplitterCriteriaFactory.getCriteria(System.getProperty(TLB_CRITERIA)));
     }
 
     @Override
@@ -36,5 +38,9 @@ public class LoadBalancedFileSet extends FileSet {
             }
         }
         return matchedFiles.iterator();
+    }
+
+    public TestSplitterCriteria getSplitterCriteria() {
+        return criteria;
     }
 }
