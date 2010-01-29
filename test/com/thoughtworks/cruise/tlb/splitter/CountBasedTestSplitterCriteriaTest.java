@@ -55,6 +55,47 @@ public class CountBasedTestSplitterCriteriaTest {
     }
 
     @Test
+    public void shouldSplitTestsBasedOnSplitFactorForTheSecondJobWhenThereAreNonLoadBalancedJobs() {
+        when(talkToCruise.getJobs("stage-1")).thenReturn(Arrays.asList("job-1", "jj", "job-2", "pavan"));
+
+        SystemEnvironment env = initEnvironment("job-2");
+
+        FileResource third = file("third");
+        FileResource fourth = file("fourth");
+        FileResource fifth = file("fifth");
+        List<FileResource> resources = Arrays.asList(file("first"), file("second"), third, fourth, fifth);
+
+        CountBasedTestSplitterCriteria criteria = new CountBasedTestSplitterCriteria(talkToCruise, env);
+        assertThat(criteria.filter(resources), is(Arrays.asList(third, fourth, fifth)));
+    }
+
+    @Test
+    public void shouldSplitTestsJobWithUUIDWhenThereAreNonLoadBalancedJobs() {
+        when(talkToCruise.getJobs("stage-1")).thenReturn(Arrays.asList("job-abcdef12-1234-3456-7890-abcdef123456", "jj", "job-e2345678-1234-3456-7890-abcdef123456", "pavan"));
+
+        SystemEnvironment env = initEnvironment("job-e2345678-1234-3456-7890-abcdef123456");
+
+        FileResource third = file("third");
+        FileResource fourth = file("fourth");
+        FileResource fifth = file("fifth");
+        List<FileResource> resources = Arrays.asList(file("first"), file("second"), third, fourth, fifth);
+
+        CountBasedTestSplitterCriteria criteria = new CountBasedTestSplitterCriteria(talkToCruise, env);
+        assertThat(criteria.filter(resources), is(Arrays.asList(third, fourth, fifth)));
+    }
+
+    @Test
+    public void shouldNotSplitTestsWhenJobNameDoesntEndInNumberOrUUID() {
+        when(talkToCruise.getJobs("stage-1")).thenReturn(Arrays.asList("job-abcdef12-1234-3456-7890-abcdef123456", "jj", "pavan"));
+
+        List<FileResource> resources = files(1, 2, 3, 4, 5);
+
+        assertThat(criteria("job-abcdef12-1234-3456-7890-abcdef123456").filter(resources), is(resources));
+
+        assertThat(criteria("jj").filter(resources), is(resources));
+    }
+
+    @Test
     public void shouldSplitTestsBalanced() {
         when(talkToCruise.getJobs("stage-1")).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
 
@@ -69,6 +110,36 @@ public class CountBasedTestSplitterCriteriaTest {
         assertThat(criteria("job-2").filter(resources), is(files(3, 4, 5, 6)));
 
         assertThat(criteria("job-3").filter(resources), is(files(7, 8, 9, 10)));
+    }
+
+    @Test
+    public void shouldSplitTestsWhenTheSplitsAreMoreThanTests() {
+        when(talkToCruise.getJobs("stage-1")).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
+
+        ArrayList<FileResource> resources = new ArrayList<FileResource>();
+
+        for(int i = 0; i < 2; i++) {
+            resources.add(new FileResource(new File("base" + i)));
+        }
+
+        assertThat(criteria("job-1").filter(resources), is(files()));
+        assertThat(criteria("job-2").filter(resources), is(files(0)));
+        assertThat(criteria("job-3").filter(resources), is(files(1)));
+    }
+
+    @Test
+    public void shouldSplitTestsWhenTheSplitsIsEqualToNumberOfTests() {
+        when(talkToCruise.getJobs("stage-1")).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
+
+        ArrayList<FileResource> resources = new ArrayList<FileResource>();
+
+        for(int i = 0; i < 3; i++) {
+            resources.add(new FileResource(new File("base" + i)));
+        }
+
+        assertThat(criteria("job-1").filter(resources), is(files(0)));
+        assertThat(criteria("job-2").filter(resources), is(files(1)));
+        assertThat(criteria("job-3").filter(resources), is(files(2)));
     }
 
     @Test//to assertain it really works as expected
