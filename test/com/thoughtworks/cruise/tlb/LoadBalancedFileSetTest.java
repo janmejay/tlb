@@ -3,7 +3,6 @@ package com.thoughtworks.cruise.tlb;
 import org.junit.Test;
 import org.junit.Before;
 import org.junit.After;
-import org.junit.Assert;
 import static org.junit.internal.matchers.IsCollectionContaining.hasItem;
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -13,9 +12,12 @@ import org.apache.tools.ant.types.resources.FileResource;
 import org.apache.tools.ant.types.FileSet;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.any;
 
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.Arrays;
+import java.util.List;
 import java.io.File;
 
 import com.thoughtworks.cruise.tlb.utils.FileUtil;
@@ -61,10 +63,10 @@ public class LoadBalancedFileSetTest {
         File excluded = FileUtil.createFileInFolder(projectDir, "excluded");
         File included = FileUtil.createFileInFolder(projectDir, "included");
 
+        List<FileResource> resources = Arrays.asList(new FileResource(excluded), new FileResource(included));
 
         TestSplitterCriteria criteria = mock(TestSplitterCriteria.class);
-        when(criteria.shouldInclude(included)).thenReturn(true);
-        when(criteria.shouldInclude(excluded)).thenReturn(false);
+        when(criteria.filter(any(List.class))).thenReturn(Arrays.asList(new FileResource(included)));
 
         fileSet = new LoadBalancedFileSet(criteria);
         initFileSet(fileSet);

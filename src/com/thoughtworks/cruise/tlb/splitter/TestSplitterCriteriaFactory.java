@@ -1,5 +1,8 @@
 package com.thoughtworks.cruise.tlb.splitter;
 
+import com.thoughtworks.cruise.tlb.service.TalkToCruise;
+import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
+
 /**
  * @understands creating a criteria based on the name
  */
@@ -12,7 +15,7 @@ public class TestSplitterCriteriaFactory {
             return TestSplitterCriteria.MATCH_ALL_FILE_SET;
         }
         if (criteriaName.equals(COUNT)) {
-            return new CountBasedTestSplitterCriteria();
+            return new CountBasedTestSplitterCriteria(new TalkToCruise(), new SystemEnvironment());
         }
         if (criteriaName.equals(TIME)) {
             return new TimeBasedTestSplitterCriteria();

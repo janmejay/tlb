@@ -29,15 +29,12 @@ public class LoadBalancedFileSet extends FileSet {
     @Override
     @SuppressWarnings({"unchecked"})
     public Iterator iterator() {
-        Iterator<FileResource> files = super.iterator();
-        ArrayList<FileResource> matchedFiles = new ArrayList<FileResource>();
+        Iterator<FileResource> files = (Iterator<FileResource>) super.iterator();
+        List<FileResource> matchedFiles = new ArrayList<FileResource>();
         while (files.hasNext()) {
-            FileResource fileResource = files.next();
-            if (criteria.shouldInclude(fileResource.getFile())) {
-                matchedFiles.add(fileResource);
-            }
+            matchedFiles.add(files.next());
         }
-        return matchedFiles.iterator();
+        return criteria.filter(matchedFiles).iterator();
     }
 
     public TestSplitterCriteria getSplitterCriteria() {
