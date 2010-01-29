@@ -4,6 +4,9 @@
         <pathelement path="target/classes"/>
         <pathelement path="lib/ant-1.7.1.jar"/>
         <pathelement path="lib/commons-io-1.3.2.jar"/>
+        <pathelement path="lib/dom4j-1.6.1.jar"/>
+        <pathelement path="lib/jaxen-1.1.1.jar"/>
+        <pathelement path="lib/commons-httpclient-3.1.jar"/>
     </path>
 
     <path id="test.classpath">
@@ -35,7 +38,7 @@
             <classpath refid="test.classpath"/>
             <src path="test"/>
         </javac>
-        <copy todir="target/test-classes">
+        <copy todir="target/test-classes/resources">
             <fileset dir="test/resources"/>
         </copy>
     </target>

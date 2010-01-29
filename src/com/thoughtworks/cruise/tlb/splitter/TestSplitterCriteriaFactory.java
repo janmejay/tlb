@@ -11,11 +11,14 @@ public class TestSplitterCriteriaFactory {
     public static final String TIME = "time";
 
     public static TestSplitterCriteria getCriteria(String criteriaName) {
+        SystemEnvironment systemEnvironment = new SystemEnvironment();
+        TalkToCruise cruise = new TalkToCruise(systemEnvironment, null);
+
         if (criteriaName == null || criteriaName.isEmpty()) {
             return TestSplitterCriteria.MATCH_ALL_FILE_SET;
         }
         if (criteriaName.equals(COUNT)) {
-            return new CountBasedTestSplitterCriteria(new TalkToCruise(), new SystemEnvironment());
+            return new CountBasedTestSplitterCriteria(cruise, systemEnvironment);
         }
         if (criteriaName.equals(TIME)) {
             return new TimeBasedTestSplitterCriteria();

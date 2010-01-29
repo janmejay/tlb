@@ -38,7 +38,7 @@ public class CountBasedTestSplitterCriteria implements TestSplitterCriteria {
      * @return filtered list
      */
     public List<FileResource> filter(List<FileResource> files) {
-        List<String> jobs = jobsInTheSameFamily(talkToCruise.getJobs(stageName()));
+        List<String> jobs = jobsInTheSameFamily(talkToCruise.getJobs());
         if (jobs.isEmpty()) {
             return files;
         }

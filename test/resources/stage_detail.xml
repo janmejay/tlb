@@ -1,0 +1,22 @@
+<stage name="build" counter="1">
+    <link rel="self" href="http://cruise03.thoughtworks.com:8153/cruise/api/stages/49.xml"/>
+    <pipeline name="rags" counter="5"
+        label="5" href="http://cruise03.thoughtworks.com:8153/cruise/api/pipelines/rags/17.xml"/>
+    <updated></updated>
+    <result>Failed</result>
+    <state>Completed</state>
+    <approvedBy><![CDATA[anonymous]]></approvedBy>
+    <jobs>
+        
+        <job href="http://test.host:8153/cruise/api/jobs/140.xml" />
+
+        <job href="http://test.host:8153/cruise/api/jobs/141.xml" />
+
+        <job href="http://test.host:8153/cruise/api/jobs/142.xml" />
+
+        <job href="http://test.host:8153/cruise/api/jobs/143.xml" />
+        
+        <job href="http://test.host:8153/cruise/api/jobs/139.xml" />
+
+    </jobs>
+</stage>

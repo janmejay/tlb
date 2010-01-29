@@ -1,0 +1,60 @@
+<job name="smoke">
+
+    <link rel="self" href="http://cruise03.thoughtworks.com:8153/cruise/api/jobs/139.xml"/>
+    <pipeline name="rags" counter="5" label="5"/>
+    <stage name="build" counter="1" href="http://cruise03.thoughtworks.com:8153/cruise/api/stages/49.xml"/>
+    <state>Completed</state>
+    <result>Failed</result>
+    <properties>
+
+            <property name="cruise_agent"><![CDATA[fmtstdcrspbs08.thoughtworks.com]]></property>
+
+
+            <property name="cruise_job_duration"><![CDATA[0]]></property>
+
+            <property name="cruise_job_id"><![CDATA[139]]></property>
+
+            <property name="cruise_job_result"><![CDATA[Failed]]></property>
+
+            <property name="cruise_pipeline_counter"><![CDATA[5]]></property>
+
+            <property name="cruise_pipeline_label"><![CDATA[5]]></property>
+
+            <property name="cruise_stage_counter"><![CDATA[1]]></property>
+
+            <property name="cruise_timestamp_01_scheduled"><![CDATA[2010-01-26T16:26:41-08:00]]></property>
+
+            <property name="cruise_timestamp_02_assigned"><![CDATA[2010-01-26T16:26:47-08:00]]></property>
+
+            <property name="cruise_timestamp_03_preparing"><![CDATA[2010-01-26T16:26:57-08:00]]></property>
+
+
+            <property name="cruise_timestamp_04_building"><![CDATA[2010-01-26T16:26:58-08:00]]></property>
+
+            <property name="cruise_timestamp_05_completing"><![CDATA[2010-01-26T16:26:58-08:00]]></property>
+
+            <property name="cruise_timestamp_06_completed"><![CDATA[2010-01-26T16:26:58-08:00]]></property>
+
+    </properties>
+    <agent uuid="3d4c5f9e-0d65-40ec-8bbf-92cf93e839d3"/>
+    <artifacts baseUrl="http://cruise03.thoughtworks.com:8153/cruise/files/rags/5/build/1/smoke" pathFromArtifactRoot="pipelines/rags/5/build/1/smoke">
+
+            <artifact path="cruise-output/log.xml" type="file"/>
+
+            <artifact path="twistreports/twist" type="file"/>
+
+            <artifact path="agent/logs/*.log" type="file"/>
+
+
+            <artifact path="server/logs/*.log" type="file"/>
+
+            <artifact path="server/config/config" type="file"/>
+
+    </artifacts>
+    <resources>
+
+    </resources>
+    <environmentvariables>
+
+    </environmentvariables>
+</job>

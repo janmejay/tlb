@@ -27,7 +27,7 @@ public class CountBasedTestSplitterCriteriaTest {
 
     @Test
     public void shouldSplitTestsBasedOnSplitFactorForTheFirstJob() {
-        when(talkToCruise.getJobs("stage-1")).thenReturn(Arrays.asList("job-1", "job-2"));
+        when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2"));
 
         SystemEnvironment env = initEnvironment("job-1");
 
@@ -41,7 +41,7 @@ public class CountBasedTestSplitterCriteriaTest {
 
     @Test
     public void shouldSplitTestsBasedOnSplitFactorForTheSecondJob() {
-        when(talkToCruise.getJobs("stage-1")).thenReturn(Arrays.asList("job-1", "job-2"));
+        when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2"));
 
         SystemEnvironment env = initEnvironment("job-2");
 
@@ -56,7 +56,7 @@ public class CountBasedTestSplitterCriteriaTest {
 
     @Test
     public void shouldSplitTestsBasedOnSplitFactorForTheSecondJobWhenThereAreNonLoadBalancedJobs() {
-        when(talkToCruise.getJobs("stage-1")).thenReturn(Arrays.asList("job-1", "jj", "job-2", "pavan"));
+        when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "jj", "job-2", "pavan"));
 
         SystemEnvironment env = initEnvironment("job-2");
 
@@ -71,7 +71,7 @@ public class CountBasedTestSplitterCriteriaTest {
 
     @Test
     public void shouldSplitTestsJobWithUUIDWhenThereAreNonLoadBalancedJobs() {
-        when(talkToCruise.getJobs("stage-1")).thenReturn(Arrays.asList("job-abcdef12-1234-3456-7890-abcdef123456", "jj", "job-e2345678-1234-3456-7890-abcdef123456", "pavan"));
+        when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-abcdef12-1234-3456-7890-abcdef123456", "jj", "job-e2345678-1234-3456-7890-abcdef123456", "pavan"));
 
         SystemEnvironment env = initEnvironment("job-e2345678-1234-3456-7890-abcdef123456");
 
@@ -86,7 +86,7 @@ public class CountBasedTestSplitterCriteriaTest {
 
     @Test
     public void shouldNotSplitTestsWhenJobNameDoesntEndInNumberOrUUID() {
-        when(talkToCruise.getJobs("stage-1")).thenReturn(Arrays.asList("job-abcdef12-1234-3456-7890-abcdef123456", "jj", "pavan"));
+        when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-abcdef12-1234-3456-7890-abcdef123456", "jj", "pavan"));
 
         List<FileResource> resources = files(1, 2, 3, 4, 5);
 
@@ -97,7 +97,7 @@ public class CountBasedTestSplitterCriteriaTest {
 
     @Test
     public void shouldSplitTestsBalanced() {
-        when(talkToCruise.getJobs("stage-1")).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
+        when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
 
         ArrayList<FileResource> resources = new ArrayList<FileResource>();
 
@@ -114,7 +114,7 @@ public class CountBasedTestSplitterCriteriaTest {
 
     @Test
     public void shouldSplitTestsWhenTheSplitsAreMoreThanTests() {
-        when(talkToCruise.getJobs("stage-1")).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
+        when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
 
         ArrayList<FileResource> resources = new ArrayList<FileResource>();
 
@@ -129,7 +129,7 @@ public class CountBasedTestSplitterCriteriaTest {
 
     @Test
     public void shouldSplitTestsWhenTheSplitsIsEqualToNumberOfTests() {
-        when(talkToCruise.getJobs("stage-1")).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
+        when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
 
         ArrayList<FileResource> resources = new ArrayList<FileResource>();
 
@@ -144,7 +144,7 @@ public class CountBasedTestSplitterCriteriaTest {
 
     @Test//to assertain it really works as expected
     public void shouldSplitTestsBalancedFor37testsAcross7Jobs() {
-        when(talkToCruise.getJobs("stage-1")).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4", "job-5", "job-6", "job-7"));
+        when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4", "job-5", "job-6", "job-7"));
 
         ArrayList<FileResource> resources = new ArrayList<FileResource>();
 
@@ -169,7 +169,7 @@ public class CountBasedTestSplitterCriteriaTest {
 
     @Test//to assertain it really works as expected
     public void shouldSplitTestsBalancedFor41testsAcross7Jobs() {
-        when(talkToCruise.getJobs("stage-1")).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4", "job-5", "job-6", "job-7"));
+        when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4", "job-5", "job-6", "job-7"));
 
         ArrayList<FileResource> resources = new ArrayList<FileResource>();
 
@@ -194,7 +194,7 @@ public class CountBasedTestSplitterCriteriaTest {
 
     @Test//to assertain it really works as expected
     public void shouldSplitTestsBalancedFor36testsAcross6Jobs() {
-        when(talkToCruise.getJobs("stage-1")).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4", "job-5", "job-6"));
+        when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4", "job-5", "job-6"));
 
         ArrayList<FileResource> resources = new ArrayList<FileResource>();
 
