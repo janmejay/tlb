@@ -1,6 +1,7 @@
 package com.thoughtworks.cruise.tlb.splitter;
 
 import com.thoughtworks.cruise.tlb.service.TalkToCruise;
+import com.thoughtworks.cruise.tlb.service.DefaultHttpAction;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 
 /**
@@ -12,7 +13,7 @@ public class TestSplitterCriteriaFactory {
 
     public static TestSplitterCriteria getCriteria(String criteriaName) {
         SystemEnvironment systemEnvironment = new SystemEnvironment();
-        TalkToCruise cruise = new TalkToCruise(systemEnvironment, null);
+        TalkToCruise cruise = new TalkToCruise(systemEnvironment, new DefaultHttpAction(systemEnvironment));
 
         if (criteriaName == null || criteriaName.isEmpty()) {
             return TestSplitterCriteria.MATCH_ALL_FILE_SET;

@@ -94,8 +94,4 @@ public class CountBasedTestSplitterCriteria implements TestSplitterCriteria {
     private String jobName() {
         return env.getProperty(TlbConstants.CRUISE_JOB_NAME);
     }
-
-    private String stageName() {
-        return env.getProperty(TlbConstants.CRUISE_STAGE_NAME);
-    }
 }

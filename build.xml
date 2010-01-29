@@ -7,6 +7,7 @@
         <pathelement path="lib/dom4j-1.6.1.jar"/>
         <pathelement path="lib/jaxen-1.1.1.jar"/>
         <pathelement path="lib/commons-httpclient-3.1.jar"/>
+        <pathelement path="lib/commons-logging-1.1.1.jar"/>
     </path>
 
     <path id="test.classpath">
