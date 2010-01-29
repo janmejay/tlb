@@ -40,7 +40,8 @@ public class CountBasedTestSplitterCriteria implements TestSplitterCriteria {
         int reminder = files.size() % jobs.size();
 
         double balance = (double) (reminder * (index + 1)) / jobs.size();
-        int startIndex = isFirst(index) ? 0 : index * splitRatio + (int) Math.floor(balance - 1);
+        double lastBalance = (double) (reminder * index) / jobs.size();
+        int startIndex = isFirst(index) ? 0 : index * splitRatio + (int) Math.floor(Math.abs(lastBalance));
         int endIndex = isLast(jobs, index) ? files.size() : (index + 1) * splitRatio + (int) Math.floor(balance);
 
         return files.subList(startIndex, endIndex);

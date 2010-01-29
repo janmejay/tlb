@@ -64,12 +64,49 @@ public class CountBasedTestSplitterCriteriaTest {
             resources.add(new FileResource(new File("base" + i)));
         }
 
-        CountBasedTestSplitterCriteria criteria = new CountBasedTestSplitterCriteria(talkToCruise, initEnvironment("job-1"));
-        assertThat(criteria.filter(resources), is(Arrays.asList(file("base0"), file("base1"), file("base2"))));
-        criteria = new CountBasedTestSplitterCriteria(talkToCruise, initEnvironment("job-2"));
-        assertThat(criteria.filter(resources), is(Arrays.asList(file("base3"), file("base4"), file("base5"), file("base6"))));
-        criteria = new CountBasedTestSplitterCriteria(talkToCruise, initEnvironment("job-3"));
-        assertThat(criteria.filter(resources), is(Arrays.asList(file("base7"),file("base8"), file("base9"), file("base10"))));
+        assertThat(criteria("job-1").filter(resources), is(files(0, 1, 2)));
+
+        assertThat(criteria("job-2").filter(resources), is(files(3, 4, 5, 6)));
+
+        assertThat(criteria("job-3").filter(resources), is(files(7, 8, 9, 10)));
+    }
+
+    @Test//another to assertain it really works as expected
+    public void shouldSplitTestsBalancedFor37testsAcross7Jobs() {
+        when(talkToCruise.getJobs("stage-1")).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4", "job-5", "job-6", "job-7"));
+
+        ArrayList<FileResource> resources = new ArrayList<FileResource>();
+
+        for(int i = 0; i < 37; i++) {
+            resources.add(new FileResource(new File("base" + i)));
+        }
+
+        assertThat(criteria("job-1").filter(resources), is(files(0, 1, 2, 3, 4))); //2/7
+
+        assertThat(criteria("job-2").filter(resources), is(files(5, 6, 7, 8, 9))); //4/7
+
+        assertThat(criteria("job-3").filter(resources), is(files(10, 11, 12, 13, 14))); //6/7
+
+        assertThat(criteria("job-4").filter(resources), is(files(15, 16, 17, 18, 19, 20))); //1/7
+
+        assertThat(criteria("job-5").filter(resources), is(files(21, 22, 23, 24, 25))); //3/7
+
+        assertThat(criteria("job-6").filter(resources), is(files(26, 27, 28, 29, 30))); //5/7
+
+        assertThat(criteria("job-7").filter(resources), is(files(31, 32, 33, 34, 35, 36))); //7/7
+
+    }
+
+    private List<FileResource> files(int ... numbers) {
+        ArrayList<FileResource> resources = new ArrayList<FileResource>();
+        for (int number : numbers) {
+            resources.add(file("base" + number));
+        }
+        return resources;
+    }
+
+    private CountBasedTestSplitterCriteria criteria(String jobName) {
+        return new CountBasedTestSplitterCriteria(talkToCruise, initEnvironment(jobName));
     }
 
     private FileResource file(String name) {
