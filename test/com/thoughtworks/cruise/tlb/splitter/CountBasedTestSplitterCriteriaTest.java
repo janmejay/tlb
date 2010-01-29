@@ -71,7 +71,7 @@ public class CountBasedTestSplitterCriteriaTest {
         assertThat(criteria("job-3").filter(resources), is(files(7, 8, 9, 10)));
     }
 
-    @Test//another to assertain it really works as expected
+    @Test//to assertain it really works as expected
     public void shouldSplitTestsBalancedFor37testsAcross7Jobs() {
         when(talkToCruise.getJobs("stage-1")).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4", "job-5", "job-6", "job-7"));
 
@@ -94,8 +94,56 @@ public class CountBasedTestSplitterCriteriaTest {
         assertThat(criteria("job-6").filter(resources), is(files(26, 27, 28, 29, 30))); //5/7
 
         assertThat(criteria("job-7").filter(resources), is(files(31, 32, 33, 34, 35, 36))); //7/7
-
     }
+
+    @Test//to assertain it really works as expected
+    public void shouldSplitTestsBalancedFor41testsAcross7Jobs() {
+        when(talkToCruise.getJobs("stage-1")).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4", "job-5", "job-6", "job-7"));
+
+        ArrayList<FileResource> resources = new ArrayList<FileResource>();
+
+        for(int i = 0; i < 41; i++) {
+            resources.add(new FileResource(new File("base" + i)));
+        }
+
+        assertThat(criteria("job-1").filter(resources), is(files(0, 1, 2, 3, 4))); //6/7
+
+        assertThat(criteria("job-2").filter(resources), is(files(5, 6, 7, 8, 9, 10))); //12/7 = 5/7
+
+        assertThat(criteria("job-3").filter(resources), is(files(11, 12, 13, 14, 15, 16))); //18/7 = 4/7
+
+        assertThat(criteria("job-4").filter(resources), is(files(17, 18, 19, 20, 21, 22))); //24/7 = 3/7
+
+        assertThat(criteria("job-5").filter(resources), is(files(23, 24, 25, 26, 27, 28))); //30/7 = 2/7
+
+        assertThat(criteria("job-6").filter(resources), is(files(29, 30, 31, 32, 33, 34))); //36/7 = 1/7
+
+        assertThat(criteria("job-7").filter(resources), is(files(35, 36, 37, 38, 39, 40))); //42/7 = 7/7
+    }
+
+    @Test//to assertain it really works as expected
+    public void shouldSplitTestsBalancedFor36testsAcross6Jobs() {
+        when(talkToCruise.getJobs("stage-1")).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4", "job-5", "job-6"));
+
+        ArrayList<FileResource> resources = new ArrayList<FileResource>();
+
+        for(int i = 0; i < 36; i++) {
+            resources.add(new FileResource(new File("base" + i)));
+        }
+
+        assertThat(criteria("job-1").filter(resources), is(files(0, 1, 2, 3, 4, 5)));
+
+        assertThat(criteria("job-2").filter(resources), is(files(6, 7, 8, 9, 10, 11)));
+
+        assertThat(criteria("job-3").filter(resources), is(files(12, 13, 14, 15, 16, 17)));
+
+        assertThat(criteria("job-4").filter(resources), is(files(18, 19, 20, 21, 22, 23)));
+
+        assertThat(criteria("job-5").filter(resources), is(files(24, 25, 26, 27, 28, 29)));
+
+        assertThat(criteria("job-6").filter(resources), is(files(30, 31, 32, 33, 34, 35)));
+    }
+
 
     private List<FileResource> files(int ... numbers) {
         ArrayList<FileResource> resources = new ArrayList<FileResource>();
