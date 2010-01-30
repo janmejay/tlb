@@ -3,6 +3,7 @@ package com.thoughtworks.cruise.tlb.service;
 import static com.thoughtworks.cruise.tlb.TlbConstants.*;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 import com.thoughtworks.cruise.tlb.TlbConstants;
+import com.thoughtworks.cruise.tlb.service.http.HttpAction;
 import org.junit.Test;
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.core.Is.is;

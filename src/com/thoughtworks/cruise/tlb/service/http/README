@@ -1,0 +1,2 @@
+Code that talks over HTTP(S) is not unit tested.
+Changes to this need to be tested manually.
