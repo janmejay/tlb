@@ -10,7 +10,9 @@ public class SystemEnvironmentTest {
     
     @Test
     public void shouldGetPropertyAvailableInGivenMap() throws Exception {
-        SystemEnvironment env = new SystemEnvironment(new HashMap() {{ put("foo", "bar"); }});
+        HashMap<String, String> map = new HashMap<String, String>();
+        map.put("foo", "bar");
+        SystemEnvironment env = new SystemEnvironment(map);
         assertThat(env.getProperty("foo"), is("bar"));
     }
 

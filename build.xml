@@ -75,7 +75,7 @@
 
     <target name="test" depends="package, compile-tests">
         <typedef name="load-balanced-fileset" classname="com.thoughtworks.cruise.tlb.LoadBalancedFileSet" classpathref="dog.food.classpath"/>
-        <junit failureproperty="test.failure" printsummary="yes" haltonfailure="true" fork="true">
+        <junit failureproperty="test.failure" printsummary="yes" haltonfailure="true" haltonerror="true" showoutput="true" fork="true">
             <classpath refid="test.classpath"/>
             <batchtest todir="target/reports">
                 <load-balanced-fileset dir="target/test-classes" includes="**/*Test*"/>
