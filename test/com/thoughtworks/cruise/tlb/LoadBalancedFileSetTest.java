@@ -1,27 +1,25 @@
 package com.thoughtworks.cruise.tlb;
 
-import org.junit.Test;
-import org.junit.Before;
-import org.junit.After;
-import static org.junit.internal.matchers.IsCollectionContaining.hasItem;
-import static org.junit.Assert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.types.resources.FileResource;
-import org.apache.tools.ant.types.FileSet;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.mockito.Matchers.any;
-
-import java.util.*;
-import java.io.File;
-
+import static com.thoughtworks.cruise.tlb.TlbConstants.CRUISE_SERVER_URL;
+import static com.thoughtworks.cruise.tlb.TlbConstants.TLB_CRITERIA;
+import com.thoughtworks.cruise.tlb.splitter.CountBasedTestSplitterCriteria;
+import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteria;
 import com.thoughtworks.cruise.tlb.utils.FileUtil;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
-import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteria;
-import com.thoughtworks.cruise.tlb.splitter.CountBasedTestSplitterCriteria;
-import static com.thoughtworks.cruise.tlb.TlbConstants.TLB_CRITERIA;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.ant.types.resources.FileResource;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
+import org.junit.Before;
+import org.junit.Test;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.File;
+import java.util.*;
 
 public class LoadBalancedFileSetTest {
     private LoadBalancedFileSet fileSet;
@@ -78,6 +76,7 @@ public class LoadBalancedFileSetTest {
     private SystemEnvironment initEnvironment(String strategyName) {
         Map<String, String> map = new HashMap<String, String>();
         map.put(TLB_CRITERIA, strategyName);
+        map.put(CRUISE_SERVER_URL, "https://localhost:8154/cruise");
         return new SystemEnvironment(map);
     }
 }
