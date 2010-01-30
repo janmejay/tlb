@@ -66,6 +66,7 @@
     <target name="test" depends="package, compile-tests">
         <typedef name="load-balanced-fileset" classname="com.thoughtworks.cruise.tlb.LoadBalancedFileSet" classpathref="dog.food.classpath"/>
         <junit failureproperty="test.failure" printsummary="yes" haltonfailure="true" fork="true">
+            <jvmarg value="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5010"/>
             <classpath refid="test.classpath"/>
             <batchtest todir="target/reports">
                 <load-balanced-fileset dir="target/test-classes" includes="**/*Test*"/>

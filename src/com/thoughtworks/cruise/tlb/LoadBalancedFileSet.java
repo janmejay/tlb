@@ -3,27 +3,31 @@ package com.thoughtworks.cruise.tlb;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.resources.FileResource;
 
-import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 
 import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteria;
 import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteriaFactory;
+import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
+import static com.thoughtworks.cruise.tlb.TlbConstants.TLB_CRITERIA;
 
 /**
  * @understands splitting Junit test classes into groups
  */
 public class LoadBalancedFileSet extends FileSet {
     private final TestSplitterCriteria criteria;
-    protected static final String TLB_CRITERIA = "tlb.criteria";
 
     public LoadBalancedFileSet(TestSplitterCriteria criteria) {
         this.criteria = criteria;
     }
 
+    public LoadBalancedFileSet(SystemEnvironment systemEnvironment) {
+        this(TestSplitterCriteriaFactory.getCriteria(systemEnvironment.getProperty(TLB_CRITERIA), systemEnvironment));
+    }
+
     public LoadBalancedFileSet() {
-        this(TestSplitterCriteriaFactory.getCriteria(System.getProperty(TLB_CRITERIA)));
+        this(new SystemEnvironment());
     }
 
     @Override

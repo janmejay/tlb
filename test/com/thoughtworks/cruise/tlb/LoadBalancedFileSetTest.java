@@ -14,37 +14,29 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Matchers.any;
 
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.io.File;
 
 import com.thoughtworks.cruise.tlb.utils.FileUtil;
+import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteria;
 import com.thoughtworks.cruise.tlb.splitter.CountBasedTestSplitterCriteria;
+import static com.thoughtworks.cruise.tlb.TlbConstants.TLB_CRITERIA;
 
 public class LoadBalancedFileSetTest {
     private LoadBalancedFileSet fileSet;
     private File projectDir;
-    private Properties originalProperties;
 
     @Before
     public void setUp() throws Exception {
         fileSet = new LoadBalancedFileSet();
         projectDir = FileUtil.createTempFolder();
         initFileSet(fileSet);
-        originalProperties = System.getProperties();
     }
 
     private void initFileSet(FileSet fileSet) {
         fileSet.setDir(projectDir);
         fileSet.setProject(new Project());
-    }
-
-    @After
-    public void tearDown() {
-        System.setProperties(originalProperties);
     }
 
     @Test
@@ -54,7 +46,7 @@ public class LoadBalancedFileSetTest {
         Iterator files = fileSet.iterator();
 
         assertThat(files.hasNext(), is(true));
-        assertThat(((FileResource) files.next()).getFile(), is (newFile));
+        assertThat(((FileResource) files.next()).getFile(), is(newFile));
         assertThat(files.hasNext(), is(false));
     }
 
@@ -73,14 +65,19 @@ public class LoadBalancedFileSetTest {
         Iterator files = fileSet.iterator();
 
         assertThat(files.hasNext(), is(true));
-        assertThat(((FileResource) files.next()).getFile(), is (included));
+        assertThat(((FileResource) files.next()).getFile(), is(included));
         assertThat(files.hasNext(), is(false));
     }
 
     @Test
     public void shouldUseSystemPropertyToInstantiateCriteria() {
-        System.setProperty(LoadBalancedFileSet.TLB_CRITERIA, "count");
-        fileSet = new LoadBalancedFileSet();
+        fileSet = new LoadBalancedFileSet(initEnvironment("count"));
         assertThat(fileSet.getSplitterCriteria(), instanceOf(CountBasedTestSplitterCriteria.class));
+    }
+
+    private SystemEnvironment initEnvironment(String strategyName) {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put(TLB_CRITERIA, strategyName);
+        return new SystemEnvironment(map);
     }
 }

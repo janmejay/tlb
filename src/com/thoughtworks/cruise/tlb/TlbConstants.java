@@ -13,4 +13,5 @@ public interface TlbConstants {
     String CRUISE_PIPELINE_COUNTER = "CRUISE_PIPELINE_COUNTER";
     String PASSWORD = "TLB_PASSWORD";
     String USERNAME = "TLB_USERNAME";
+    String TLB_CRITERIA = "TLB_CRITERIA";
 }
