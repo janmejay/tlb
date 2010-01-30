@@ -1,16 +1,18 @@
-package com.thoughtworks.cruise.tlb.service;
+package com.thoughtworks.cruise.tlb.service.http;
 
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import static com.thoughtworks.cruise.tlb.TlbConstants.PASSWORD;
+import static com.thoughtworks.cruise.tlb.TlbConstants.USERNAME;
+import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
+import com.thoughtworks.cruise.tlb.service.http.PermissiveSSLProtocolSocketFactory;
+import com.thoughtworks.cruise.tlb.TlbConstants;
+import org.apache.commons.httpclient.*;
+import org.apache.commons.httpclient.protocol.Protocol;
+import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.params.HttpClientParams;
 
 import java.io.IOException;
-
-import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
-import static com.thoughtworks.cruise.tlb.TlbConstants.USERNAME;
-import static com.thoughtworks.cruise.tlb.TlbConstants.PASSWORD;
 
 /**
  * @understands talking http protocol using http client
@@ -27,6 +29,12 @@ public class DefaultHttpAction implements HttpAction {
             client.getState().setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(environment.getProperty(USERNAME), environment.getProperty(PASSWORD)));
         } else {
             client = new HttpClient(params);
+        }
+        try {
+            URI url = new URI(environment.getProperty(TlbConstants.CRUISE_SERVER_URL));
+            Protocol.registerProtocol("https", new Protocol("https", (ProtocolSocketFactory) new PermissiveSSLProtocolSocketFactory(), url.getPort()));
+        } catch (URIException e) {
+            throw new RuntimeException(e);
         }
     }
 

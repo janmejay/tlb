@@ -1,7 +1,7 @@
 package com.thoughtworks.cruise.tlb.splitter;
 
 import com.thoughtworks.cruise.tlb.service.TalkToCruise;
-import com.thoughtworks.cruise.tlb.service.DefaultHttpAction;
+import com.thoughtworks.cruise.tlb.service.http.DefaultHttpAction;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 
 /**

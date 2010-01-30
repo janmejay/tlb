@@ -1,4 +1,4 @@
-package com.thoughtworks.cruise.tlb.service;
+package com.thoughtworks.cruise.tlb.service.http;
 
 /**
  * @understands http protocol method
