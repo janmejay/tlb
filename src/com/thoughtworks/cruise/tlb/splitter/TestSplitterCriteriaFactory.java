@@ -12,11 +12,10 @@ public class TestSplitterCriteriaFactory {
     public static final String TIME = "time";
 
     public static TestSplitterCriteria getCriteria(String criteriaName, SystemEnvironment environment) {
-        TalkToCruise cruise = new TalkToCruise(environment, new DefaultHttpAction(environment));
-
         if (criteriaName == null || criteriaName.isEmpty()) {
             return TestSplitterCriteria.MATCH_ALL_FILE_SET;
         }
+        TalkToCruise cruise = new TalkToCruise(environment, new DefaultHttpAction(environment));
         if (criteriaName.equals(COUNT)) {
             return new CountBasedTestSplitterCriteria(cruise, environment);
         }
