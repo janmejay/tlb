@@ -1,4 +1,4 @@
-package com.thoughtworks.cruise.tlb;
+package com.thoughtworks.cruise.tlb.ant;
 
 import static com.thoughtworks.cruise.tlb.TlbConstants.CRUISE_SERVER_URL;
 import static com.thoughtworks.cruise.tlb.TlbConstants.TLB_CRITERIA;
@@ -6,6 +6,7 @@ import com.thoughtworks.cruise.tlb.splitter.CountBasedTestSplitterCriteria;
 import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteria;
 import com.thoughtworks.cruise.tlb.utils.FileUtil;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
+import com.thoughtworks.cruise.tlb.ant.LoadBalancedFileSet;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.resources.FileResource;
