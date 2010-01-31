@@ -13,8 +13,8 @@ import org.apache.tools.ant.types.resources.FileResource;
 /**
  * @understands the criteria for splitting tests based on the number of tests
  */
-public class CountBasedTestSplitterCriteria implements TestSplitterCriteria {
-    private final TalkToCruise talkToCruise;
+public class CountBasedTestSplitterCriteria implements TestSplitterCriteria, TalksToCruise {
+    private TalkToCruise talkToCruise;
     private final SystemEnvironment env;
     private static final String INT = "\\d+";
     private static final Pattern NUMBER_BASED_LOAD_BALANCED_JOB = Pattern.compile("(.*?)-(" + INT + ")");
@@ -22,9 +22,17 @@ public class CountBasedTestSplitterCriteria implements TestSplitterCriteria {
     private static final String UUID = HEX + "{8}-" + HEX + "{4}-" + HEX + "{4}-" + HEX + "{4}-" + HEX + "{12}";
     private static final Pattern UUID_BASED_LOAD_BALANCED_JOB = Pattern.compile("(.*?)-(" + UUID + ")");
 
-    public CountBasedTestSplitterCriteria(TalkToCruise talkToCruise, SystemEnvironment env) {
+    public CountBasedTestSplitterCriteria(SystemEnvironment env) {
+        this.env = env;
+    }
+
+    CountBasedTestSplitterCriteria(TalkToCruise talkToCruise, SystemEnvironment env) {
         this.talkToCruise = talkToCruise;
         this.env = env;
+    }
+
+    public void talksToCruise(TalkToCruise cruise) {
+       this.talkToCruise = cruise;
     }
 
     /**

@@ -4,6 +4,7 @@ import static com.thoughtworks.cruise.tlb.TlbConstants.CRUISE_SERVER_URL;
 import static com.thoughtworks.cruise.tlb.TlbConstants.TLB_CRITERIA;
 import com.thoughtworks.cruise.tlb.splitter.CountBasedTestSplitterCriteria;
 import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteria;
+import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteriaFactory;
 import com.thoughtworks.cruise.tlb.utils.FileUtil;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 import org.apache.tools.ant.Project;
@@ -69,7 +70,7 @@ public class LoadBalancedFileSetTest {
 
     @Test
     public void shouldUseSystemPropertyToInstantiateCriteria() {
-        fileSet = new LoadBalancedFileSet(initEnvironment("count"));
+        fileSet = new LoadBalancedFileSet(initEnvironment(TestSplitterCriteriaFactory.COUNT));
         assertThat(fileSet.getSplitterCriteria(), instanceOf(CountBasedTestSplitterCriteria.class));
     }
 
