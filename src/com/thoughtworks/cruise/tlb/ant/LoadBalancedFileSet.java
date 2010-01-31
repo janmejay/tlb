@@ -1,4 +1,4 @@
-package com.thoughtworks.cruise.tlb;
+package com.thoughtworks.cruise.tlb.ant;
 
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.resources.FileResource;
