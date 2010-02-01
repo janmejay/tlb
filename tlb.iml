@@ -14,7 +14,13 @@
           <root url="file://$MODULE_DIR$/lib" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES />
+        <SOURCES>
+          <root url="jar://$MODULE_DIR$/local/apache-ant-1.7.1-src.zip!/apache-ant-1.7.1/src/tests/junit" />
+          <root url="jar://$MODULE_DIR$/local/apache-ant-1.7.1-src.zip!/apache-ant-1.7.1/src/tests/antunit/core/uuencode/src" />
+          <root url="jar://$MODULE_DIR$/local/apache-ant-1.7.1-src.zip!/apache-ant-1.7.1/src" />
+          <root url="jar://$MODULE_DIR$/local/apache-ant-1.7.1-src.zip!/apache-ant-1.7.1/src/tests/antunit/core/location/src" />
+          <root url="jar://$MODULE_DIR$/local/apache-ant-1.7.1-src.zip!/apache-ant-1.7.1/src/main" />
+        </SOURCES>
         <jarDirectory url="file://$MODULE_DIR$/lib" recursive="false" />
       </library>
     </orderEntry>

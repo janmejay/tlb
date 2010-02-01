@@ -80,6 +80,7 @@
             <batchtest todir="target/reports">
                 <load-balanced-fileset dir="target/test-classes" includes="**/*Test*"/>
                 <formatter type="plain"/>
+                <formatter classname="com.thoughtworks.cruise.tlb.JunitTimeRecorder"/>
             </batchtest>
         </junit>
     </target>
