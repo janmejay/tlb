@@ -59,6 +59,6 @@ public class TalkToCruise {
 
     public void testClassTime(String className, long time) {
         httpAction.put(String.format("%s/files/%s/%s/%s/%s/%s/%s", p(CRUISE_SERVER_URL), p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_LABEL), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER),
-                p(CRUISE_JOB_NAME), TEST_TIME_FILE), String.format("%s: %s", className, time));
+                p(CRUISE_JOB_NAME), TEST_TIME_FILE), String.format("%s: %s\n", className, time));
     }
 }
