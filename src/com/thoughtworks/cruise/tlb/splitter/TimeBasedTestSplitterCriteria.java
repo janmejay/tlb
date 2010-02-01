@@ -6,11 +6,17 @@ import java.io.File;
 import java.util.List;
 import java.util.Iterator;
 
+import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
+
 /**
  * @understands criteria for splitting tests based on time taken
  */
 public class TimeBasedTestSplitterCriteria implements TestSplitterCriteria {
+    private final SystemEnvironment env;
 
+    public TimeBasedTestSplitterCriteria(SystemEnvironment env) {
+        this.env = env;
+    }
     public List<FileResource> filter(List<FileResource> files) {
         throw new RuntimeException("Not yet implemented");
     }
