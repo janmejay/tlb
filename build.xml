@@ -63,7 +63,7 @@
 
     <target name="package" depends="clean, package.src, package.jar"/>
 
-    <target name="test.unbalanced" depends="compile, compile-tests">
+    <target name="test" depends="compile, compile-tests">
         <junit failureproperty="test.failure" printsummary="yes" haltonfailure="true" fork="true">
             <classpath refid="test.classpath"/>
             <batchtest todir="target/reports">
@@ -73,13 +73,26 @@
         </junit>
     </target>
 
-    <target name="test" depends="package, compile-tests">
+    <target name="test.count_balanced" depends="package, compile-tests">
         <typedef name="load-balanced-fileset" classname="com.thoughtworks.cruise.tlb.ant.LoadBalancedFileSet" classpathref="dog.food.classpath"/>
-        <junit failureproperty="test.failure" printsummary="yes" haltonfailure="true" haltonerror="true" showoutput="true" fork="true">
+        <junit failureproperty="test.failure" printsummary="yes" haltonfailure="true" haltonerror="true"
+               showoutput="true" fork="true">
             <classpath refid="test.classpath"/>
             <batchtest todir="target/reports">
                 <load-balanced-fileset dir="target/test-classes" includes="**/*Test.class"/>
                 <formatter type="plain"/>
+            </batchtest>
+        </junit>
+    </target>
+
+    <target name="test.time_balanced" depends="package, compile-tests">
+        <junit failureproperty="test.failure" printsummary="yes" haltonfailure="true" haltonerror="true"
+               showoutput="true" fork="true">
+            <classpath refid="test.classpath"/>
+            <batchtest todir="target/reports">
+                <fileset dir="target/test-classes" includes="**/*Test*"/>
+                <formatter type="plain"/>
+                <formatter classname="com.thoughtworks.cruise.tlb.ant.JunitTimeRecorder"/>
             </batchtest>
         </junit>
     </target>

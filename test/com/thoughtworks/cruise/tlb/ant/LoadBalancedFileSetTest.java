@@ -29,7 +29,7 @@ public class LoadBalancedFileSetTest {
 
     @Before
     public void setUp() throws Exception {
-        fileSet = new LoadBalancedFileSet();
+        fileSet = new LoadBalancedFileSet(new SystemEnvironment(new HashMap<String, String>()));
         projectDir = FileUtil.createTempFolder();
         initFileSet(fileSet);
     }

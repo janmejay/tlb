@@ -14,12 +14,13 @@ import org.dom4j.Attribute;
 import org.dom4j.io.SAXReader;
 
 /**
- * ADD an UNDERSTANDS
+ * @understands requesting and posting information to/from cruise
  */
 public class TalkToCruise {
     private final SystemEnvironment environment;
     private final HttpAction httpAction;
     private static final String JOB_NAME = "name";
+    protected static final String TEST_TIME_FILE = "tlb/test_time.properties";
 
     public TalkToCruise(SystemEnvironment environment, HttpAction httpAction) {
         this.environment = environment;
@@ -54,5 +55,10 @@ public class TalkToCruise {
 
     private String p(String key) {
         return environment.getProperty(key);
+    }
+
+    public void testClassTime(String className, long time) {
+        httpAction.put(String.format("%s/files/%s/%s/%s/%s/%s/%s", p(CRUISE_SERVER_URL), p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_LABEL), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER),
+                p(CRUISE_JOB_NAME), TEST_TIME_FILE), String.format("%s: %s", className, time));
     }
 }
