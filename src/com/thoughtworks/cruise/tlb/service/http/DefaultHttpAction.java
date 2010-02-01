@@ -8,11 +8,13 @@ import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 /**
  * @understands talking http protocol using http client
@@ -75,12 +77,21 @@ public class DefaultHttpAction implements HttpAction {
     }
 
     class FollowablePutRequest extends FollowableHttpRequest {
-        protected FollowablePutRequest(HttpClient client) {
+        private String data;
+
+        protected FollowablePutRequest(HttpClient client, String data) {
             super(client);
+            this.data = data;
         }
 
         public HttpMethodBase createMethod(String url) {
-            return new PutMethod(url);
+            PutMethod method = new PutMethod(url);
+            try {
+                method.setRequestEntity(new StringRequestEntity(data, "text/plain", "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                new RuntimeException(e);
+            }
+            return method;
         }
     }
 
@@ -94,7 +105,7 @@ public class DefaultHttpAction implements HttpAction {
     }
 
     public String put(String url, String data) {
-        FollowablePutRequest request = new FollowablePutRequest(client);
+        FollowablePutRequest request = new FollowablePutRequest(client, data);
         return request.executeRequest(url);
     }
 }

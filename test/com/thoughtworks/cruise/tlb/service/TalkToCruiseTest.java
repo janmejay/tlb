@@ -42,7 +42,7 @@ public class TalkToCruiseTest {
         HttpAction action = mock(HttpAction.class);
         String data = "com.thoughtworks.tlb.TestSuite: 12";
         String url = "http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/" + TalkToCruise.TEST_TIME_FILE;
-        when(action.put(url, data)).thenReturn("File tlb.test_time.properties was appended successfully");
+        when(action.put(url, data + "\n")).thenReturn("File tlb.test_time.properties was appended successfully");
 
         TalkToCruise cruise = new TalkToCruise(environment, action);
         cruise.testClassTime("com.thoughtworks.tlb.TestSuite", 12);
