@@ -68,11 +68,13 @@ public class TestSplitterCriteriaFactoryTest {
         return new SystemEnvironment(map);
     }
 
-    private static class MockCriteria implements TestSplitterCriteria, TalksToCruise {
+    private static class MockCriteria extends TestSplitterCriteria implements TalksToCruise {
         private boolean calledFilter = false;
         private boolean calledTalksToCruise = false;
 
-        public MockCriteria(SystemEnvironment env) { }
+        public MockCriteria(SystemEnvironment env) {
+            super(env);
+        }
 
         public List<FileResource> filter(List<FileResource> files) {
             this.calledFilter = true;

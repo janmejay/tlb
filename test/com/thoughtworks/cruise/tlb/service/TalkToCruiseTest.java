@@ -24,25 +24,22 @@ public class TalkToCruiseTest {
     @Test
     public void shouldReturnTheListOfJobsIntheGivenStage() throws Exception {
         SystemEnvironment environment = initEnvironment("http://test.host:8153/cruise");
-        HttpAction action = mock(HttpAction.class);
-        when(action.get("http://test.host:8153/cruise/pipelines/pipeline/2/stage/1.xml")).thenReturn(fileContents("resources/stage_detail.xml"));
-        when(action.get("http://test.host:8153/cruise/api/jobs/140.xml")).thenReturn(fileContents("resources/job_details_140.xml"));
-        when(action.get("http://test.host:8153/cruise/api/jobs/139.xml")).thenReturn(fileContents("resources/job_details_139.xml"));
-        when(action.get("http://test.host:8153/cruise/api/jobs/141.xml")).thenReturn(fileContents("resources/job_details_141.xml"));
-        when(action.get("http://test.host:8153/cruise/api/jobs/142.xml")).thenReturn(fileContents("resources/job_details_142.xml"));
-        when(action.get("http://test.host:8153/cruise/api/jobs/143.xml")).thenReturn(fileContents("resources/job_details_143.xml"));
+        assertCanFindJobsFrom("http://test.host:8153/cruise", environment);
+    }
 
-        TalkToCruise cruise = new TalkToCruise(environment, action);
-        assertThat(cruise.getJobs(), is(Arrays.asList("firefox-1", "firefox-2", "firefox-3", "rails", "smoke")));
+    @Test
+    public void shouldWorkWithUrlHavingPathWithTrailingSlash() throws Exception {
+        SystemEnvironment environment = initEnvironment("https://test.host:8154/cruise/");
+        assertCanFindJobsFrom("https://test.host:8154/cruise", environment);
     }
 
     @Test
     public void shouldUpdateCruiseArtifactWithTestTimeUsingPUT() throws Exception {
         SystemEnvironment environment = initEnvironment("http://test.host:8153/cruise");
         HttpAction action = mock(HttpAction.class);
-        String data = "com.thoughtworks.tlb.TestSuite: 12";
+        String data = "com.thoughtworks.tlb.TestSuite: 12\n";
         String url = "http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/" + TalkToCruise.TEST_TIME_FILE;
-        when(action.put(url, data + "\n")).thenReturn("File tlb.test_time.properties was appended successfully");
+        when(action.put(url, data)).thenReturn("File tlb.test_time.properties was appended successfully");
 
         TalkToCruise cruise = new TalkToCruise(environment, action);
         cruise.testClassTime("com.thoughtworks.tlb.TestSuite", 12);
@@ -64,5 +61,19 @@ public class TalkToCruiseTest {
         map.put(CRUISE_STAGE_COUNTER, "1");
         map.put(CRUISE_PIPELINE_COUNTER, "2");
         return new SystemEnvironment(map);
+    }
+
+    private void assertCanFindJobsFrom(String baseUrl, SystemEnvironment environment) throws IOException, URISyntaxException {
+        HttpAction action = mock(HttpAction.class);
+
+        when(action.get(baseUrl + "/pipelines/pipeline/2/stage/1.xml")).thenReturn(fileContents("resources/stage_detail.xml"));
+        when(action.get("http://test.host:8153/cruise/api/jobs/140.xml")).thenReturn(fileContents("resources/job_details_140.xml"));
+        when(action.get("http://test.host:8153/cruise/api/jobs/139.xml")).thenReturn(fileContents("resources/job_details_139.xml"));
+        when(action.get("http://test.host:8153/cruise/api/jobs/141.xml")).thenReturn(fileContents("resources/job_details_141.xml"));
+        when(action.get("http://test.host:8153/cruise/api/jobs/142.xml")).thenReturn(fileContents("resources/job_details_142.xml"));
+        when(action.get("http://test.host:8153/cruise/api/jobs/143.xml")).thenReturn(fileContents("resources/job_details_143.xml"));
+
+        TalkToCruise cruise = new TalkToCruise(environment, action);
+        assertThat(cruise.getJobs(), is(Arrays.asList("firefox-1", "firefox-2", "firefox-3", "rails", "smoke")));
     }
 }

@@ -52,10 +52,8 @@ public class LoadBalancedFileSetTest {
 
     @Test
     public void shouldReturnAListOfFilesWhichMatchAGivenMatcher() {
-        File excluded = FileUtil.createFileInFolder(projectDir, "excluded");
+        FileUtil.createFileInFolder(projectDir, "excluded");
         File included = FileUtil.createFileInFolder(projectDir, "included");
-
-        List<FileResource> resources = Arrays.asList(new FileResource(excluded), new FileResource(included));
 
         TestSplitterCriteria criteria = mock(TestSplitterCriteria.class);
         when(criteria.filter(any(List.class))).thenReturn(Arrays.asList(new FileResource(included)));

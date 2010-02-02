@@ -50,7 +50,15 @@ public class TalkToCruise {
     }
 
     private String stageUrl() {
-        return String.format("%s/pipelines/%s/%s/%s/%s.xml", p(CRUISE_SERVER_URL), p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_COUNTER), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER));
+        return String.format("%s/pipelines/%s/%s/%s/%s.xml", cruiseUrl(), p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_COUNTER), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER));
+    }
+
+    private Object cruiseUrl() {
+        String url = p(CRUISE_SERVER_URL);
+        if(url.endsWith("/")) {
+            url = url.substring(0, url.length() - 1);
+        }
+        return url;
     }
 
     private String p(String key) {
@@ -58,7 +66,7 @@ public class TalkToCruise {
     }
 
     public void testClassTime(String className, long time) {
-        httpAction.put(String.format("%s/files/%s/%s/%s/%s/%s/%s", p(CRUISE_SERVER_URL), p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_LABEL), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER),
-                p(CRUISE_JOB_NAME), TEST_TIME_FILE), String.format("%s: %s", className, time));
+        httpAction.put(String.format("%s/files/%s/%s/%s/%s/%s/%s", cruiseUrl(), p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_LABEL), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER),
+                p(CRUISE_JOB_NAME), TEST_TIME_FILE), String.format("%s: %s\n", className, time));
     }
 }

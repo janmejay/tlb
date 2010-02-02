@@ -26,6 +26,21 @@ public class CountBasedTestSplitterCriteriaTest {
     }
 
     @Test
+    public void shouldConsumeAllTestsWhenNoJobsToBalanceWith() {
+        when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "foo", "bar"));
+
+        SystemEnvironment env = initEnvironment("job-1");
+
+        FileResource first = file("first");
+        FileResource second = file("second");
+        FileResource third = file("third");
+        List<FileResource> resources = Arrays.asList(first, second, third);
+
+        CountBasedTestSplitterCriteria criteria = new CountBasedTestSplitterCriteria(talkToCruise, env);
+        assertThat(criteria.filter(resources), is(Arrays.asList(first, second, third)));
+    }
+
+    @Test
     public void shouldSplitTestsBasedOnSplitFactorForTheFirstJob() {
         when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2"));
 

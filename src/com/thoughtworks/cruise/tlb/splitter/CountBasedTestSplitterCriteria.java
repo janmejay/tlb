@@ -13,26 +13,14 @@ import org.apache.tools.ant.types.resources.FileResource;
 /**
  * @understands the criteria for splitting tests based on the number of tests
  */
-public class CountBasedTestSplitterCriteria implements TestSplitterCriteria, TalksToCruise {
-    private TalkToCruise talkToCruise;
-    private final SystemEnvironment env;
-    private static final String INT = "\\d+";
-    private static final Pattern NUMBER_BASED_LOAD_BALANCED_JOB = Pattern.compile("(.*?)-(" + INT + ")");
-    private static final String HEX = "[a-fA-F0-9]";
-    private static final String UUID = HEX + "{8}-" + HEX + "{4}-" + HEX + "{4}-" + HEX + "{4}-" + HEX + "{12}";
-    private static final Pattern UUID_BASED_LOAD_BALANCED_JOB = Pattern.compile("(.*?)-(" + UUID + ")");
+public class CountBasedTestSplitterCriteria extends TestSplitterCriteria {
 
     public CountBasedTestSplitterCriteria(SystemEnvironment env) {
-        this.env = env;
+        super(env);
     }
 
     CountBasedTestSplitterCriteria(TalkToCruise talkToCruise, SystemEnvironment env) {
-        this.talkToCruise = talkToCruise;
-        this.env = env;
-    }
-
-    public void talksToCruise(TalkToCruise cruise) {
-       this.talkToCruise = cruise;
+        super(talkToCruise, env);
     }
 
     /**
@@ -64,42 +52,4 @@ public class CountBasedTestSplitterCriteria implements TestSplitterCriteria, Tal
         return files.subList(startIndex, endIndex);
     }
 
-    private List<String> jobsInTheSameFamily(List<String> jobs) {
-        List<String> family = new ArrayList<String>();
-        Pattern pattern = getMatcher();
-        for (String job : jobs) {
-            if (pattern.matcher(job).matches()) {
-                family.add(job);
-            }
-        }
-        return family;
-    }
-
-    private Pattern getMatcher() {
-        return Pattern.compile(String.format("^%s-(" + INT + "|" + UUID + ")$", jobBaseName()));
-    }
-
-    private String jobBaseName() {
-        Matcher matcher = NUMBER_BASED_LOAD_BALANCED_JOB.matcher(jobName());
-        if (matcher.matches()) {
-            return matcher.group(1);
-        }
-        matcher = UUID_BASED_LOAD_BALANCED_JOB.matcher(jobName());
-        if (matcher.matches()) {
-            return matcher.group(1);
-        }
-        return jobName();
-    }
-
-    private boolean isLast(List<String> jobs, int index) {
-        return (index + 1) == jobs.size();
-    }
-
-    private boolean isFirst(int index) {
-        return (index == 0);
-    }
-
-    private String jobName() {
-        return env.getProperty(TlbConstants.CRUISE_JOB_NAME);
-    }
 }
