@@ -14,7 +14,11 @@ import com.thoughtworks.cruise.tlb.TlbConstants;
 /**
  * @understands criteria for splitting tests based on time taken
  */
-public class TimeBasedTestSplitterCriteria extends TestSplitterCriteria {
+public class TimeBasedTestSplitterCriteria extends TestSplitterCriteria implements TalksToCruise {
+
+    public TimeBasedTestSplitterCriteria(SystemEnvironment environment) {
+        super(environment);
+    }
 
     public TimeBasedTestSplitterCriteria(TalkToCruise talkToCruise, SystemEnvironment env) {
         super(talkToCruise, env);
