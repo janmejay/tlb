@@ -5,6 +5,7 @@ import org.apache.tools.ant.types.resources.FileResource;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -81,5 +82,11 @@ public abstract class TestSplitterCriteria implements TalksToCruise {
 
     protected String jobName() {
         return env.getProperty(TlbConstants.CRUISE_JOB_NAME);
+    }
+
+    protected List<String> pearJobs() {
+        List<String> jobs = jobsInTheSameFamily(talkToCruise.getJobs());
+        Collections.sort(jobs);
+        return jobs;
     }
 }

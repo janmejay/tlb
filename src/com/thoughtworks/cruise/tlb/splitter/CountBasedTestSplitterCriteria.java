@@ -2,11 +2,8 @@ package com.thoughtworks.cruise.tlb.splitter;
 
 import com.thoughtworks.cruise.tlb.service.TalkToCruise;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
-import com.thoughtworks.cruise.tlb.TlbConstants;
 
 import java.util.*;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 import org.apache.tools.ant.types.resources.FileResource;
 
@@ -34,11 +31,11 @@ public class CountBasedTestSplitterCriteria extends TestSplitterCriteria {
      * @return filtered list
      */
     public List<FileResource> filter(List<FileResource> files) {
-        List<String> jobs = jobsInTheSameFamily(talkToCruise.getJobs());
+        List<String> jobs = pearJobs();
         if (jobs.isEmpty()) {
             return files;
         }
-        Collections.sort(jobs);
+
 
         int index = jobs.indexOf(jobName());
         int splitRatio = files.size() / jobs.size();

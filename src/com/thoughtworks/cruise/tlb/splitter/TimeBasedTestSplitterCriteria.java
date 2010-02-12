@@ -25,11 +25,36 @@ public class TimeBasedTestSplitterCriteria extends TestSplitterCriteria implemen
     }
 
     public List<FileResource> filter(List<FileResource> fileResources) {
-        List<String> jobs = jobsInTheSameFamily(talkToCruise.getJobs());
+        List<String> jobs = pearJobs();
         if (jobs.size() <= 1) {
             return fileResources;
         }
-        Collections.sort(jobs);
+
+        Set<TestFile> testFiles = testFiles(jobs);
+        Bucket thisBucket = buckets(jobs, testFiles);
+        return resourcesFrom(thisBucket, fileResources.get(0).getProject());
+    }
+
+    private Bucket buckets(List<String> jobs, Set<TestFile> testFiles) {
+        Bucket thisBucket = null;
+        List<Bucket> buckets = new ArrayList<Bucket>();
+
+
+        for (String job : jobs) {
+            Bucket bucket = new Bucket(job);
+            if (job.equals(jobName())) thisBucket = bucket;
+            buckets.add(bucket);
+        }
+
+        for (TestFile testFile : testFiles) {
+            buckets.get(0).add(testFile);
+            Collections.sort(buckets);
+        }
+        
+        return thisBucket;
+    }
+
+    private Set<TestFile> testFiles(List<String> jobs) {
         Map<String, String> classToTime = talkToCruise.getTestTimes(jobs);
 
         Set<TestFile> testFiles = new TreeSet<TestFile>();
@@ -38,24 +63,7 @@ public class TimeBasedTestSplitterCriteria extends TestSplitterCriteria implemen
             String fileName = FileUtil.getCannonicalName(testClass);
             testFiles.add(new TestFile(fileName, Double.parseDouble(classToTime.get(testClass))));
         }
-
-        List<Bucket> buckets = new ArrayList<Bucket>();
-
-        for (String job : jobs) {
-            buckets.add(new Bucket(job));
-        }
-
-        for (TestFile testFile : testFiles) {
-            buckets.get(0).add(testFile);
-            Collections.sort(buckets);
-        }
-
-        for (Bucket bucket : buckets) {
-            if (bucket.name.equals(jobName())) {
-                return resourcesFrom(bucket, fileResources.get(0).getProject());
-            }
-        }
-        throw new RuntimeException("Should never get here! Cannot find the job with name: " + jobName());
+        return testFiles;
     }
 
     private List<FileResource> resourcesFrom(Bucket bucket, Project project) {
