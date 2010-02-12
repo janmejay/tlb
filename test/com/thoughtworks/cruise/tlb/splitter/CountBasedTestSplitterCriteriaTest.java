@@ -9,8 +9,10 @@ import static org.hamcrest.core.Is.is;
 import org.apache.tools.ant.types.resources.FileResource;
 import com.thoughtworks.cruise.tlb.service.TalkToCruise;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
-import static com.thoughtworks.cruise.tlb.TlbConstants.CRUISE_STAGE_NAME;
-import static com.thoughtworks.cruise.tlb.TlbConstants.CRUISE_JOB_NAME;
+import com.thoughtworks.cruise.tlb.TestUtil;
+import static com.thoughtworks.cruise.tlb.TestUtil.files;
+import static com.thoughtworks.cruise.tlb.TestUtil.initEnvironment;
+import static com.thoughtworks.cruise.tlb.TestUtil.file;
 
 import java.util.*;
 import java.io.File;
@@ -231,26 +233,8 @@ public class CountBasedTestSplitterCriteriaTest {
     }
 
 
-    private List<FileResource> files(int ... numbers) {
-        ArrayList<FileResource> resources = new ArrayList<FileResource>();
-        for (int number : numbers) {
-            resources.add(file("base" + number));
-        }
-        return resources;
-    }
-
     private CountBasedTestSplitterCriteria criteria(String jobName) {
         return new CountBasedTestSplitterCriteria(talkToCruise, initEnvironment(jobName));
     }
 
-    private FileResource file(String name) {
-        return new FileResource(new File(name));
-    }
-
-    private SystemEnvironment initEnvironment(String jobName) {
-        Map<String, String> map = new HashMap<String, String>();
-        map.put(CRUISE_JOB_NAME, jobName);
-        map.put(CRUISE_STAGE_NAME, "stage-1");
-        return new SystemEnvironment(map);
-    }
 }

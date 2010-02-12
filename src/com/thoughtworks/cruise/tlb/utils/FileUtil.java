@@ -2,6 +2,7 @@ package com.thoughtworks.cruise.tlb.utils;
 
 import org.apache.commons.io.FileUtils;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
+import org.apache.tools.ant.types.resources.FileResource;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,5 +31,9 @@ public class FileUtil {
         }
         file.deleteOnExit();
         return file;
+    }
+
+    public static String getCannonicalName(String testClass) {
+        return testClass.replaceAll("\\.", "/");
     }
 }

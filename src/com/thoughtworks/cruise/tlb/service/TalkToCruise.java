@@ -6,6 +6,7 @@ import com.thoughtworks.cruise.tlb.service.http.HttpAction;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 import java.io.StringReader;
 
 import org.dom4j.Document;
@@ -68,5 +69,9 @@ public class TalkToCruise {
     public void testClassTime(String className, long time) {
         httpAction.put(String.format("%s/files/%s/%s/%s/%s/%s/%s", cruiseUrl(), p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_LABEL), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER),
                 p(CRUISE_JOB_NAME), TEST_TIME_FILE), String.format("%s: %s\n", className, time));
+    }
+
+    public Map<String, String> getTestTimes(List<String> jobNames) {
+        throw new RuntimeException("IMPLEMENT ME!");
     }
 }
