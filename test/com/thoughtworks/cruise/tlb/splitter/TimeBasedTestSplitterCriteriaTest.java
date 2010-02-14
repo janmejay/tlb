@@ -10,9 +10,12 @@ import com.thoughtworks.cruise.tlb.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.Ignore;
+import static org.junit.matchers.JUnitMatchers.hasItem;
+import static org.junit.matchers.JUnitMatchers.hasItems;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import org.mockito.Matchers;
 import org.apache.tools.ant.types.resources.FileResource;
 import static org.hamcrest.core.Is.is;
 
@@ -91,7 +94,6 @@ public class TimeBasedTestSplitterCriteriaTest {
     }
 
     @Test
-    @Ignore
     public void shouldDistributeUnknownTestsBasedOnAverageTime() throws Exception{
         when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2"));
         HashMap<String, String> map = testTimes();
@@ -107,10 +109,14 @@ public class TimeBasedTestSplitterCriteriaTest {
         List<FileResource> resources = Arrays.asList(first, second, third, fourth, fifth, firstNew, secondNew);
 
         TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToCruise, initEnvironment("job-1"));
-        assertThat(criteria.filter(resources), is(Arrays.asList(second, first, third, secondNew)));
+        List<FileResource> filteredResources = criteria.filter(resources);
+        assertThat(filteredResources.size(), is(4));
+        assertThat(filteredResources, hasItems(second, first, third, secondNew));
 
         criteria = new TimeBasedTestSplitterCriteria(talkToCruise, initEnvironment("job-2"));
-        assertThat(criteria.filter(resources), is(Arrays.asList(fourth, fifth, firstNew)));
+        filteredResources = criteria.filter(resources);
+        assertThat(filteredResources.size(), is(3));
+        assertThat(filteredResources, hasItems(fourth, fifth, firstNew));
     }
 
     @Test

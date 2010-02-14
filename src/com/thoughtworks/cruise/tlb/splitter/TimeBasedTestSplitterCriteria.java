@@ -22,12 +22,12 @@ public class TimeBasedTestSplitterCriteria extends TestSplitterCriteria implemen
     }
 
     protected List<FileResource> subset(List<FileResource> fileResources) {
-        Set<TestFile> testFiles = testFiles(jobs, fileResources);
+        List<TestFile> testFiles = testFiles(jobs, fileResources);
         Bucket thisBucket = buckets(jobs, testFiles);
         return resourcesFrom(thisBucket, fileResources.get(0).getProject());
     }
 
-    private Bucket buckets(List<String> jobs, Set<TestFile> testFiles) {
+    private Bucket buckets(List<String> jobs, List<TestFile> testFiles) {
         Bucket thisBucket = null;
         List<Bucket> buckets = new ArrayList<Bucket>();
 
@@ -42,21 +42,21 @@ public class TimeBasedTestSplitterCriteria extends TestSplitterCriteria implemen
         return thisBucket;
     }
 
-    private void assignToBuckets(Set<TestFile> testFiles, List<Bucket> buckets) {
+    private void assignToBuckets(List<TestFile> testFiles, List<Bucket> buckets) {
         for (TestFile testFile : testFiles) {
             buckets.get(0).add(testFile);
             Collections.sort(buckets);
         }
     }
 
-    private Set<TestFile> testFiles(List<String> jobs, List<FileResource> fileResources) {
+    private List<TestFile> testFiles(List<String> jobs, List<FileResource> fileResources) {
         Map<String, String> classToTime = talkToCruise.getTestTimes(jobs);
         Set<String> currentFileNames = new HashSet<String>();
         for (FileResource fileResource : fileResources) {
             currentFileNames.add(fileResource.getName());
         }
 
-        Set<TestFile> testFiles = new TreeSet<TestFile>();
+        List<TestFile> testFiles = new ArrayList<TestFile>();
         double totalTime = 0;
 
         for (String testClass : classToTime.keySet()) {
@@ -65,6 +65,14 @@ public class TimeBasedTestSplitterCriteria extends TestSplitterCriteria implemen
             totalTime += time;
             if (currentFileNames.remove(fileName)) testFiles.add(new TestFile(fileName, time));
         }
+
+        double avgTime = totalTime / classToTime.size();
+
+        for (String newFile : currentFileNames) {
+            testFiles.add(new TestFile(newFile, avgTime));
+        }
+
+        Collections.sort(testFiles);
         
         return testFiles;
     }
