@@ -52,7 +52,9 @@ public abstract class TestSplitterCriteria implements TalksToCruise {
             return fileResources;
         }
 
-        return subset(fileResources);
+        List<FileResource> subset = subset(fileResources);
+        System.setProperty(TlbConstants.TEST_SUBSET_SIZE, String.valueOf(subset.size()));
+        return subset;
     }
 
     protected abstract List<FileResource> subset(List<FileResource> fileResources);
