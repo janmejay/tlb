@@ -5,6 +5,8 @@ import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 import com.thoughtworks.cruise.tlb.TlbConstants;
 import com.thoughtworks.cruise.tlb.service.http.HttpAction;
 import org.junit.Test;
+import org.junit.Before;
+import org.junit.After;
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.mock;
@@ -21,6 +23,12 @@ import java.net.URISyntaxException;
 
 public class TalkToCruiseTest {
 
+    @Before
+    @After
+    public void cleanUp() {
+        System.clearProperty(TlbConstants.TEST_SUBSET_SIZE);
+    }
+
     @Test
     public void shouldReturnTheListOfJobsIntheGivenStage() throws Exception {
         SystemEnvironment environment = initEnvironment("http://test.host:8153/cruise");
@@ -35,6 +43,7 @@ public class TalkToCruiseTest {
 
     @Test
     public void shouldUpdateCruiseArtifactWithTestTimeUsingPUT() throws Exception {
+        System.setProperty(TlbConstants.TEST_SUBSET_SIZE, "1");
         SystemEnvironment environment = initEnvironment("http://test.host:8153/cruise");
         HttpAction action = mock(HttpAction.class);
         String data = "com.thoughtworks.tlb.TestSuite: 12\n";
@@ -43,6 +52,31 @@ public class TalkToCruiseTest {
 
         TalkToCruise cruise = new TalkToCruise(environment, action);
         cruise.testClassTime("com.thoughtworks.tlb.TestSuite", 12);
+        verify(action).put(url, data);
+    }
+
+    @Test
+    public void shouldUpdateCruiseArtifactWithTestTimeUsingPUTOnlyOnTheLastSuite() throws Exception {
+        System.setProperty(TlbConstants.TEST_SUBSET_SIZE, "5");
+        SystemEnvironment environment = initEnvironment("http://test.host:8153/cruise");
+        HttpAction action = mock(HttpAction.class);
+        String data = "com.thoughtworks.tlb.TestSuite: 12\n" +
+                "com.thoughtworks.tlb.TestTimeBased: 15\n" +
+                "com.thoughtworks.tlb.TestCountBased: 10\n" +
+                "com.thoughtworks.tlb.TestCriteriaSelection: 30\n" +
+                "com.thougthworks.tlb.SystemEnvTest: 8\n";
+        String url = "http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/" + TalkToCruise.TEST_TIME_FILE;
+
+        TalkToCruise cruise = new TalkToCruise(environment, action);
+        cruise.testClassTime("com.thoughtworks.tlb.TestSuite", 12);
+        cruise.testClassTime("com.thoughtworks.tlb.TestTimeBased", 15);
+        cruise.testClassTime("com.thoughtworks.tlb.TestCountBased", 10);
+        cruise.testClassTime("com.thoughtworks.tlb.TestCriteriaSelection", 30);
+
+        when(action.put(url, data)).thenReturn("File tlb.test_time.properties was appended successfully");
+
+        cruise.testClassTime("com.thougthworks.tlb.SystemEnvTest", 8);
+
         verify(action).put(url, data);
     }
 

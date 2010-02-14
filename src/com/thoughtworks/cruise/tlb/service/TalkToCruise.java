@@ -3,6 +3,7 @@ package com.thoughtworks.cruise.tlb.service;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 import static com.thoughtworks.cruise.tlb.TlbConstants.*;
 import com.thoughtworks.cruise.tlb.service.http.HttpAction;
+import com.thoughtworks.cruise.tlb.TlbConstants;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ public class TalkToCruise {
     private final HttpAction httpAction;
     private static final String JOB_NAME = "name";
     protected static final String TEST_TIME_FILE = "tlb/test_time.properties";
+    private List<String> payloads = new ArrayList<String>();
 
     public TalkToCruise(SystemEnvironment environment, HttpAction httpAction) {
         this.environment = environment;
@@ -67,8 +69,17 @@ public class TalkToCruise {
     }
 
     public void testClassTime(String className, long time) {
-        httpAction.put(String.format("%s/files/%s/%s/%s/%s/%s/%s", cruiseUrl(), p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_LABEL), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER),
-                p(CRUISE_JOB_NAME), TEST_TIME_FILE), String.format("%s: %s\n", className, time));
+        payloads.add(String.format("%s: %s\n", className, time));
+        if (Integer.parseInt(System.getProperty(TlbConstants.TEST_SUBSET_SIZE)) == payloads.size()) {
+            StringBuffer buffer = new StringBuffer();
+            for (String payload : payloads) {
+                buffer.append(payload);
+            }
+            httpAction.put(String.format("%s/files/%s/%s/%s/%s/%s/%s", cruiseUrl(), p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_LABEL), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER),
+                p(CRUISE_JOB_NAME), TEST_TIME_FILE), buffer.toString());
+            payloads.clear();
+        }
+
     }
 
     public Map<String, String> getTestTimes(List<String> jobNames) {
