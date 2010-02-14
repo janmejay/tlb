@@ -5,6 +5,7 @@ import org.apache.tools.ant.taskdefs.optional.junit.JUnitTest;
 import org.apache.tools.ant.BuildException;
 
 import java.io.OutputStream;
+import java.net.URL;
 
 import junit.framework.Test;
 import junit.framework.AssertionFailedError;
@@ -33,6 +34,8 @@ public class JunitTimeRecorder implements JUnitResultFormatter {
     public void startTestSuite(JUnitTest jUnitTest) throws BuildException {}
 
     public void endTestSuite(JUnitTest jUnitTest) throws BuildException {
+        //URL filePath = jUnitTest.getClass().getResource("/" + jUnitTest.getName().replace(".", "/") + ".class");
+        //System.err.println("Foo => " + jUnitTest.getName() + " -- " + filePath);
         talkToCruise.testClassTime(jUnitTest.getName(), jUnitTest.getRunTime());
     }
 

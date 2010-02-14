@@ -25,7 +25,9 @@ public class TestUtil {
     }
 
     public static FileResource file(String dir, String name) {
-        return new FileResource(new Project(), new File(dir, name).getPath());
+        FileResource fileResource = new FileResource(new Project(), dir + File.separator + name + ".class");
+        fileResource.setBaseDir(new File("."));
+        return fileResource;
     }
 
     public static SystemEnvironment initEnvironment(String jobName) {

@@ -33,7 +33,7 @@ public class FileUtil {
         return file;
     }
 
-    public static String getCannonicalName(String testClass) {
-        return testClass.replaceAll("\\.", "/");
+    public static String classFileRelativePath(String testClass) {
+        return testClass.replaceAll("\\.", "/") + ".class";
     }
 }

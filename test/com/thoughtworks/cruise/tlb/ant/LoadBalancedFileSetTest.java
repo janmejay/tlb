@@ -19,6 +19,7 @@ import org.junit.Test;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 import java.io.File;
 import java.util.*;
@@ -59,6 +60,7 @@ public class LoadBalancedFileSetTest {
         when(criteria.filter(any(List.class))).thenReturn(Arrays.asList(new FileResource(included)));
 
         fileSet = new LoadBalancedFileSet(criteria);
+        fileSet.setDir(projectDir);
         initFileSet(fileSet);
         Iterator files = fileSet.iterator();
 
@@ -70,7 +72,17 @@ public class LoadBalancedFileSetTest {
     @Test
     public void shouldUseSystemPropertyToInstantiateCriteria() {
         fileSet = new LoadBalancedFileSet(initEnvironment(TestSplitterCriteriaFactory.COUNT));
+        fileSet.setDir(projectDir);
         assertThat(fileSet.getSplitterCriteria(), instanceOf(CountBasedTestSplitterCriteria.class));
+    }
+
+    @Test
+    public void shouldSetFileSetDir() throws Exception{
+        TestSplitterCriteria criteria = mock(TestSplitterCriteria.class);
+        fileSet = new LoadBalancedFileSet(criteria);
+        fileSet.setDir(projectDir);
+        verify(criteria).setDir(projectDir);
+        assertThat(fileSet.getDir(), is(projectDir));
     }
 
     private SystemEnvironment initEnvironment(String strategyName) {

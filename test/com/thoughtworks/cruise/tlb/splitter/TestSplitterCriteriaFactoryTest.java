@@ -76,7 +76,7 @@ public class TestSplitterCriteriaFactoryTest {
             super(env);
         }
 
-        public List<FileResource> filter(List<FileResource> files) {
+        protected List<FileResource> subset(List<FileResource> fileResources) {
             this.calledFilter = true;
             return null;
         }

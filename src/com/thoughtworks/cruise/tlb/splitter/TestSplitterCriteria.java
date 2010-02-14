@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.io.File;
 
 import com.thoughtworks.cruise.tlb.service.TalkToCruise;
 import com.thoughtworks.cruise.tlb.TlbConstants;
@@ -18,8 +19,12 @@ import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
  */
 public abstract class TestSplitterCriteria implements TalksToCruise {
     public static TestSplitterCriteria MATCH_ALL_FILE_SET = new TestSplitterCriteria(null) {
-        public List<FileResource> filter(List<FileResource> files) {
-            return files;
+        public List<FileResource> filter(List<FileResource> fileResources) {
+            return fileResources;
+        }
+
+        protected List<FileResource> subset(List<FileResource> fileResources) {
+            throw new RuntimeException("Should never reach here");
         }
     };
     protected TalkToCruise talkToCruise;
@@ -29,6 +34,8 @@ public abstract class TestSplitterCriteria implements TalksToCruise {
     private static final String HEX = "[a-fA-F0-9]";
     private static final String UUID = HEX + "{8}-" + HEX + "{4}-" + HEX + "{4}-" + HEX + "{4}-" + HEX + "{12}";
     private static final Pattern UUID_BASED_LOAD_BALANCED_JOB = Pattern.compile("(.*?)-(" + UUID + ")");
+    protected List<String> jobs;
+    protected File dir;
 
     public TestSplitterCriteria(SystemEnvironment env) {
         this.env = env;
@@ -39,7 +46,16 @@ public abstract class TestSplitterCriteria implements TalksToCruise {
         talksToCruise(talkToCruise);
     }
 
-    public abstract List<FileResource> filter(List<FileResource> files);
+    public List<FileResource> filter(List<FileResource> fileResources) {
+        jobs = pearJobs();
+        if (jobs.size() <= 1) {
+            return fileResources;
+        }
+
+        return subset(fileResources);
+    }
+
+    protected abstract List<FileResource> subset(List<FileResource> fileResources);
 
     public void talksToCruise(TalkToCruise cruise) {
        this.talkToCruise = cruise;
@@ -88,5 +104,9 @@ public abstract class TestSplitterCriteria implements TalksToCruise {
         List<String> jobs = jobsInTheSameFamily(talkToCruise.getJobs());
         Collections.sort(jobs);
         return jobs;
+    }
+
+    public void setDir(File dir) {
+        this.dir = dir;
     }
 }
