@@ -1,15 +1,12 @@
 package com.thoughtworks.cruise.tlb.splitter;
 
-import org.apache.tools.ant.types.resources.FileResource;
-import org.apache.tools.ant.Project;
-
-import java.io.File;
-import java.util.*;
-
-import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
-import com.thoughtworks.cruise.tlb.utils.FileUtil;
 import com.thoughtworks.cruise.tlb.service.TalkToCruise;
-import com.thoughtworks.cruise.tlb.TlbConstants;
+import com.thoughtworks.cruise.tlb.utils.FileUtil;
+import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.types.resources.FileResource;
+
+import java.util.*;
 
 /**
  * @understands criteria for splitting tests based on time taken
@@ -24,38 +21,60 @@ public class TimeBasedTestSplitterCriteria extends TestSplitterCriteria implemen
         super(talkToCruise, env);
     }
 
-    public List<FileResource> filter(List<FileResource> fileResources) {
-        List<String> jobs = jobsInTheSameFamily(talkToCruise.getJobs());
-        if (jobs.size() <= 1) {
-            return fileResources;
-        }
-        Collections.sort(jobs);
-        Map<String, String> classToTime = talkToCruise.getTestTimes(jobs);
+    protected List<FileResource> subset(List<FileResource> fileResources) {
+        List<TestFile> testFiles = testFiles(jobs, fileResources);
+        Bucket thisBucket = buckets(jobs, testFiles);
+        return resourcesFrom(thisBucket, fileResources.get(0).getProject());
+    }
 
-        Set<TestFile> testFiles = new TreeSet<TestFile>();
-
-        for (String testClass : classToTime.keySet()) {
-            String fileName = FileUtil.getCannonicalName(testClass);
-            testFiles.add(new TestFile(fileName, Double.parseDouble(classToTime.get(testClass))));
-        }
-
+    private Bucket buckets(List<String> jobs, List<TestFile> testFiles) {
+        Bucket thisBucket = null;
         List<Bucket> buckets = new ArrayList<Bucket>();
 
         for (String job : jobs) {
-            buckets.add(new Bucket(job));
+            Bucket bucket = new Bucket(job);
+            if (job.equals(jobName())) thisBucket = bucket;
+            buckets.add(bucket);
         }
 
+        assignToBuckets(testFiles, buckets);
+
+        return thisBucket;
+    }
+
+    private void assignToBuckets(List<TestFile> testFiles, List<Bucket> buckets) {
         for (TestFile testFile : testFiles) {
             buckets.get(0).add(testFile);
             Collections.sort(buckets);
         }
+    }
 
-        for (Bucket bucket : buckets) {
-            if (bucket.name.equals(jobName())) {
-                return resourcesFrom(bucket, fileResources.get(0).getProject());
-            }
+    private List<TestFile> testFiles(List<String> jobs, List<FileResource> fileResources) {
+        Map<String, String> classToTime = talkToCruise.getLastRunTestTimes(jobs);
+        Set<String> currentFileNames = new HashSet<String>();
+        for (FileResource fileResource : fileResources) {
+            currentFileNames.add(fileResource.getName());
         }
-        throw new RuntimeException("Should never get here! Cannot find the job with name: " + jobName());
+
+        List<TestFile> testFiles = new ArrayList<TestFile>();
+        double totalTime = 0;
+
+        for (String testClass : classToTime.keySet()) {
+            String fileName = FileUtil.classFileRelativePath(testClass);
+            double time = Double.parseDouble(classToTime.get(testClass));
+            totalTime += time;
+            if (currentFileNames.remove(fileName)) testFiles.add(new TestFile(fileName, time));
+        }
+
+        double avgTime = totalTime / classToTime.size();
+
+        for (String newFile : currentFileNames) {
+            testFiles.add(new TestFile(newFile, avgTime));
+        }
+
+        Collections.sort(testFiles);
+        
+        return testFiles;
     }
 
     private List<FileResource> resourcesFrom(Bucket bucket, Project project) {

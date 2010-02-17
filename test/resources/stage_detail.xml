@@ -1,7 +1,7 @@
 <stage name="build" counter="1">
-    <link rel="self" href="http://cruise03.thoughtworks.com:8153/cruise/api/stages/49.xml"/>
-    <pipeline name="rags" counter="5"
-        label="5" href="http://cruise03.thoughtworks.com:8153/cruise/api/pipelines/rags/17.xml"/>
+    <link rel="self" href="http://localhost:8153/cruise/api/stages/49.xml"/>
+    <pipeline name="pipeline" counter="5"
+        label="5" href="http://localhost:8153/cruise/api/pipelines/pipeline/17.xml"/>
     <updated></updated>
     <result>Failed</result>
     <state>Completed</state>

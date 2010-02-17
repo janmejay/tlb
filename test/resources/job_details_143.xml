@@ -1,8 +1,8 @@
 <job name="rails">
 
-    <link rel="self" href="http://cruise03.thoughtworks.com:8153/cruise/api/jobs/143.xml"/>
-    <pipeline name="rags" counter="5" label="5"/>
-    <stage name="build" counter="1" href="http://cruise03.thoughtworks.com:8153/cruise/api/stages/49.xml"/>
+    <link rel="self" href="http://localhost:8153/cruise/api/jobs/143.xml"/>
+    <pipeline name="pipeline" counter="5" label="5"/>
+    <stage name="build" counter="1" href="http://localhost:8153/cruise/api/stages/49.xml"/>
     <state>Completed</state>
     <result>Failed</result>
     <properties>
@@ -37,7 +37,7 @@
 
     </properties>
     <agent uuid="eb71c53f-ed56-4ab6-ad9e-2ccbc4f79e43"/>
-    <artifacts baseUrl="http://cruise03.thoughtworks.com:8153/cruise/files/rags/5/build/1/rails" pathFromArtifactRoot="pipelines/rags/5/build/1/rails">
+    <artifacts baseUrl="http://localhost:8153/cruise/files/pipeline/1/stage/1/rails" pathFromArtifactRoot="pipelines/pipeline/1/stage/1/rails">
 
             <artifact path="cruise-output/log.xml" type="file"/>
 

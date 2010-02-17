@@ -2,10 +2,12 @@ package com.thoughtworks.cruise.tlb.ant;
 
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.resources.FileResource;
+import org.apache.tools.ant.BuildException;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import java.io.File;
 
 import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteria;
 import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteriaFactory;
@@ -43,5 +45,11 @@ public class LoadBalancedFileSet extends FileSet {
 
     public TestSplitterCriteria getSplitterCriteria() {
         return criteria;
+    }
+
+    @Override
+    public void setDir(File dir) throws BuildException {
+        super.setDir(dir);
+        criteria.setDir(dir);
     }
 }
