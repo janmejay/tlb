@@ -16,7 +16,7 @@
 
     
         <entry>
-            <title><![CDATA[AnotherPipeline/1/Stage/1]]></title>
+            <title><![CDATA[old_pipeline/1/old_stage/1]]></title>
             <updated>2010-02-15T21:46:21-08:00</updated>
             <id>37</id>
             <link href="http://localhost:8153/cruise/api/stages/2.xml" rel="alternate"/>

@@ -13,13 +13,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import org.apache.commons.io.FileUtils;
-import org.dom4j.Element;
-import org.dom4j.Node;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Arrays;
-import java.util.List;
 import java.io.IOException;
 import java.io.File;
 import java.net.URISyntaxException;
@@ -88,13 +85,36 @@ public class TalkToCruiseTest {
         HttpAction action = mock(HttpAction.class);
         when(action.get("http://localhost:8153/cruise/api/feeds/stages.xml")).thenReturn(fileContents("resources/stages_p1.xml"));
         when(action.get("http://localhost:8153/cruise/api/feeds/stages.xml?before=60")).thenReturn(fileContents("resources/stages_p2.xml"));
-//        when(action.get("http://localhost:8153/cruise/api/feeds/stages.xml?before=42")).thenReturn(fileContents("resources/stages_p3.xml"));
-//        when(action.get("http://localhost:8153/cruise/api/feeds/stages.xml?before=37")).thenReturn(fileContents("resources/stages_p4.xml"));
         when(action.get("http://localhost:8153/cruise/api/stages/3.xml")).thenReturn(fileContents("resources/stage_detail.xml"));
         stubJobDetails(action);
         when(action.get("http://localhost:8153/cruise/files/pipeline/1/stage/1/firefox-1/tlb/test_time.properties")).thenReturn(fileContents("resources/test_time_1.properties"));
         when(action.get("http://localhost:8153/cruise/files/pipeline/1/stage/1/firefox-2/tlb/test_time.properties")).thenReturn(fileContents("resources/test_time_2.properties"));
         TalkToCruise cruise = new TalkToCruise(initEnvironment("http://localhost:8153/cruise"), action);
+        Map<String, String> runTimes = cruise.getLastRunTestTimes(Arrays.asList("firefox-1", "firefox-2"));
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("com.thoughtworks.cruise.one.One", "10");
+        map.put("com.thoughtworks.cruise.two.Two", "20");
+        map.put("com.thoughtworks.cruise.three.Three", "30");
+        map.put("com.thoughtworks.cruise.four.Four", "40");
+        map.put("com.thoughtworks.cruise.five.Five", "50");
+        assertThat(runTimes, is(map));
+    }
+
+    @Test
+    public void shouldFindTestTimesFromLastRunStageWhenDeepDownFeedLinks() throws Exception{
+        HttpAction action = mock(HttpAction.class);
+        when(action.get("http://localhost:8153/cruise/api/feeds/stages.xml")).thenReturn(fileContents("resources/stages_p1.xml"));
+        when(action.get("http://localhost:8153/cruise/api/feeds/stages.xml?before=60")).thenReturn(fileContents("resources/stages_p2.xml"));
+        when(action.get("http://localhost:8153/cruise/api/feeds/stages.xml?before=42")).thenReturn(fileContents("resources/stages_p3.xml"));
+//        when(action.get("http://localhost:8153/cruise/api/feeds/stages.xml?before=37")).thenReturn(fileContents("resources/stages_p4.xml"));
+        when(action.get("http://localhost:8153/cruise/api/stages/2.xml")).thenReturn(fileContents("resources/stage_detail.xml"));
+        stubJobDetails(action);
+        when(action.get("http://localhost:8153/cruise/files/pipeline/1/stage/1/firefox-1/tlb/test_time.properties")).thenReturn(fileContents("resources/test_time_1.properties"));
+        when(action.get("http://localhost:8153/cruise/files/pipeline/1/stage/1/firefox-2/tlb/test_time.properties")).thenReturn(fileContents("resources/test_time_2_with_new_lines.properties"));
+        Map<String, String> envMap = initEnvMap("http://localhost:8153/cruise");
+        envMap.put(CRUISE_PIPELINE_NAME, "old_pipeline");
+        envMap.put(CRUISE_STAGE_NAME, "old_stage");
+        TalkToCruise cruise = new TalkToCruise(new SystemEnvironment(envMap), action);
         Map<String, String> runTimes = cruise.getLastRunTestTimes(Arrays.asList("firefox-1", "firefox-2"));
         Map<String, String> map = new HashMap<String, String>();
         map.put("com.thoughtworks.cruise.one.One", "10");

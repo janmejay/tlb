@@ -10,10 +10,7 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.io.StringReader;
 
-import org.dom4j.Document;
-import org.dom4j.Element;
-import org.dom4j.Attribute;
-import org.dom4j.DocumentFactory;
+import org.dom4j.*;
 import org.dom4j.io.SAXReader;
 
 /**
