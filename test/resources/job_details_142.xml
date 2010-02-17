@@ -1,8 +1,8 @@
 <job name="firefox-3">
 
-    <link rel="self" href="http://cruise03.thoughtworks.com:8153/cruise/api/jobs/142.xml"/>
-    <pipeline name="rags" counter="5" label="5"/>
-    <stage name="build" counter="1" href="http://cruise03.thoughtworks.com:8153/cruise/api/stages/49.xml"/>
+    <link rel="self" href="http://localhost:8153/cruise/api/jobs/142.xml"/>
+    <pipeline name="pipeline" counter="5" label="5"/>
+    <stage name="build" counter="1" href="http://localhost:8153/cruise/api/stages/49.xml"/>
     <state>Completed</state>
     <result>Failed</result>
     <properties>
@@ -37,7 +37,7 @@
 
     </properties>
     <agent uuid="fda50e5f-444b-4d30-ac8e-e54d649ee9b1"/>
-    <artifacts baseUrl="http://cruise03.thoughtworks.com:8153/cruise/files/rags/5/build/1/firefox-3" pathFromArtifactRoot="pipelines/rags/5/build/1/firefox-3">
+    <artifacts baseUrl="http://localhost:8153/cruise/files/pipeline/1/stage/1/firefox-3" pathFromArtifactRoot="pipelines/pipeline/1/stage/1/firefox-3">
 
             <artifact path="cruise-output/log.xml" type="file"/>
 

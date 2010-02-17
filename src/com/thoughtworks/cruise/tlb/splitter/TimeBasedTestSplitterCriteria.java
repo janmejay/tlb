@@ -50,7 +50,7 @@ public class TimeBasedTestSplitterCriteria extends TestSplitterCriteria implemen
     }
 
     private List<TestFile> testFiles(List<String> jobs, List<FileResource> fileResources) {
-        Map<String, String> classToTime = talkToCruise.getTestTimes(jobs);
+        Map<String, String> classToTime = talkToCruise.getLastRunTestTimes(jobs);
         Set<String> currentFileNames = new HashSet<String>();
         for (FileResource fileResource : fileResources) {
             currentFileNames.add(fileResource.getName());

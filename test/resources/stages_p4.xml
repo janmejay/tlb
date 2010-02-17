@@ -1,0 +1,14 @@
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <title>Stages</title>
+    <id>http://localhost:8153/cruise/api/feeds/stages.xml</id>
+    <author>
+        <name>Cruise</name>
+    </author>
+    <updated>2010-02-15T22:01:11-08:00</updated>
+    <link rel="self" href="http://localhost:8153/cruise/api/feeds/stages.xml"/>
+
+    
+    
+
+    
+</feed>

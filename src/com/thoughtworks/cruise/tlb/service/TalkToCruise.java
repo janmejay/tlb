@@ -5,14 +5,15 @@ import static com.thoughtworks.cruise.tlb.TlbConstants.*;
 import com.thoughtworks.cruise.tlb.service.http.HttpAction;
 import com.thoughtworks.cruise.tlb.TlbConstants;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import java.io.StringReader;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.Attribute;
+import org.dom4j.DocumentFactory;
 import org.dom4j.io.SAXReader;
 
 /**
@@ -24,24 +25,34 @@ public class TalkToCruise {
     private static final String JOB_NAME = "name";
     protected static final String TEST_TIME_FILE = "tlb/test_time.properties";
     private List<String> payloads = new ArrayList<String>();
+    private static final Pattern STAGE_LOCATOR = Pattern.compile("(.*?)/\\d+/(.*?)/\\d+");
+    private static final Pattern SUITE_TIME_STRING = Pattern.compile("(.*?):\\s*(\\d+)");
 
     public TalkToCruise(SystemEnvironment environment, HttpAction httpAction) {
+        HashMap<String, String> map = new HashMap<String, String>();
+        map.put("a", "http://www.w3.org/2005/Atom");
+        DocumentFactory factory = DocumentFactory.getInstance();
+        factory.setXPathNamespaceURIs(map);
         this.environment = environment;
         this.httpAction = httpAction;
     }
 
     public List<String> getJobs() {
         String url = stageUrl();
-        Element stage = rootFor(url);
-        List<Attribute> jobLinks = stage.selectNodes("//jobs/job/@href");
         ArrayList<String> jobNames = new ArrayList<String>();
-        for (Attribute jobLink : jobLinks) {
+        for (Attribute jobLink : jobLinks(url)) {
             jobNames.add(rootFor(jobLink.getValue()).attributeValue(JOB_NAME));
         }
         return jobNames;
     }
 
-    private Element rootFor(String url) {
+    @SuppressWarnings({"unchecked"})
+    private List<Attribute> jobLinks(String url) {
+        Element stage = rootFor(url);
+        return (List<Attribute>) stage.selectNodes("//jobs/job/@href");
+    }
+
+    public Element rootFor(String url) {
         SAXReader builder = new SAXReader();
         String xmlString = httpAction.get(url);
         try {
@@ -58,7 +69,7 @@ public class TalkToCruise {
 
     private Object cruiseUrl() {
         String url = p(CRUISE_SERVER_URL);
-        if(url.endsWith("/")) {
+        if (url.endsWith("/")) {
             url = url.substring(0, url.length() - 1);
         }
         return url;
@@ -76,13 +87,72 @@ public class TalkToCruise {
                 buffer.append(payload);
             }
             httpAction.put(String.format("%s/files/%s/%s/%s/%s/%s/%s", cruiseUrl(), p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_LABEL), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER),
-                p(CRUISE_JOB_NAME), TEST_TIME_FILE), buffer.toString());
+                    p(CRUISE_JOB_NAME), TEST_TIME_FILE), buffer.toString());
             payloads.clear();
         }
 
     }
 
-    public Map<String, String> getTestTimes(List<String> jobNames) {
-        throw new RuntimeException("IMPLEMENT ME!");
+    public Map<String, String> getLastRunTestTimes(List<String> jobNames) {
+        String stageFeedUrl = String.format("%s/api/feeds/stages.xml", cruiseUrl());
+        String stageDetailUrl = lastRunStageDetailUrl(stageFeedUrl);
+        List<Attribute> jobLinks = jobLinks(stageDetailUrl);
+        List<String> tlbTestTimeUrls = tlbTestTimeUrls(jobLinks, jobNames);
+        return mergedProperties(tlbTestTimeUrls);
+    }
+
+    private Map<String, String> mergedProperties(List<String> tlbTestTimeUrls) {
+        HashMap<String, String> suiteTimeMap = new HashMap<String, String>();
+        StringBuffer buffer = new StringBuffer();
+        for (String tlbTestTimeUrl : tlbTestTimeUrls) {
+            try {
+                buffer.append(httpAction.get(tlbTestTimeUrl) + "\n");
+            } catch (RuntimeException e) {
+                continue; //FIXME!
+            }
+        }
+        StringTokenizer suiteTimes = new StringTokenizer(buffer.toString(), "\n");
+        while (suiteTimes.hasMoreTokens()) {
+            String tuple = suiteTimes.nextToken();
+            Matcher matcher = SUITE_TIME_STRING.matcher(tuple);
+            if (matcher.matches()) suiteTimeMap.put(matcher.group(1), matcher.group(2));
+        }
+        return suiteTimeMap;
+    }
+
+    private List<String> tlbTestTimeUrls(List<Attribute> jobLinks, List<String> jobNames) {
+        ArrayList<String> tlbTestTimeUrls = new ArrayList<String>();
+        for (Attribute jobLink : jobLinks) {
+            Element jobDom = rootFor(jobLink.getValue());
+            String jobName = jobDom.attribute("name").getValue().trim();
+            if (jobNames.contains(jobName)) {
+                String atrifactBaseUrl = jobDom.selectSingleNode("//artifacts/@baseUrl").getText();
+                tlbTestTimeUrls.add(String.format("%s/%s", atrifactBaseUrl, TEST_TIME_FILE));
+            }
+        }
+        return tlbTestTimeUrls;
+    }
+
+    @SuppressWarnings({"unchecked"})
+    private String lastRunStageDetailUrl(String stageFeedUrl) {
+        Element stageFeedPage = rootFor(stageFeedUrl);
+        List<Element> list = stageFeedPage.selectNodes("//a:entry");
+        for (Element element : list) {
+            String stageLocator = element.selectSingleNode("./a:title").getText();
+            if (sameStage(stageLocator)) {
+                return element.selectSingleNode("./a:link/@href").getText();
+            }
+        }
+        return lastRunStageDetailUrl(stageFeedPage.selectSingleNode("//a:link[@rel='next']/@href").getText());
+    }
+
+    private boolean sameStage(String stageLocator) {
+        Matcher matcher = STAGE_LOCATOR.matcher(stageLocator);
+        if (!matcher.matches()) {
+            return false;
+        }
+        boolean samePipeline = environment.getProperty(CRUISE_PIPELINE_NAME).equals(matcher.group(1));
+        boolean sameStage = environment.getProperty(CRUISE_STAGE_NAME).equals(matcher.group(2));
+        return samePipeline && sameStage;
     }
 }

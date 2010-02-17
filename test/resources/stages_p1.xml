@@ -1,0 +1,39 @@
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <title>Stages</title>
+    <id>http://localhost:8153/cruise/api/feeds/stages.xml</id>
+    <author>
+        <name>Cruise</name>
+    </author>
+    <updated>2010-02-15T21:54:30-08:00</updated>
+    <link rel="self" href="http://localhost:8153/cruise/api/feeds/stages.xml"/>
+
+    
+        <link rel="previous" href="http://localhost:8153/cruise/api/feeds/stages.xml?after=72"/>
+    
+    
+        <link rel="next" href="http://localhost:8153/cruise/api/feeds/stages.xml?before=60"/>
+    
+
+    
+        <entry>
+            <title><![CDATA[up_stream/5/AutoStage/1]]></title>
+            <updated>2010-02-15T21:54:30-08:00</updated>
+            <id>72</id>
+            <link href="http://localhost:8153/cruise/api/stages/37.xml" rel="alternate"/>
+        </entry>
+    
+        <entry>
+            <title><![CDATA[up_stream/4/AutoStage/2]]></title>
+            <updated>2010-02-15T21:53:01-08:00</updated>
+            <id>66</id>
+            <link href="http://localhost:8153/cruise/api/stages/36.xml" rel="alternate"/>
+        </entry>
+    
+        <entry>
+            <title><![CDATA[up_stream/4/AutoStage/1]]></title>
+            <updated>2010-02-15T21:52:01-08:00</updated>
+            <id>60</id>
+            <link href="http://localhost:8153/cruise/api/stages/35.xml" rel="alternate"/>
+        </entry>
+    
+</feed>
