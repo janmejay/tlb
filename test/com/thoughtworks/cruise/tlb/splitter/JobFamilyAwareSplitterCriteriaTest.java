@@ -10,25 +10,16 @@ import org.hamcrest.core.Is;
 import static org.hamcrest.core.Is.is;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 import com.thoughtworks.cruise.tlb.TlbConstants;
+import static com.thoughtworks.cruise.tlb.TestUtil.file;
 import com.thoughtworks.cruise.tlb.service.TalkToCruise;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Arrays;
-import java.util.ArrayList;
+import java.util.*;
 import java.io.File;
 
 public class JobFamilyAwareSplitterCriteriaTest {
     @Test
     public void testFilterShouldPublishNumberOfSuitesSelectedForRunning() {
         HashMap<String, String> envMap = new HashMap<String, String>();
-        //envMap.put(TlbConstants.TEST_SUBSET_SIZE, "10");
-//        envMap.put(TlbConstants.CRUISE_SERVER_URL, "http://localhost:8153/cruise");
-//        envMap.put(TlbConstants.CRUISE_PIPELINE_NAME, "pipeline_one");
-//        envMap.put(TlbConstants.CRUISE_STAGE_NAME, "stage_one");
-//        envMap.put(TlbConstants.CRUISE_PIPELINE_COUNTER, "3");
-//        envMap.put(TlbConstants.CRUISE_STAGE_COUNTER, "2");
-//        envMap.put(TlbConstants.CRUISE_JOB_NAME, "build");
         envMap.put(TlbConstants.CRUISE_JOB_NAME, "build-1");
         TalkToCruise toCruise = mock(TalkToCruise.class);
         when(toCruise.getJobs()).thenReturn(Arrays.asList("build-1", "build-2", "build-3"));

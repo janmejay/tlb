@@ -34,8 +34,6 @@ public class JunitTimeRecorder implements JUnitResultFormatter {
     public void startTestSuite(JUnitTest jUnitTest) throws BuildException {}
 
     public void endTestSuite(JUnitTest jUnitTest) throws BuildException {
-        //URL filePath = jUnitTest.getClass().getResource("/" + jUnitTest.getName().replace(".", "/") + ".class");
-        //System.err.println("Foo => " + jUnitTest.getName() + " -- " + filePath);
         talkToCruise.testClassTime(jUnitTest.getName(), jUnitTest.getRunTime());
     }
 
