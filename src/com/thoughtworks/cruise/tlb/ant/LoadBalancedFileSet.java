@@ -9,8 +9,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.io.File;
 
-import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteria;
 import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteriaFactory;
+import com.thoughtworks.cruise.tlb.splitter.JobFamilyAwareSplitterCriteria;
+import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteria;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 import static com.thoughtworks.cruise.tlb.TlbConstants.TLB_CRITERIA;
 

@@ -11,7 +11,7 @@ import java.util.*;
 /**
  * @understands criteria for splitting tests based on time taken
  */
-public class TimeBasedTestSplitterCriteria extends TestSplitterCriteria implements TalksToCruise {
+public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteria implements TalksToCruise {
 
     public TimeBasedTestSplitterCriteria(SystemEnvironment environment) {
         super(environment);

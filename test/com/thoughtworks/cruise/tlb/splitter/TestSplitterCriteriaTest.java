@@ -31,7 +31,7 @@ public class TestSplitterCriteriaTest {
         when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2"));
         Map<String, String> env = new HashMap<String, String>();
         env.put(TlbConstants.CRUISE_JOB_NAME, "job-1");
-        TestSplitterCriteria criteria = new TestSplitterCriteria(talkToCruise, new SystemEnvironment(env)) {
+        TestSplitterCriteria criteria = new JobFamilyAwareSplitterCriteria(talkToCruise, new SystemEnvironment(env)) {
             protected List<FileResource> subset(List<FileResource> fileResources) {
                 return resources;
             }

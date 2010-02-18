@@ -15,11 +15,11 @@ public class TestSplitterCriteriaFactory {
 
     public static TestSplitterCriteria getCriteria(String criteriaName, SystemEnvironment environment) {
         if (criteriaName == null || criteriaName.isEmpty()) {
-            return TestSplitterCriteria.MATCH_ALL_FILE_SET;
+            return JobFamilyAwareSplitterCriteria.MATCH_ALL_FILE_SET;
         }
         try {
             Class<?> criteriaClass = Class.forName(criteriaName);
-            if(!TestSplitterCriteria.class.isAssignableFrom(criteriaClass)) {
+            if(!JobFamilyAwareSplitterCriteria.class.isAssignableFrom(criteriaClass)) {
                 throw new IllegalArgumentException("Class '" + criteriaName + "' does not implement TestSplitterCriteria");
             }
             return getCriteria((Class<TestSplitterCriteria>) criteriaClass, environment);

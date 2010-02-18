@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @understands the criteria for splitting tests based on the number of tests
  */
-public class CountBasedTestSplitterCriteria extends TestSplitterCriteria {
+public class CountBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteria {
 
     public CountBasedTestSplitterCriteria(SystemEnvironment env) {
         super(env);
