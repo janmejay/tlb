@@ -58,8 +58,8 @@ public class DefaultHttpAction implements HttpAction {
                 if (result >= 300 && result < 400) {
                     executeRequest(method.getResponseHeader("Location").getValue());
                 }
-                if (result != 200) {
-                    throw new RuntimeException("Something went horribly wrong. Bu Hao. The response looks like: " + method.getResponseBodyAsString());
+                if (result < 200 || result >= 300) {
+                    throw new RuntimeException(String.format("Something went horribly wrong. Bu Hao. The response[status: %s] looks like: %s", result, method.getResponseBodyAsString()));
                 }
                 return method.getResponseBodyAsString();
             } catch (IOException e) {
