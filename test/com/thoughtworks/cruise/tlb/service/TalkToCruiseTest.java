@@ -2,32 +2,29 @@ package com.thoughtworks.cruise.tlb.service;
 
 import static com.thoughtworks.cruise.tlb.TlbConstants.*;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
+import com.thoughtworks.cruise.tlb.utils.FileUtil;
 import com.thoughtworks.cruise.tlb.TlbConstants;
 import com.thoughtworks.cruise.tlb.service.http.HttpAction;
 import org.junit.Test;
 import org.junit.Before;
-import org.junit.After;
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Arrays;
+import java.util.List;
 import java.io.IOException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.net.URISyntaxException;
 
 public class TalkToCruiseTest {
-
-    @Before
-    @After
-    public void cleanUp() {
-        System.clearProperty(TlbConstants.TEST_SUBSET_SIZE);
-    }
 
     @Test
     public void shouldReturnTheListOfJobsIntheGivenStage() throws Exception {
@@ -57,7 +54,7 @@ public class TalkToCruiseTest {
 
     @Test
     public void shouldUpdateCruiseArtifactWithTestTimeUsingPUTOnlyOnTheLastSuite() throws Exception {
-        SystemEnvironment environment = initEnvironment("http://test.host:8153/cruise");
+        SystemEnvironment env = initEnvironment("http://test.host:8153/cruise");
         HttpAction action = mock(HttpAction.class);
         String data = "com.thoughtworks.tlb.TestSuite: 12\n" +
                 "com.thoughtworks.tlb.TestTimeBased: 15\n" +
@@ -67,18 +64,39 @@ public class TalkToCruiseTest {
         String url = "http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/" + TalkToCruise.TEST_TIME_FILE;
 
         when(action.get("http://test.host:8153/cruise/properties/pipeline/label-2/stage/1/rspec/TEST_SUBSET_SIZE")).thenReturn("TEST_SUBSET_SIZE\n5");
-        TalkToCruise cruise = new TalkToCruise(environment, action);
+        TalkToCruise cruise = new TalkToCruise(env, action);
+        cruise.clearSuiteTimeCachingFile();
         cruise.testClassTime("com.thoughtworks.tlb.TestSuite", 12);
+        assertCacheState(cruise, 1, "com.thoughtworks.tlb.TestSuite: 12");
         cruise.testClassTime("com.thoughtworks.tlb.TestTimeBased", 15);
+        assertCacheState(cruise, 2, "com.thoughtworks.tlb.TestTimeBased: 15");
         cruise.testClassTime("com.thoughtworks.tlb.TestCountBased", 10);
+        assertCacheState(cruise, 3, "com.thoughtworks.tlb.TestCountBased: 10");
         cruise.testClassTime("com.thoughtworks.tlb.TestCriteriaSelection", 30);
+        assertCacheState(cruise, 4, "com.thoughtworks.tlb.TestCriteriaSelection: 30");
 
         when(action.put(url, data)).thenReturn("File tlb.test_time.properties was appended successfully");
 
+
         cruise.testClassTime("com.thougthworks.tlb.SystemEnvTest", 8);
+        assertThat(FileUtil.getUniqueFile(cruise.jobLocator).exists(), is(false));
 
         verify(action).get("http://test.host:8153/cruise/properties/pipeline/label-2/stage/1/rspec/TEST_SUBSET_SIZE");
         verify(action).put(url, data);
+    }
+
+    private void assertCacheState(TalkToCruise cruise, int lineCount, String lastLine) throws IOException {
+        List<String> cache = cacheFileContents(cruise);
+        assertThat(cache.size(), is(lineCount));
+        assertThat(cache.get(lineCount - 1), is(lastLine));
+    }
+
+    private List cacheFileContents(TalkToCruise cruise) throws IOException {
+        File cacheFile = FileUtil.getUniqueFile(cruise.jobLocator);
+        FileInputStream fileIn = new FileInputStream(cacheFile);
+        List cachedLines = IOUtils.readLines(fileIn);
+        IOUtils.closeQuietly(fileIn);
+        return cachedLines;
     }
 
     @Test
