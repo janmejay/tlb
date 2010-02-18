@@ -15,11 +15,15 @@ import org.dom4j.*;
 import org.dom4j.io.SAXReader;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @understands requesting and posting information to/from cruise
  */
 public class TalkToCruise {
+    private static final Log LOG = LogFactory.getLog(TalkToCruise.class);
+
     private final SystemEnvironment environment;
     private final HttpAction httpAction;
     private static final String JOB_NAME = "name";
@@ -200,7 +204,7 @@ public class TalkToCruise {
         try {
             FileUtils.forceDelete(FileUtil.getUniqueFile(jobLocator));
         } catch (IOException e) {
-            System.err.println("TLB ERROR: could not delete suite time cache file: " + e.getMessage());
+            LOG.error("could not delete suite time cache file: " + e.getMessage());
         }
     }
 }
