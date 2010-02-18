@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cruise xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="cruise-config.xsd" schemaVersion="17">
+  <server artifactsdir="logs">
+    <license user="USER">LICENSE</license>
+    <mailhost hostname="10.18.3.171" port="25" username="cruise2" password="cru1s3123" tls="false" from="cruise2@cruise.com" admin="khu@thoughtworks.com" />
+  </server>
+  <pipelines group="tlb">
+    <pipeline name="tlb">
+      <materials>
+        <git url="/home/janmejay/projects/tlb" branch="dev" />
+      </materials>
+      <stage name="dev">
+        <jobs>
+          <job name="build">
+            <tasks>
+              <ant/>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+    <pipeline name="tlb_time">
+      <materials>
+        <git url="/home/janmejay/projects/tlb" branch="dev" />
+        <pipeline pipelineName="tlb" stageName="dev"/>
+      </materials>
+      <stage name="time_based">
+        <environmentvariables>
+          <variable name="TLB_CRITERIA">com.thoughtworks.cruise.tlb.splitter.DefaultingTestSplitterCriteria</variable>
+          <variable name="CRITERIA_DEFAULTING_ORDER">com.thoughtworks.cruise.tlb.splitter.TimeBasedTestSplitterCriteria:com.thoughtworks.cruise.tlb.splitter.CountBasedTestSplitterCriteria</variable>
+        </environmentvariables> 
+        <jobs>
+          <job name="build-1">
+            <tasks>
+              <ant target="test.time_balanced"/>
+            </tasks>
+          </job>
+          <job name="build-2">
+            <tasks>
+              <ant target="test.time_balanced"/>
+            </tasks>
+          </job>
+          <job name="build-3">
+            <tasks>
+              <ant target="test.time_balanced"/>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+    <pipeline name="tlb_count">
+      <materials>
+        <git url="/home/janmejay/projects/tlb" branch="dev" />
+        <pipeline pipelineName="tlb" stageName="dev"/>
+      </materials>
+      <stage name="count">
+        <environmentvariables>
+          <variable name="TLB_CRITERIA">com.thoughtworks.cruise.tlb.splitter.CountBasedTestSplitterCriteria</variable>
+        </environmentvariables> 
+        <jobs>
+          <job name="build-1">
+            <tasks>
+              <ant target="test.count_balanced"/>
+            </tasks>
+          </job>
+          <job name="build-2">
+            <tasks>
+              <ant target="test.count_balanced"/>
+            </tasks>
+          </job>
+          <job name="build-3">
+            <tasks>
+              <ant target="test.count_balanced"/>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+  </pipelines>
+  <agents>
+    <agent hostname="js" ipaddress="192.168.1.3" uuid="6d30a6de-ae46-4968-aa2b-c41668208b5b" />
+  </agents>
+</cruise>
+
