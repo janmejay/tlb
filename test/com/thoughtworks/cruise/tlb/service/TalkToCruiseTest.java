@@ -82,6 +82,18 @@ public class TalkToCruiseTest {
     }
 
     @Test
+    public void shouldPublishSubsetSizeAsPropertyOnJob() throws Exception{
+        SystemEnvironment environment = initEnvironment("http://test.host:8153/cruise");
+        HttpAction action = mock(HttpAction.class);
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("value", "10");
+        when(action.post("http://test.host:8153/cruise/properties/pipeline/label-2/stage/1/rspec/TEST_SUBSET_SIZE", params)).thenReturn("Property 'TEST_SUBSET_SIZE' created with value '10'");
+        TalkToCruise toCruise = new TalkToCruise(environment, action);
+        toCruise.publishSubsetSize(10);
+        verify(action).post("http://test.host:8153/cruise/properties/pipeline/label-2/stage/1/rspec/TEST_SUBSET_SIZE", params);
+    }
+
+    @Test
     public void shouldFindTestTimesFromLastRunStage() throws Exception{
         HttpAction action = mock(HttpAction.class);
         when(action.get("http://localhost:8153/cruise/api/feeds/stages.xml")).thenReturn(fileContents("resources/stages_p1.xml"));

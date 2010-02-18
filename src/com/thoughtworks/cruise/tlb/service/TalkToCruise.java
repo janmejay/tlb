@@ -27,6 +27,7 @@ public class TalkToCruise {
     private Integer subsetSize;
     private String jobLocator;
     private String stageLocator;
+    private String subsetSizeUrl;
 
     public TalkToCruise(SystemEnvironment environment, HttpAction httpAction) {
         HashMap<String, String> map = new HashMap<String, String>();
@@ -38,6 +39,7 @@ public class TalkToCruise {
         subsetSize = null;
         jobLocator = String.format("%s/%s/%s/%s/%s", p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_LABEL), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER), p(CRUISE_JOB_NAME));
         stageLocator = String.format("%s/%s/%s/%s", p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_COUNTER), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER));
+        subsetSizeUrl = String.format("%s/properties/%s/%s", cruiseUrl(), jobLocator, TlbConstants.TEST_SUBSET_SIZE);
     }
 
     public List<String> getJobs() {
@@ -92,7 +94,7 @@ public class TalkToCruise {
 
     private int subsetSize() {
         if (subsetSize == null) {
-            String propertyValue = httpAction.get(String.format("%s/properties/%s/%s", cruiseUrl(), jobLocator, TlbConstants.TEST_SUBSET_SIZE)).split("\n")[1];
+            String propertyValue = httpAction.get(subsetSizeUrl).split("\n")[1];
             subsetSize = Integer.parseInt(propertyValue);
         }
         return subsetSize;
@@ -161,7 +163,9 @@ public class TalkToCruise {
         return samePipeline && sameStage;
     }
 
-    public void publishSubsetSize(int i) {
-        throw new RuntimeException("Not yet implemented");
+    public void publishSubsetSize(int size) {
+        Map<String, String> payload = new HashMap<String, String>();
+        payload.put("value", String.valueOf(size));
+        httpAction.post(subsetSizeUrl, payload);
     }
 }

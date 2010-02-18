@@ -9,12 +9,14 @@ import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Map;
 
 /**
  * @understands talking http protocol using http client
@@ -95,13 +97,31 @@ public class DefaultHttpAction implements HttpAction {
         }
     }
 
+    class FollowablePostRequest extends FollowableHttpRequest {
+        private Map<String, String> data;
+
+        protected FollowablePostRequest(HttpClient client, Map<String, String> data) {
+            super(client);
+            this.data = data;
+        }
+
+        public HttpMethodBase createMethod(String url) {
+            PostMethod method = new PostMethod(url);
+            for (Map.Entry<String, String> param : data.entrySet()) {
+                method.addParameter(param.getKey(), param.getValue());
+            }
+            return method;
+        }
+    }
+
     public String get(String url) {
         FollowableGetRequest request = new FollowableGetRequest(client);
         return request.executeRequest(url);
     }
 
-    public String post(String url, String data) {
-        throw new RuntimeException("Not yet implemented");
+    public String post(String url, Map<String,String> data) {
+        FollowablePostRequest request = new FollowablePostRequest(client, data);
+        return request.executeRequest(url);
     }
 
     public String put(String url, String data) {
