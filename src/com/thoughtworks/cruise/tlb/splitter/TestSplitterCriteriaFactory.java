@@ -19,7 +19,7 @@ public class TestSplitterCriteriaFactory {
         }
         try {
             Class<?> criteriaClass = Class.forName(criteriaName);
-            if(!JobFamilyAwareSplitterCriteria.class.isAssignableFrom(criteriaClass)) {
+            if(!TestSplitterCriteria.class.isAssignableFrom(criteriaClass)) {
                 throw new IllegalArgumentException("Class '" + criteriaName + "' does not implement TestSplitterCriteria");
             }
             return getCriteria((Class<TestSplitterCriteria>) criteriaClass, environment);
