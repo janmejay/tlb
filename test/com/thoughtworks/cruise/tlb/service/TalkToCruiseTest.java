@@ -43,11 +43,11 @@ public class TalkToCruiseTest {
 
     @Test
     public void shouldUpdateCruiseArtifactWithTestTimeUsingPUT() throws Exception {
-        System.setProperty(TlbConstants.TEST_SUBSET_SIZE, "1");
         SystemEnvironment environment = initEnvironment("http://test.host:8153/cruise");
         HttpAction action = mock(HttpAction.class);
         String data = "com.thoughtworks.tlb.TestSuite: 12\n";
         String url = "http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/" + TalkToCruise.TEST_TIME_FILE;
+        when(action.get("http://test.host:8153/cruise/properties/pipeline/label-2/stage/1/rspec/TEST_SUBSET_SIZE")).thenReturn("TEST_SUBSET_SIZE\n1");
         when(action.put(url, data)).thenReturn("File tlb.test_time.properties was appended successfully");
 
         TalkToCruise cruise = new TalkToCruise(environment, action);
@@ -57,7 +57,6 @@ public class TalkToCruiseTest {
 
     @Test
     public void shouldUpdateCruiseArtifactWithTestTimeUsingPUTOnlyOnTheLastSuite() throws Exception {
-        System.setProperty(TlbConstants.TEST_SUBSET_SIZE, "5");
         SystemEnvironment environment = initEnvironment("http://test.host:8153/cruise");
         HttpAction action = mock(HttpAction.class);
         String data = "com.thoughtworks.tlb.TestSuite: 12\n" +
@@ -67,6 +66,7 @@ public class TalkToCruiseTest {
                 "com.thougthworks.tlb.SystemEnvTest: 8\n";
         String url = "http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/" + TalkToCruise.TEST_TIME_FILE;
 
+        when(action.get("http://test.host:8153/cruise/properties/pipeline/label-2/stage/1/rspec/TEST_SUBSET_SIZE")).thenReturn("TEST_SUBSET_SIZE\n5");
         TalkToCruise cruise = new TalkToCruise(environment, action);
         cruise.testClassTime("com.thoughtworks.tlb.TestSuite", 12);
         cruise.testClassTime("com.thoughtworks.tlb.TestTimeBased", 15);
@@ -77,6 +77,7 @@ public class TalkToCruiseTest {
 
         cruise.testClassTime("com.thougthworks.tlb.SystemEnvTest", 8);
 
+        verify(action).get("http://test.host:8153/cruise/properties/pipeline/label-2/stage/1/rspec/TEST_SUBSET_SIZE");
         verify(action).put(url, data);
     }
 

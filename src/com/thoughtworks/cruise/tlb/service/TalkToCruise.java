@@ -24,6 +24,9 @@ public class TalkToCruise {
     private List<String> payloads = new ArrayList<String>();
     private static final Pattern STAGE_LOCATOR = Pattern.compile("(.*?)/\\d+/(.*?)/\\d+");
     private static final Pattern SUITE_TIME_STRING = Pattern.compile("(.*?):\\s*(\\d+)");
+    private Integer subsetSize;
+    private String jobLocator;
+    private String stageLocator;
 
     public TalkToCruise(SystemEnvironment environment, HttpAction httpAction) {
         HashMap<String, String> map = new HashMap<String, String>();
@@ -32,12 +35,14 @@ public class TalkToCruise {
         factory.setXPathNamespaceURIs(map);
         this.environment = environment;
         this.httpAction = httpAction;
+        subsetSize = null;
+        jobLocator = String.format("%s/%s/%s/%s/%s", p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_LABEL), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER), p(CRUISE_JOB_NAME));
+        stageLocator = String.format("%s/%s/%s/%s", p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_COUNTER), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER));
     }
 
     public List<String> getJobs() {
-        String url = stageUrl();
         ArrayList<String> jobNames = new ArrayList<String>();
-        for (Attribute jobLink : jobLinks(url)) {
+        for (Attribute jobLink : jobLinks(String.format("%s/pipelines/%s.xml", cruiseUrl(), stageLocator))) {
             jobNames.add(rootFor(jobLink.getValue()).attributeValue(JOB_NAME));
         }
         return jobNames;
@@ -60,10 +65,6 @@ public class TalkToCruise {
         }
     }
 
-    private String stageUrl() {
-        return String.format("%s/pipelines/%s/%s/%s/%s.xml", cruiseUrl(), p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_COUNTER), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER));
-    }
-
     private Object cruiseUrl() {
         String url = p(CRUISE_SERVER_URL);
         if (url.endsWith("/")) {
@@ -78,16 +79,23 @@ public class TalkToCruise {
 
     public void testClassTime(String className, long time) {
         payloads.add(String.format("%s: %s\n", className, time));
-        if (Integer.parseInt(System.getProperty(TlbConstants.TEST_SUBSET_SIZE)) == payloads.size()) {
+        if (subsetSize() == payloads.size()) {
             StringBuffer buffer = new StringBuffer();
             for (String payload : payloads) {
                 buffer.append(payload);
             }
-            httpAction.put(String.format("%s/files/%s/%s/%s/%s/%s/%s", cruiseUrl(), p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_LABEL), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER),
-                    p(CRUISE_JOB_NAME), TEST_TIME_FILE), buffer.toString());
+            httpAction.put(String.format("%s/files/%s/%s", cruiseUrl(), jobLocator, TEST_TIME_FILE), buffer.toString());
             payloads.clear();
         }
 
+    }
+
+    private int subsetSize() {
+        if (subsetSize == null) {
+            String propertyValue = httpAction.get(String.format("%s/properties/%s/%s", cruiseUrl(), jobLocator, TlbConstants.TEST_SUBSET_SIZE)).split("\n")[1];
+            subsetSize = Integer.parseInt(propertyValue);
+        }
+        return subsetSize;
     }
 
     public Map<String, String> getLastRunTestTimes(List<String> jobNames) {
@@ -151,5 +159,9 @@ public class TalkToCruise {
         boolean samePipeline = environment.getProperty(CRUISE_PIPELINE_NAME).equals(matcher.group(1));
         boolean sameStage = environment.getProperty(CRUISE_STAGE_NAME).equals(matcher.group(2));
         return samePipeline && sameStage;
+    }
+
+    public void publishSubsetSize(int i) {
+        throw new RuntimeException("Not yet implemented");
     }
 }

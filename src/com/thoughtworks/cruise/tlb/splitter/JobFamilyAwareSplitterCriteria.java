@@ -49,6 +49,7 @@ public abstract class JobFamilyAwareSplitterCriteria extends TestSplitterCriteri
         }
 
         List<FileResource> subset = subset(fileResources);
+        talkToCruise.publishSubsetSize(subset.size());
         System.setProperty(TlbConstants.TEST_SUBSET_SIZE, String.valueOf(subset.size()));
         return subset;
     }

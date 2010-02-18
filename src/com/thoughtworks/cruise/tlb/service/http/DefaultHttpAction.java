@@ -100,7 +100,7 @@ public class DefaultHttpAction implements HttpAction {
         return request.executeRequest(url);
     }
 
-    public String post(String url) {
+    public String post(String url, String data) {
         throw new RuntimeException("Not yet implemented");
     }
 
