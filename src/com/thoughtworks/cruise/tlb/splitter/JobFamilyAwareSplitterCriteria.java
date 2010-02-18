@@ -26,7 +26,6 @@ public abstract class JobFamilyAwareSplitterCriteria extends TestSplitterCriteri
         }
     };
     protected TalkToCruise talkToCruise;
-    protected final SystemEnvironment env;
     private static final String INT = "\\d+";
     private static final Pattern NUMBER_BASED_LOAD_BALANCED_JOB = Pattern.compile("(.*?)-(" + INT + ")");
     private static final String HEX = "[a-fA-F0-9]";
@@ -35,7 +34,7 @@ public abstract class JobFamilyAwareSplitterCriteria extends TestSplitterCriteri
     protected List<String> jobs;
 
     public JobFamilyAwareSplitterCriteria(SystemEnvironment env) {
-        this.env = env;
+        super(env);
     }
 
     public JobFamilyAwareSplitterCriteria(TalkToCruise talkToCruise, SystemEnvironment env) {
