@@ -3,7 +3,6 @@ package com.thoughtworks.cruise.tlb.splitter;
 import com.thoughtworks.cruise.tlb.service.TalkToCruise;
 import com.thoughtworks.cruise.tlb.utils.FileUtil;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
-import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.resources.FileResource;
 
 import java.util.*;
@@ -24,7 +23,7 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
     protected List<FileResource> subset(List<FileResource> fileResources) {
         List<TestFile> testFiles = testFiles(jobs, fileResources);
         Bucket thisBucket = buckets(jobs, testFiles);
-        return resourcesFrom(thisBucket, fileResources.get(0).getProject());
+        return resourcesFrom(thisBucket);
     }
 
     private Bucket buckets(List<String> jobs, List<TestFile> testFiles) {
@@ -51,9 +50,12 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
 
     private List<TestFile> testFiles(List<String> jobs, List<FileResource> fileResources) {
         Map<String, String> classToTime = talkToCruise.getLastRunTestTimes(jobs);
+        Map<String, FileResource> fileNameToResource = new HashMap<String, FileResource>();
         Set<String> currentFileNames = new HashSet<String>();
         for (FileResource fileResource : fileResources) {
-            currentFileNames.add(fileResource.getName());
+            String name = fileResource.getName();
+            currentFileNames.add(name);
+            fileNameToResource.put(name, fileResource);
         }
 
         List<TestFile> testFiles = new ArrayList<TestFile>();
@@ -63,13 +65,13 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
             String fileName = FileUtil.classFileRelativePath(testClass);
             double time = Double.parseDouble(classToTime.get(testClass));
             totalTime += time;
-            if (currentFileNames.remove(fileName)) testFiles.add(new TestFile(fileName, time));
+            if (currentFileNames.remove(fileName)) testFiles.add(new TestFile(fileNameToResource.get(fileName), time));
         }
 
         double avgTime = totalTime / classToTime.size();
 
         for (String newFile : currentFileNames) {
-            testFiles.add(new TestFile(newFile, avgTime));
+            testFiles.add(new TestFile(fileNameToResource.get(newFile), avgTime));
         }
 
         Collections.sort(testFiles);
@@ -77,10 +79,10 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
         return testFiles;
     }
 
-    private List<FileResource> resourcesFrom(Bucket bucket, Project project) {
+    private List<FileResource> resourcesFrom(Bucket bucket) {
         List<FileResource> resources = new ArrayList<FileResource>();
-        for (String file : bucket.files) {
-            resources.add(new FileResource(project, file));
+        for (FileResource file : bucket.files) {
+            resources.add(file);
         }
         return resources;
     }
@@ -89,7 +91,7 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
 
         String name;
         Double time = 0.0;
-        List<String> files = new ArrayList<String>();
+        List<FileResource> files = new ArrayList<FileResource>();
 
         public Bucket(String name) {
             this.name = name;
@@ -106,10 +108,10 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
     }
 
     private class TestFile implements Comparable<TestFile> {
-        String fileName;
+        FileResource fileName;
         Double time;
 
-        public TestFile(String fileName, Double time) {
+        public TestFile(FileResource fileName, Double time) {
             this.fileName = fileName;
             this.time = time;
         }
