@@ -18,9 +18,9 @@ public class TestSplitterCriteriaFactoryTest {
     @Test
     public void shouldReturnDefaultMatchAllCriteriaForEmpty() {
         TestSplitterCriteria criteria = TestSplitterCriteriaFactory.getCriteria((String) null, env());
-        assertThat(criteria, is(TestSplitterCriteria.MATCH_ALL_FILE_SET));
+        assertThat(criteria, is(JobFamilyAwareSplitterCriteria.MATCH_ALL_FILE_SET));
         criteria = TestSplitterCriteriaFactory.getCriteria("", env());
-        assertThat(criteria, is(TestSplitterCriteria.MATCH_ALL_FILE_SET));
+        assertThat(criteria, is(JobFamilyAwareSplitterCriteria.MATCH_ALL_FILE_SET));
     }
 
     @Test
@@ -68,7 +68,7 @@ public class TestSplitterCriteriaFactoryTest {
         return new SystemEnvironment(map);
     }
 
-    private static class MockCriteria extends TestSplitterCriteria implements TalksToCruise {
+    private static class MockCriteria extends JobFamilyAwareSplitterCriteria implements TalksToCruise {
         private boolean calledFilter = false;
         private boolean calledTalksToCruise = false;
 

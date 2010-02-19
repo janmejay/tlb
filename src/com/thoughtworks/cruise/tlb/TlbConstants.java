@@ -15,5 +15,6 @@ public interface TlbConstants {
     final String PASSWORD = "TLB_PASSWORD";
     final String USERNAME = "TLB_USERNAME";
     final String TLB_CRITERIA = "TLB_CRITERIA";
-    final String TEST_SUBSET_SIZE = "TLB_TEST_SUBSET_SIZE";
+    final String TEST_SUBSET_SIZE = "TEST_SUBSET_SIZE";
+    final String CRITERIA_DEFAULTING_ORDER = "CRITERIA_DEFAULTING_ORDER";
 }

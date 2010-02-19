@@ -1,6 +1,7 @@
 package com.thoughtworks.cruise.tlb.service;
 
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
+import com.thoughtworks.cruise.tlb.utils.FileUtil;
 import static com.thoughtworks.cruise.tlb.TlbConstants.*;
 import com.thoughtworks.cruise.tlb.service.http.HttpAction;
 import com.thoughtworks.cruise.tlb.TlbConstants;
@@ -8,22 +9,31 @@ import com.thoughtworks.cruise.tlb.TlbConstants;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
-import java.io.StringReader;
+import java.io.*;
 
 import org.dom4j.*;
 import org.dom4j.io.SAXReader;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @understands requesting and posting information to/from cruise
  */
 public class TalkToCruise {
+    private static final Log LOG = LogFactory.getLog(TalkToCruise.class);
+
     private final SystemEnvironment environment;
     private final HttpAction httpAction;
     private static final String JOB_NAME = "name";
     protected static final String TEST_TIME_FILE = "tlb/test_time.properties";
-    private List<String> payloads = new ArrayList<String>();
     private static final Pattern STAGE_LOCATOR = Pattern.compile("(.*?)/\\d+/(.*?)/\\d+");
     private static final Pattern SUITE_TIME_STRING = Pattern.compile("(.*?):\\s*(\\d+)");
+    private Integer subsetSize;
+    final String jobLocator;
+    final String stageLocator;
+    final String subsetSizeUrl;
 
     public TalkToCruise(SystemEnvironment environment, HttpAction httpAction) {
         HashMap<String, String> map = new HashMap<String, String>();
@@ -32,12 +42,15 @@ public class TalkToCruise {
         factory.setXPathNamespaceURIs(map);
         this.environment = environment;
         this.httpAction = httpAction;
+        subsetSize = null;
+        jobLocator = String.format("%s/%s/%s/%s/%s", p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_LABEL), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER), p(CRUISE_JOB_NAME));
+        stageLocator = String.format("%s/%s/%s/%s", p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_COUNTER), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER));
+        subsetSizeUrl = String.format("%s/properties/%s/%s", cruiseUrl(), jobLocator, TlbConstants.TEST_SUBSET_SIZE);
     }
 
     public List<String> getJobs() {
-        String url = stageUrl();
         ArrayList<String> jobNames = new ArrayList<String>();
-        for (Attribute jobLink : jobLinks(url)) {
+        for (Attribute jobLink : jobLinks(String.format("%s/pipelines/%s.xml", cruiseUrl(), stageLocator))) {
             jobNames.add(rootFor(jobLink.getValue()).attributeValue(JOB_NAME));
         }
         return jobNames;
@@ -60,10 +73,6 @@ public class TalkToCruise {
         }
     }
 
-    private String stageUrl() {
-        return String.format("%s/pipelines/%s/%s/%s/%s.xml", cruiseUrl(), p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_COUNTER), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER));
-    }
-
     private Object cruiseUrl() {
         String url = p(CRUISE_SERVER_URL);
         if (url.endsWith("/")) {
@@ -77,17 +86,49 @@ public class TalkToCruise {
     }
 
     public void testClassTime(String className, long time) {
-        payloads.add(String.format("%s: %s\n", className, time));
-        if (Integer.parseInt(System.getProperty(TlbConstants.TEST_SUBSET_SIZE)) == payloads.size()) {
+        List<String> testTimes = cacheAndPersist(String.format("%s: %s\n", className, time), jobLocator);
+        if (subsetSize() == testTimes.size()) {
             StringBuffer buffer = new StringBuffer();
-            for (String payload : payloads) {
-                buffer.append(payload);
+            for (String testTime : testTimes) {
+                buffer.append(testTime);
+                buffer.append("\n");
             }
-            httpAction.put(String.format("%s/files/%s/%s/%s/%s/%s/%s", cruiseUrl(), p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_LABEL), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER),
-                    p(CRUISE_JOB_NAME), TEST_TIME_FILE), buffer.toString());
-            payloads.clear();
+            httpAction.put(String.format("%s/files/%s/%s", cruiseUrl(), jobLocator, TEST_TIME_FILE), buffer.toString());
+            clearSuiteTimeCachingFile();
         }
 
+    }
+
+    private List<String> cacheAndPersist(String line, String fileIdentifier) {
+        File cacheFile = FileUtil.getUniqueFile(fileIdentifier);
+        FileOutputStream out = null;
+        FileInputStream in = null;
+        List<String> lines = null;
+        try {
+            out = new FileOutputStream(cacheFile, true);
+            IOUtils.write(line, out);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            IOUtils.closeQuietly(out);
+        }
+        try {
+            in = new FileInputStream(cacheFile);
+            lines = IOUtils.readLines(in);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            IOUtils.closeQuietly(in);
+        }
+        return lines;
+    }
+
+    private int subsetSize() {
+        if (subsetSize == null) {
+            String propertyValue = httpAction.get(subsetSizeUrl).split("\n")[1];
+            subsetSize = Integer.parseInt(propertyValue);
+        }
+        return subsetSize;
     }
 
     public Map<String, String> getLastRunTestTimes(List<String> jobNames) {
@@ -151,5 +192,19 @@ public class TalkToCruise {
         boolean samePipeline = environment.getProperty(CRUISE_PIPELINE_NAME).equals(matcher.group(1));
         boolean sameStage = environment.getProperty(CRUISE_STAGE_NAME).equals(matcher.group(2));
         return samePipeline && sameStage;
+    }
+
+    public void publishSubsetSize(int size) {
+        Map<String, String> payload = new HashMap<String, String>();
+        payload.put("value", String.valueOf(size));
+        httpAction.post(subsetSizeUrl, payload);
+    }
+
+    public void clearSuiteTimeCachingFile() {
+        try {
+            FileUtils.forceDelete(FileUtil.getUniqueFile(jobLocator));
+        } catch (IOException e) {
+            LOG.error("could not delete suite time cache file: " + e.getMessage());
+        }
     }
 }

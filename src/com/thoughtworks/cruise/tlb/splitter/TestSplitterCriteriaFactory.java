@@ -15,7 +15,7 @@ public class TestSplitterCriteriaFactory {
 
     public static TestSplitterCriteria getCriteria(String criteriaName, SystemEnvironment environment) {
         if (criteriaName == null || criteriaName.isEmpty()) {
-            return TestSplitterCriteria.MATCH_ALL_FILE_SET;
+            return JobFamilyAwareSplitterCriteria.MATCH_ALL_FILE_SET;
         }
         try {
             Class<?> criteriaClass = Class.forName(criteriaName);
