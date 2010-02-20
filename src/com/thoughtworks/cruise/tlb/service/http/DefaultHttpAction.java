@@ -10,6 +10,9 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
+import org.apache.commons.httpclient.methods.multipart.StringPart;
+import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
@@ -91,7 +94,7 @@ public class DefaultHttpAction implements HttpAction {
             try {
                 method.setRequestEntity(new StringRequestEntity(data, "text/plain", "UTF-8"));
             } catch (UnsupportedEncodingException e) {
-                new RuntimeException(e);
+                throw new RuntimeException(e);
             }
             return method;
         }
