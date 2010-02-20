@@ -45,7 +45,7 @@ public class TalkToCruise {
         subsetSize = null;
         jobLocator = String.format("%s/%s/%s/%s/%s", p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_LABEL), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER), p(CRUISE_JOB_NAME));
         stageLocator = String.format("%s/%s/%s/%s", p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_COUNTER), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER));
-        subsetSizeUrl = String.format("%s/properties/%s/%s", cruiseUrl(), jobLocator, TlbConstants.TEST_SUBSET_SIZE);
+        subsetSizeUrl = String.format("%s/properties/%s/%s", cruiseUrl(), jobLocator, TlbConstants.TEST_SUBSET_SIZE_FILE);
     }
 
     public List<String> getJobs() {
@@ -93,10 +93,14 @@ public class TalkToCruise {
                 buffer.append(testTime);
                 buffer.append("\n");
             }
-            httpAction.put(String.format("%s/files/%s/%s", cruiseUrl(), jobLocator, TEST_TIME_FILE), buffer.toString());
+            httpAction.put(artifactFileUrl(TEST_TIME_FILE), buffer.toString());
             clearSuiteTimeCachingFile();
         }
 
+    }
+
+    private String artifactFileUrl(String atrifactFile) {
+        return String.format("%s/files/%s/%s", cruiseUrl(), jobLocator, atrifactFile);
     }
 
     private List<String> cacheAndPersist(String line, String fileIdentifier) {
@@ -125,7 +129,8 @@ public class TalkToCruise {
 
     private int subsetSize() {
         if (subsetSize == null) {
-            String propertyValue = httpAction.get(subsetSizeUrl).split("\n")[1];
+            String[] subsetSizes = httpAction.get(artifactFileUrl(TlbConstants.TEST_SUBSET_SIZE_FILE)).split("\n");
+            String propertyValue = subsetSizes[subsetSizes.length - 1];
             subsetSize = Integer.parseInt(propertyValue);
         }
         return subsetSize;
@@ -195,9 +200,7 @@ public class TalkToCruise {
     }
 
     public void publishSubsetSize(int size) {
-        Map<String, String> payload = new HashMap<String, String>();
-        payload.put("value", String.valueOf(size));
-        httpAction.post(subsetSizeUrl, payload);
+        httpAction.put(artifactFileUrl(TlbConstants.TEST_SUBSET_SIZE_FILE), String.valueOf(size));
     }
 
     public void clearSuiteTimeCachingFile() {

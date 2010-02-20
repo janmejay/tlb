@@ -44,12 +44,29 @@ public class TalkToCruiseTest {
         HttpAction action = mock(HttpAction.class);
         String data = "com.thoughtworks.tlb.TestSuite: 12\n";
         String url = "http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/" + TalkToCruise.TEST_TIME_FILE;
-        when(action.get("http://test.host:8153/cruise/properties/pipeline/label-2/stage/1/rspec/TEST_SUBSET_SIZE")).thenReturn("TEST_SUBSET_SIZE\n1");
-        when(action.put(url, data)).thenReturn("File tlb.test_time.properties was appended successfully");
+        when(action.get("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size")).thenReturn("1\n");
+        when(action.put(url, data)).thenReturn("File tlb/test_time.properties was appended successfully");
 
         TalkToCruise cruise = new TalkToCruise(environment, action);
+        cruise.clearSuiteTimeCachingFile();
         cruise.testClassTime("com.thoughtworks.tlb.TestSuite", 12);
         verify(action).put(url, data);
+    }
+
+    @Test
+    public void shouldAppendToSubsetSizeArtifactForMultipleCalls() throws Exception{
+        SystemEnvironment environment = initEnvironment("http://test.host:8153/cruise");
+        HttpAction action = mock(HttpAction.class);
+        when(action.put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "10")).thenReturn("File tlb/subset_size was appended successfully");
+        when(action.put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "20")).thenReturn("File tlb/subset_size was appended successfully");
+        when(action.put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "25")).thenReturn("File tlb/subset_size was appended successfully");
+        TalkToCruise toCruise = new TalkToCruise(environment, action);
+        toCruise.publishSubsetSize(10);
+        toCruise.publishSubsetSize(20);
+        toCruise.publishSubsetSize(25);
+        verify(action).put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "10");
+        verify(action).put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "20");
+        verify(action).put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "25");
     }
 
     @Test
@@ -63,7 +80,7 @@ public class TalkToCruiseTest {
                 "com.thougthworks.tlb.SystemEnvTest: 8\n";
         String url = "http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/" + TalkToCruise.TEST_TIME_FILE;
 
-        when(action.get("http://test.host:8153/cruise/properties/pipeline/label-2/stage/1/rspec/TEST_SUBSET_SIZE")).thenReturn("TEST_SUBSET_SIZE\n5");
+        when(action.get("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size")).thenReturn("5\n");
         TalkToCruise cruise = new TalkToCruise(env, action);
         cruise.clearSuiteTimeCachingFile();
         cruise.testClassTime("com.thoughtworks.tlb.TestSuite", 12);
@@ -75,13 +92,40 @@ public class TalkToCruiseTest {
         cruise.testClassTime("com.thoughtworks.tlb.TestCriteriaSelection", 30);
         assertCacheState(cruise, 4, "com.thoughtworks.tlb.TestCriteriaSelection: 30");
 
-        when(action.put(url, data)).thenReturn("File tlb.test_time.properties was appended successfully");
+        when(action.put(url, data)).thenReturn("File tlb/test_time.properties was appended successfully");
 
 
         cruise.testClassTime("com.thougthworks.tlb.SystemEnvTest", 8);
         assertThat(FileUtil.getUniqueFile(cruise.jobLocator).exists(), is(false));
 
-        verify(action).get("http://test.host:8153/cruise/properties/pipeline/label-2/stage/1/rspec/TEST_SUBSET_SIZE");
+        verify(action).get("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size");
+        verify(action).put(url, data);
+    }
+
+    @Test
+    public void shouldUpdateCruiseArtifactWithTestTimeUsingPUTOnlyOnTheLastSuiteAccordingToLastSubsetSizeEntry() throws Exception {
+        SystemEnvironment env = initEnvironment("http://test.host:8153/cruise");
+        HttpAction action = mock(HttpAction.class);
+        String data = "com.thoughtworks.tlb.TestSuite: 12\n" +
+                "com.thoughtworks.tlb.TestCriteriaSelection: 30\n" +
+                "com.thougthworks.tlb.SystemEnvTest: 8\n";
+        String url = "http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/" + TalkToCruise.TEST_TIME_FILE;
+
+        when(action.get("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size")).thenReturn("5\n10\n3\n");
+        TalkToCruise cruise = new TalkToCruise(env, action);
+        cruise.clearSuiteTimeCachingFile();
+        cruise.testClassTime("com.thoughtworks.tlb.TestSuite", 12);
+        assertCacheState(cruise, 1, "com.thoughtworks.tlb.TestSuite: 12");
+        cruise.testClassTime("com.thoughtworks.tlb.TestCriteriaSelection", 30);
+        assertCacheState(cruise, 2, "com.thoughtworks.tlb.TestCriteriaSelection: 30");
+
+        when(action.put(url, data)).thenReturn("File tlb/test_time.properties was appended successfully");
+
+
+        cruise.testClassTime("com.thougthworks.tlb.SystemEnvTest", 8);
+        assertThat(FileUtil.getUniqueFile(cruise.jobLocator).exists(), is(false));
+
+        verify(action).get("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size");
         verify(action).put(url, data);
     }
 
@@ -100,15 +144,13 @@ public class TalkToCruiseTest {
     }
 
     @Test
-    public void shouldPublishSubsetSizeAsPropertyOnJob() throws Exception{
+    public void shouldPublishSubsetSizeAsALineAppendedToJobArtifact() throws Exception{
         SystemEnvironment environment = initEnvironment("http://test.host:8153/cruise");
         HttpAction action = mock(HttpAction.class);
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("value", "10");
-        when(action.post("http://test.host:8153/cruise/properties/pipeline/label-2/stage/1/rspec/TEST_SUBSET_SIZE", params)).thenReturn("Property 'TEST_SUBSET_SIZE' created with value '10'");
+        when(action.put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "10")).thenReturn("File tlb/subset_size was appended successfully");
         TalkToCruise toCruise = new TalkToCruise(environment, action);
         toCruise.publishSubsetSize(10);
-        verify(action).post("http://test.host:8153/cruise/properties/pipeline/label-2/stage/1/rspec/TEST_SUBSET_SIZE", params);
+        verify(action).put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "10");
     }
 
     @Test
