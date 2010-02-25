@@ -26,6 +26,7 @@ import java.util.Map;
  */
 public class DefaultHttpAction implements HttpAction {
     private final HttpClient client;
+    private URI url;
 
     public DefaultHttpAction(SystemEnvironment environment) {
         HttpClientParams params = new HttpClientParams();
@@ -38,11 +39,21 @@ public class DefaultHttpAction implements HttpAction {
             client = new HttpClient(params);
         }
         try {
-            URI url = new URI(environment.getProperty(TlbConstants.CRUISE_SERVER_URL), true);
-            Protocol.registerProtocol("https", new Protocol("https", (ProtocolSocketFactory) new PermissiveSSLProtocolSocketFactory(), url.getPort()));
+            url = new URI(environment.getProperty(TlbConstants.CRUISE_SERVER_URL), true);
+            reRegisterProtocol();
         } catch (URIException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * its important that this be done before every http call,
+     * as it can be disturbed by tests running under the load balanced environment.
+     *
+     * Ouch! static state again.
+     */
+    private void reRegisterProtocol() {
+        Protocol.registerProtocol("https", new Protocol("https", (ProtocolSocketFactory) new PermissiveSSLProtocolSocketFactory(), url.getPort()));
     }
 
     abstract class FollowableHttpRequest {
@@ -56,6 +67,7 @@ public class DefaultHttpAction implements HttpAction {
 
         public String executeRequest(String url) {
             HttpMethodBase method = createMethod(url);
+            reRegisterProtocol();
             try {
                 int result = client.executeMethod(method);
                 if (result >= 300 && result < 400) {
