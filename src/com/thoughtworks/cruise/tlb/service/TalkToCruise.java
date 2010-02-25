@@ -200,7 +200,7 @@ public class TalkToCruise {
     }
 
     public void publishSubsetSize(int size) {
-        httpAction.put(artifactFileUrl(TlbConstants.TEST_SUBSET_SIZE_FILE), String.valueOf(size));
+        httpAction.put(artifactFileUrl(TlbConstants.TEST_SUBSET_SIZE_FILE), String.valueOf(size) + "\n");
     }
 
     public void clearSuiteTimeCachingFile() {

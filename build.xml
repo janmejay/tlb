@@ -11,6 +11,12 @@
         <fileset dir="test/lib" includes="*.jar"/>
     </path>
 
+    <path id="integration-test.classpath">
+        <path refid="src.classpath"/>
+        <pathelement path="target/integration-test-classes"/>
+        <fileset dir="test/lib" includes="*.jar"/>
+    </path>
+
     <path id="dog.food.classpath">
         <fileset dir="lib" includes="*.jar"/>
         <fileset dir="target" includes="tlb*.jar"/>
@@ -19,6 +25,7 @@
     <target name="init">
         <mkdir dir="target/classes"/>
         <mkdir dir="target/test-classes"/>
+        <mkdir dir="target/integration-test-classes"/>
         <mkdir dir="target/reports"/>
     </target>
 
@@ -41,6 +48,13 @@
         <copy todir="target/test-classes/resources">
             <fileset dir="test/resources"/>
         </copy>
+    </target>
+
+    <target name="compile-integration-tests" depends="compile, init">
+        <javac destdir="target/integration-test-classes" target="1.5" source="1.5">
+            <classpath refid="integration-test.classpath"/>
+            <src path="integration-test"/>
+        </javac>
     </target>
 
     <target name="-load.short.rev">
@@ -74,7 +88,8 @@
     </target>
 
     <target name="test.count_balanced" depends="package, compile-tests">
-        <typedef name="load-balanced-fileset" classname="com.thoughtworks.cruise.tlb.ant.LoadBalancedFileSet" classpathref="dog.food.classpath"/>
+        <typedef name="load-balanced-fileset" classname="com.thoughtworks.cruise.tlb.ant.LoadBalancedFileSet"
+                 classpathref="dog.food.classpath"/>
         <junit failureproperty="test.failure" printsummary="yes" haltonfailure="true" haltonerror="true"
                showoutput="true" fork="true">
             <classpath refid="test.classpath"/>
@@ -86,12 +101,32 @@
     </target>
 
     <target name="test.time_balanced" depends="package, compile-tests">
-        <typedef name="load-balanced-fileset" classname="com.thoughtworks.cruise.tlb.ant.LoadBalancedFileSet" classpathref="dog.food.classpath"/>
+        <typedef name="load-balanced-fileset" classname="com.thoughtworks.cruise.tlb.ant.LoadBalancedFileSet"
+                 classpathref="dog.food.classpath"/>
         <junit failureproperty="test.failure" printsummary="yes" haltonfailure="true" haltonerror="true"
                showoutput="true" fork="true">
             <classpath refid="test.classpath"/>
             <batchtest todir="target/reports">
                 <load-balanced-fileset dir="target/test-classes" includes="**/*Test.class"/>
+                <formatter classname="com.thoughtworks.cruise.tlb.ant.JunitTimeRecorder"/>
+                <formatter type="plain"/>
+            </batchtest>
+        </junit>
+    </target>
+
+    <target name="integration-test.time_balanced" depends="package, compile-integration-tests">
+        <description>
+            Running integration tests makes sence only in a load balanced job(in cruise).
+            These tests are meant to play dummy 'to be run' tests, that tlb is being used to balance.
+            These do not test much themselfs.
+        </description>
+        <typedef name="load-balanced-fileset" classname="com.thoughtworks.cruise.tlb.ant.LoadBalancedFileSet"
+                 classpathref="dog.food.classpath"/>
+        <junit failureproperty="test.failure" printsummary="yes" haltonfailure="true" haltonerror="true"
+               showoutput="true" fork="true">
+            <classpath refid="integration-test.classpath"/>
+            <batchtest todir="target/reports">
+                <load-balanced-fileset dir="target/integration-test-classes" includes="**/*Test.class"/>
                 <formatter classname="com.thoughtworks.cruise.tlb.ant.JunitTimeRecorder"/>
                 <formatter type="plain"/>
             </batchtest>

@@ -64,9 +64,9 @@ public class TalkToCruiseTest {
         toCruise.publishSubsetSize(10);
         toCruise.publishSubsetSize(20);
         toCruise.publishSubsetSize(25);
-        verify(action).put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "10");
-        verify(action).put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "20");
-        verify(action).put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "25");
+        verify(action).put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "10\n");
+        verify(action).put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "20\n");
+        verify(action).put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "25\n");
     }
 
     @Test
@@ -147,10 +147,10 @@ public class TalkToCruiseTest {
     public void shouldPublishSubsetSizeAsALineAppendedToJobArtifact() throws Exception{
         SystemEnvironment environment = initEnvironment("http://test.host:8153/cruise");
         HttpAction action = mock(HttpAction.class);
-        when(action.put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "10")).thenReturn("File tlb/subset_size was appended successfully");
+        when(action.put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "10\n")).thenReturn("File tlb/subset_size was appended successfully");
         TalkToCruise toCruise = new TalkToCruise(environment, action);
         toCruise.publishSubsetSize(10);
-        verify(action).put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "10");
+        verify(action).put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "10\n");
     }
 
     @Test
