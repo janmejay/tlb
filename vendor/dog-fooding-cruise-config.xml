@@ -48,6 +48,36 @@
         </jobs>
       </stage>
     </pipeline>
+    <pipeline name="buildr_tlb_time">
+      <materials>
+        <git url="/home/janmejay/projects/tlb" branch="dev" />
+        <pipeline pipelineName="tlb" stageName="dev"/>
+      </materials>
+      <stage name="time_based">
+        <environmentvariables>
+          <variable name="TLB_CRITERIA">com.thoughtworks.cruise.tlb.splitter.DefaultingTestSplitterCriteria</variable>
+          <variable name="CRITERIA_DEFAULTING_ORDER">com.thoughtworks.cruise.tlb.splitter.TimeBasedTestSplitterCriteria:com.thoughtworks.cruise.tlb.splitter.CountBasedTestSplitterCriteria</variable>
+          <variable name="LOAD_BALANCE">true</variable>
+        </environmentvariables> 
+        <jobs>
+          <job name="build-1">
+            <tasks>
+              <exec command="buildr" args="clean test"/>
+            </tasks>
+          </job>
+          <job name="build-2">
+            <tasks>
+              <exec command="buildr" args="clean test"/>
+            </tasks>
+          </job>
+          <job name="build-3">
+            <tasks>
+              <exec command="buildr" args="clean test"/>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
     <pipeline name="tlb_count">
       <materials>
         <git url="/home/janmejay/projects/tlb" branch="dev" />
