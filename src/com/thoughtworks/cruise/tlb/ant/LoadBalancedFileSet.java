@@ -42,7 +42,13 @@ public class LoadBalancedFileSet extends FileSet {
             FileResource fileResource = files.next();
             matchedFiles.add(new JunitFileResource(fileResource));
         }
-        return criteria.filter(matchedFiles).iterator();
+        List<TlbFileResource> matchedTlbFileResources = criteria.filter(matchedFiles);
+        List<FileResource> matchedFileResources = new ArrayList<FileResource>();
+        for (TlbFileResource matchedTlbFileResource : matchedTlbFileResources) {
+            JunitFileResource fileResource = (JunitFileResource) matchedTlbFileResource;
+            matchedFileResources.add(fileResource.getFileResource());
+        }
+        return matchedFileResources.iterator();
     }
 
     public TestSplitterCriteria getSplitterCriteria() {

@@ -21,6 +21,10 @@ public class JunitFileResource implements TlbFileResource {
         this.fileResource = fileResource;
     }
 
+    public FileResource getFileResource() {
+        return fileResource;
+    }
+
     public String getName() {
         return fileResource.getName();
     }

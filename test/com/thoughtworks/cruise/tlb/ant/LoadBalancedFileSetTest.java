@@ -10,6 +10,7 @@ import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 import com.thoughtworks.cruise.tlb.TestUtil;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.ant.types.resources.FileResource;
 import com.thoughtworks.cruise.tlb.ant.JunitFileResource;
 import com.thoughtworks.cruise.tlb.TlbFileResource;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -49,7 +50,7 @@ public class LoadBalancedFileSetTest {
         Iterator files = fileSet.iterator();
 
         assertThat(files.hasNext(), is(true));
-        assertThat(((TlbFileResource) files.next()).getFile(), is(newFile));
+        assertThat(((FileResource) files.next()).getFile(), is(newFile));
         assertThat(files.hasNext(), is(false));
     }
 
@@ -68,7 +69,7 @@ public class LoadBalancedFileSetTest {
         Iterator files = fileSet.iterator();
 
         assertThat(files.hasNext(), is(true));
-        assertThat(((TlbFileResource) files.next()).getFile(), is(included));
+        assertThat(((FileResource) files.next()).getFile(), is(included));
         assertThat(files.hasNext(), is(false));
     }
 
