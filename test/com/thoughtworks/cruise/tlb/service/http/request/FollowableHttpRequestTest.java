@@ -90,10 +90,9 @@ public class FollowableHttpRequestTest {
         };
         List<Integer> expectedIntervals = new ArrayList<Integer>();
         expectedIntervals.add(0);
-        expectedIntervals.add(30*1000);
-        expectedIntervals.add(60*1000);
-        expectedIntervals.add(2*60*1000);
-        expectedIntervals.add(5*60*1000);
+        for(int i = 0; i < 8*6; i++) {
+            expectedIntervals.add(10);
+        }
         assertThat(req.getRetryer().getIntervals(), is(expectedIntervals));
     }
 }

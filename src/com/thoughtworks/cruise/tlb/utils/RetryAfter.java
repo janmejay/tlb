@@ -25,6 +25,15 @@ public class RetryAfter {
         return intervals;
     }
 
+    public static int[] seq(int value, int times) {
+        int[] seq = new int[times];
+        for(int i = 0; i < times; i++) {
+            seq[i] = value;
+        }
+        return seq;
+    }
+
+
     public static interface Fn<T> {
         public T fn() throws Exception;
     }

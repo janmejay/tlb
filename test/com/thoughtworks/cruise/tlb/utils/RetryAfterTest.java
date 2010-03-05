@@ -114,4 +114,14 @@ public class RetryAfterTest {
         expectedIntervals.add(500);
         assertThat(retry.getIntervals(), is(expectedIntervals));
     }
+
+    @Test
+    public void shouldGenerateSequenceOfIntervals() throws Exception{
+        int[] seq = RetryAfter.seq(10, 5);
+        assertThat(seq.length, is(5));
+        for (int i = 0; i < seq.length; i++) {
+            int value = seq[i];
+            assertThat(String.format("value @ index=%s was not equal, expected 10, was %s", i, value), seq.length, is(5));
+        }
+    }
 }

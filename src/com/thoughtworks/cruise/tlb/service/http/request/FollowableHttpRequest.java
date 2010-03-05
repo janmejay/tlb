@@ -10,13 +10,13 @@ import com.thoughtworks.cruise.tlb.service.http.DefaultHttpAction;
 
 /**
  * @understands error ressilient http request handling
-*/
+ */
 public abstract class FollowableHttpRequest {
     private DefaultHttpAction defaultHttpAction;
     private RetryAfter retryer;
 
     public FollowableHttpRequest(DefaultHttpAction defaultHttpAction) {
-        this(defaultHttpAction, new RetryAfter(30*1000, 60*1000, 2*60*1000, 5*60*1000));
+        this(defaultHttpAction, new RetryAfter(RetryAfter.seq(10, 8*6)));
     }
 
     FollowableHttpRequest(DefaultHttpAction defaultHttpAction, RetryAfter retryer) {
