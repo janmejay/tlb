@@ -28,6 +28,7 @@
         <environmentvariables>
           <variable name="TLB_CRITERIA">com.thoughtworks.cruise.tlb.splitter.DefaultingTestSplitterCriteria</variable>
           <variable name="CRITERIA_DEFAULTING_ORDER">com.thoughtworks.cruise.tlb.splitter.TimeBasedTestSplitterCriteria:com.thoughtworks.cruise.tlb.splitter.CountBasedTestSplitterCriteria</variable>
+          <variable name="TLB_TMP_DIR">/tmp</variable>
         </environmentvariables> 
         <jobs>
           <job name="build-1">
@@ -57,7 +58,8 @@
         <environmentvariables>
           <variable name="TLB_CRITERIA">com.thoughtworks.cruise.tlb.splitter.DefaultingTestSplitterCriteria</variable>
           <variable name="CRITERIA_DEFAULTING_ORDER">com.thoughtworks.cruise.tlb.splitter.TimeBasedTestSplitterCriteria:com.thoughtworks.cruise.tlb.splitter.CountBasedTestSplitterCriteria</variable>
-          <variable name="LOAD_BALANCE">true</variable>
+          <variable name="load_balance">true</variable>
+          <variable name="TLB_TMP_DIR">/tmp</variable>
         </environmentvariables> 
         <jobs>
           <job name="build-1">
@@ -86,6 +88,7 @@
       <stage name="count">
         <environmentvariables>
           <variable name="TLB_CRITERIA">com.thoughtworks.cruise.tlb.splitter.CountBasedTestSplitterCriteria</variable>
+          <variable name="TLB_TMP_DIR">/tmp</variable>
         </environmentvariables> 
         <jobs>
           <job name="build-1">
