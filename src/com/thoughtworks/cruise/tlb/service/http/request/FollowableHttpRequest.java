@@ -1,26 +1,43 @@
-package com.thoughtworks.cruise.tlb.service.http;
+package com.thoughtworks.cruise.tlb.service.http.request;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
 
 import java.io.IOException;
 
+import com.thoughtworks.cruise.tlb.utils.RetryAfter;
+import com.thoughtworks.cruise.tlb.service.http.DefaultHttpAction;
+
 /**
  * @understands
 */
 public abstract class FollowableHttpRequest {
     private DefaultHttpAction defaultHttpAction;
+    private RetryAfter retryer;
 
-    FollowableHttpRequest(DefaultHttpAction defaultHttpAction) {
+    public FollowableHttpRequest(DefaultHttpAction defaultHttpAction) {
+        this(defaultHttpAction, new RetryAfter(30*1000, 60*1000, 2*60*1000, 5*60*1000));
+    }
+
+    FollowableHttpRequest(DefaultHttpAction defaultHttpAction, RetryAfter retryer) {
         this.defaultHttpAction = defaultHttpAction;
+        this.retryer = retryer;
+    }
+
+    public RetryAfter getRetryer() {
+        return retryer;
     }
 
     public abstract HttpMethodBase createMethod(String url);
 
     public String executeRequest(String url) {
-        HttpMethodBase method = createMethod(url);
+        final HttpMethodBase method = createMethod(url);
         try {
-            int result = defaultHttpAction.executeMethod(method);
+            int result = retryer.tryFn(new RetryAfter.Fn<Integer>() {
+                public Integer fn() throws Exception {
+                    return defaultHttpAction.executeMethod(method);
+                }
+            });
             if (result >= 300 && result < 400) {
                 executeRequest(method.getResponseHeader("Location").getValue());
             }
@@ -32,6 +49,4 @@ public abstract class FollowableHttpRequest {
             throw new RuntimeException("Oops! Something went wrong", e);
         }
     }
-
-
 }

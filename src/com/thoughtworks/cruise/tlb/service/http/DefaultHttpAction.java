@@ -1,6 +1,7 @@
 package com.thoughtworks.cruise.tlb.service.http;
 
 import com.thoughtworks.cruise.tlb.TlbConstants;
+import com.thoughtworks.cruise.tlb.service.http.request.FollowableHttpRequest;
 import static com.thoughtworks.cruise.tlb.TlbConstants.PASSWORD;
 import static com.thoughtworks.cruise.tlb.TlbConstants.USERNAME;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
@@ -18,8 +19,6 @@ import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import java.io.UnsupportedEncodingException;
 import java.io.IOException;
 import java.util.Map;
-
-import sun.net.www.http.*;
 
 /**
  * @understands talking http protocol using http client
