@@ -6,7 +6,6 @@ import com.thoughtworks.cruise.tlb.utils.FileUtil;
 import com.thoughtworks.cruise.tlb.TlbConstants;
 import com.thoughtworks.cruise.tlb.service.http.HttpAction;
 import org.junit.Test;
-import org.junit.Before;
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.mock;
@@ -78,6 +77,7 @@ public class TalkToCruiseTest {
     @Test
     public void shouldUpdateCruiseArtifactWithTestTimeUsingPUTOnlyOnTheLastSuite() throws Exception {
         SystemEnvironment env = initEnvironment("http://test.host:8153/cruise");
+        FileUtil fileUtil = new FileUtil(env);
         HttpAction action = mock(HttpAction.class);
         String data = "com.thoughtworks.tlb.TestSuite: 12\n" +
                 "com.thoughtworks.tlb.TestTimeBased: 15\n" +
@@ -91,19 +91,19 @@ public class TalkToCruiseTest {
         cruise.persist("5\n", cruise.testSubsetSizeFileLocator);
         cruise.clearSuiteTimeCachingFile();
         cruise.testClassTime("com.thoughtworks.tlb.TestSuite", 12);
-        assertCacheState(cruise, 1, "com.thoughtworks.tlb.TestSuite: 12");
+        assertCacheState(env, cruise, 1, "com.thoughtworks.tlb.TestSuite: 12");
         cruise.testClassTime("com.thoughtworks.tlb.TestTimeBased", 15);
-        assertCacheState(cruise, 2, "com.thoughtworks.tlb.TestTimeBased: 15");
+        assertCacheState(env, cruise, 2, "com.thoughtworks.tlb.TestTimeBased: 15");
         cruise.testClassTime("com.thoughtworks.tlb.TestCountBased", 10);
-        assertCacheState(cruise, 3, "com.thoughtworks.tlb.TestCountBased: 10");
+        assertCacheState(env, cruise, 3, "com.thoughtworks.tlb.TestCountBased: 10");
         cruise.testClassTime("com.thoughtworks.tlb.TestCriteriaSelection", 30);
-        assertCacheState(cruise, 4, "com.thoughtworks.tlb.TestCriteriaSelection: 30");
+        assertCacheState(env, cruise, 4, "com.thoughtworks.tlb.TestCriteriaSelection: 30");
 
         when(action.put(url, data)).thenReturn("File tlb/test_time.properties was appended successfully");
 
 
         cruise.testClassTime("com.thougthworks.tlb.SystemEnvTest", 8);
-        assertThat(FileUtil.getUniqueFile(cruise.jobLocator).exists(), is(false));
+        assertThat(fileUtil.getUniqueFile(cruise.jobLocator).exists(), is(false));
 
         verify(action).put(url, data);
     }
@@ -111,6 +111,7 @@ public class TalkToCruiseTest {
     @Test
     public void shouldUpdateCruiseArtifactWithTestTimeUsingPUTOnlyOnTheLastSuiteAccordingToLastSubsetSizeEntry() throws Exception {
         SystemEnvironment env = initEnvironment("http://test.host:8153/cruise");
+        FileUtil fileUtil = new FileUtil(env);
         HttpAction action = mock(HttpAction.class);
         String data = "com.thoughtworks.tlb.TestSuite: 12\n" +
                 "com.thoughtworks.tlb.TestCriteriaSelection: 30\n" +
@@ -121,27 +122,28 @@ public class TalkToCruiseTest {
         cruise.clearSuiteTimeCachingFile();
         cruise.persist("5\n10\n3\n", cruise.testSubsetSizeFileLocator);
         cruise.testClassTime("com.thoughtworks.tlb.TestSuite", 12);
-        assertCacheState(cruise, 1, "com.thoughtworks.tlb.TestSuite: 12");
+        assertCacheState(env, cruise, 1, "com.thoughtworks.tlb.TestSuite: 12");
         cruise.testClassTime("com.thoughtworks.tlb.TestCriteriaSelection", 30);
-        assertCacheState(cruise, 2, "com.thoughtworks.tlb.TestCriteriaSelection: 30");
+        assertCacheState(env, cruise, 2, "com.thoughtworks.tlb.TestCriteriaSelection: 30");
 
         when(action.put(url, data)).thenReturn("File tlb/test_time.properties was appended successfully");
 
 
         cruise.testClassTime("com.thougthworks.tlb.SystemEnvTest", 8);
-        assertThat(FileUtil.getUniqueFile(cruise.jobLocator).exists(), is(false));
+        assertThat(fileUtil.getUniqueFile(cruise.jobLocator).exists(), is(false));
 
         verify(action).put(url, data);
     }
 
-    private void assertCacheState(TalkToCruise cruise, int lineCount, String lastLine) throws IOException {
-        List<String> cache = cacheFileContents(cruise);
+    private void assertCacheState(SystemEnvironment env, TalkToCruise cruise, int lineCount, String lastLine) throws IOException {
+        List<String> cache = cacheFileContents(cruise, env);
         assertThat(cache.size(), is(lineCount));
         assertThat(cache.get(lineCount - 1), is(lastLine));
     }
 
-    private List cacheFileContents(TalkToCruise cruise) throws IOException {
-        File cacheFile = FileUtil.getUniqueFile(cruise.jobLocator);
+    private List cacheFileContents(TalkToCruise cruise, SystemEnvironment env) throws IOException {
+        FileUtil fileUtil = new FileUtil(env);
+        File cacheFile = fileUtil.getUniqueFile(cruise.jobLocator);
         FileInputStream fileIn = new FileInputStream(cacheFile);
         List cachedLines = IOUtils.readLines(fileIn);
         IOUtils.closeQuietly(fileIn);
@@ -221,6 +223,7 @@ public class TalkToCruiseTest {
         map.put(CRUISE_STAGE_NAME, "stage");
         map.put(CRUISE_STAGE_COUNTER, "1");
         map.put(CRUISE_PIPELINE_COUNTER, "2");
+        map.put(TLB_TMP_DIR, System.getProperty("java.io.tmpdir"));
         return map;
     }
 

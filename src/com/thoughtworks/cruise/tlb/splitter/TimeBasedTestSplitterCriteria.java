@@ -11,13 +11,16 @@ import java.util.*;
  * @understands criteria for splitting tests based on time taken
  */
 public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteria implements TalksToCruise {
-
-    public TimeBasedTestSplitterCriteria(SystemEnvironment environment) {
-        super(environment);
-    }
+    private final FileUtil fileUtil;
 
     public TimeBasedTestSplitterCriteria(TalkToCruise talkToCruise, SystemEnvironment env) {
-        super(talkToCruise, env);
+        this(env);
+        talksToCruise(talkToCruise);
+    }
+
+    public TimeBasedTestSplitterCriteria(SystemEnvironment env) {
+        super(env);
+        fileUtil = new FileUtil(env);
     }
 
     protected List<FileResource> subset(List<FileResource> fileResources) {
@@ -62,7 +65,7 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
         double totalTime = 0;
 
         for (String testClass : classToTime.keySet()) {
-            String fileName = FileUtil.classFileRelativePath(testClass);
+            String fileName = fileUtil.classFileRelativePath(testClass);
             double time = Double.parseDouble(classToTime.get(testClass));
             totalTime += time;
             if (currentFileNames.remove(fileName)) testFiles.add(new TestFile(fileNameToResource.get(fileName), time));

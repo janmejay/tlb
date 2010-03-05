@@ -1,31 +1,31 @@
 package com.thoughtworks.cruise.tlb.utils;
 
-import org.apache.commons.io.FileUtils;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.tools.ant.types.resources.FileResource;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.UUID;
 
-import sun.security.provider.MD5;
+import com.thoughtworks.cruise.tlb.TlbConstants;
+import static com.thoughtworks.cruise.tlb.TlbConstants.TLB_TMP_DIR;
 
 public class FileUtil {
+    private SystemEnvironment env;
+    public static final String TMP_DIR = "java.io.tmpdir";
 
-    public static File createTempFolder() {
-        final File file = new File(tempFolder(), UUID.randomUUID().toString());
-        file.mkdirs();
-        file.deleteOnExit();
-        return file;
+    public FileUtil(SystemEnvironment env) {
+        this.env = env;
     }
 
-    static String tempFolder() {
-        return System.getProperty("java.io.tmpdir");
+
+
+    String tempFolder() {
+        String overriddenTmpDir = env.getProperty(TLB_TMP_DIR);
+        return overriddenTmpDir == null ? System.getProperty(TMP_DIR) : overriddenTmpDir;
     }
 
-    public static File createFileInFolder(File folder, String fileName) {
+    public File createFileInFolder(File folder, String fileName) {
         File file = new File(folder, fileName);
         try {
             file.createNewFile();
@@ -36,11 +36,11 @@ public class FileUtil {
         return file;
     }
 
-    public static String classFileRelativePath(String testClass) {
+    public String classFileRelativePath(String testClass) {
         return testClass.replaceAll("\\.", "/") + ".class";
     }
 
-    public static File getUniqueFile(String seedString) {
+    public File getUniqueFile(String seedString) {
         String fileName = DigestUtils.md5Hex(seedString);
         return new File(new File(tempFolder()), fileName);
     }

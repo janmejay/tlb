@@ -16,7 +16,8 @@ public class CountBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriter
     }
 
     CountBasedTestSplitterCriteria(TalkToCruise talkToCruise, SystemEnvironment env) {
-        super(talkToCruise, env);
+        this(env);
+        talksToCruise(talkToCruise);
     }
 
     /**
