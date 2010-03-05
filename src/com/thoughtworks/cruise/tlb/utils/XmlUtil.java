@@ -12,7 +12,6 @@ import java.io.StringReader;
  * @understands xml reading
  */
 public class XmlUtil {
-    //TODO: test me!
     public static Element domFor(String xmlString) {
         registerNamespaces();
         SAXReader builder = new SAXReader();
