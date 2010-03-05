@@ -37,11 +37,6 @@ public abstract class JobFamilyAwareSplitterCriteria extends TestSplitterCriteri
         super(env);
     }
 
-    public JobFamilyAwareSplitterCriteria(TalkToCruise talkToCruise, SystemEnvironment env) {
-        this(env);
-        talksToCruise(talkToCruise);
-    }
-
     public List<FileResource> filter(List<FileResource> fileResources) {
         jobs = pearJobs();
         if (jobs.size() <= 1) {
