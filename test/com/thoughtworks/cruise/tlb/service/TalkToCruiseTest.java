@@ -15,10 +15,7 @@ import static org.mockito.Mockito.verify;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.io.IOException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,12 +41,13 @@ public class TalkToCruiseTest {
         HttpAction action = mock(HttpAction.class);
         String data = "com.thoughtworks.tlb.TestSuite: 12\n";
         String url = "http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/" + TalkToCruise.TEST_TIME_FILE;
-        when(action.get("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size")).thenReturn("1\n");
-        when(action.put(url, data)).thenReturn("File tlb/test_time.properties was appended successfully");
 
         TalkToCruise cruise = new TalkToCruise(environment, action);
         cruise.clearSuiteTimeCachingFile();
+        cruise.persist("1\n", cruise.testSubsetSizeFileLocator);
+        cruise.clearSuiteTimeCachingFile();
         cruise.testClassTime("com.thoughtworks.tlb.TestSuite", 12);
+
         verify(action).put(url, data);
     }
 
@@ -61,9 +59,17 @@ public class TalkToCruiseTest {
         when(action.put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "20")).thenReturn("File tlb/subset_size was appended successfully");
         when(action.put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "25")).thenReturn("File tlb/subset_size was appended successfully");
         TalkToCruise toCruise = new TalkToCruise(environment, action);
+        toCruise.clearSuiteTimeCachingFile();
         toCruise.publishSubsetSize(10);
+        List<String> times = new ArrayList<String>();
+        times.add("10");
+        assertThat(toCruise.cache(toCruise.testSubsetSizeFileLocator), is(times));
         toCruise.publishSubsetSize(20);
+        times.add("20");
+        assertThat(toCruise.cache(toCruise.testSubsetSizeFileLocator), is(times));
         toCruise.publishSubsetSize(25);
+        times.add("25");
+        assertThat(toCruise.cache(toCruise.testSubsetSizeFileLocator), is(times));
         verify(action).put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "10\n");
         verify(action).put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "20\n");
         verify(action).put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "25\n");
@@ -80,8 +86,9 @@ public class TalkToCruiseTest {
                 "com.thougthworks.tlb.SystemEnvTest: 8\n";
         String url = "http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/" + TalkToCruise.TEST_TIME_FILE;
 
-        when(action.get("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size")).thenReturn("5\n");
         TalkToCruise cruise = new TalkToCruise(env, action);
+        cruise.clearSuiteTimeCachingFile();
+        cruise.persist("5\n", cruise.testSubsetSizeFileLocator);
         cruise.clearSuiteTimeCachingFile();
         cruise.testClassTime("com.thoughtworks.tlb.TestSuite", 12);
         assertCacheState(cruise, 1, "com.thoughtworks.tlb.TestSuite: 12");
@@ -98,7 +105,6 @@ public class TalkToCruiseTest {
         cruise.testClassTime("com.thougthworks.tlb.SystemEnvTest", 8);
         assertThat(FileUtil.getUniqueFile(cruise.jobLocator).exists(), is(false));
 
-        verify(action).get("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size");
         verify(action).put(url, data);
     }
 
@@ -111,9 +117,9 @@ public class TalkToCruiseTest {
                 "com.thougthworks.tlb.SystemEnvTest: 8\n";
         String url = "http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/" + TalkToCruise.TEST_TIME_FILE;
 
-        when(action.get("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size")).thenReturn("5\n10\n3\n");
         TalkToCruise cruise = new TalkToCruise(env, action);
         cruise.clearSuiteTimeCachingFile();
+        cruise.persist("5\n10\n3\n", cruise.testSubsetSizeFileLocator);
         cruise.testClassTime("com.thoughtworks.tlb.TestSuite", 12);
         assertCacheState(cruise, 1, "com.thoughtworks.tlb.TestSuite: 12");
         cruise.testClassTime("com.thoughtworks.tlb.TestCriteriaSelection", 30);
@@ -125,7 +131,6 @@ public class TalkToCruiseTest {
         cruise.testClassTime("com.thougthworks.tlb.SystemEnvTest", 8);
         assertThat(FileUtil.getUniqueFile(cruise.jobLocator).exists(), is(false));
 
-        verify(action).get("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size");
         verify(action).put(url, data);
     }
 
