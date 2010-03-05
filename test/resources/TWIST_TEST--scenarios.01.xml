@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="0" hostname="fmtstdcsruat34.thoughtworks.com" name="Agent UI Auto Refresh.scn" tests="1" time="85.821" timestamp="2010-03-05T06:15:30">
+  <properties />
+  <testcase classname="com.thoughtworks.twist.core.execution.ant.XMLJunitOutputListener$TestWrapper" name="Agent UI Auto Refresh.scn" time="85.822" />
+</testsuite>

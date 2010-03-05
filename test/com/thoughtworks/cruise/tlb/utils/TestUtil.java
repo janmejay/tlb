@@ -4,12 +4,15 @@ import com.thoughtworks.cruise.tlb.ant.JunitFileResource;
 import com.thoughtworks.cruise.tlb.TlbFileResource;
 import com.thoughtworks.cruise.tlb.twist.SceanrioFileResource;
 import org.apache.tools.ant.Project;
+import org.apache.commons.io.FileUtils;
 
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 
@@ -45,5 +48,9 @@ public class TestUtil {
         map.put(com.thoughtworks.cruise.tlb.TlbConstants.CRUISE_JOB_NAME, jobName);
         map.put(com.thoughtworks.cruise.tlb.TlbConstants.CRUISE_STAGE_NAME, "stage-1");
         return new SystemEnvironment(map);
+    }
+
+    public static String fileContents(String filePath) throws IOException, URISyntaxException {
+        return FileUtils.readFileToString(new File(TestUtil.class.getClassLoader().getResource(filePath).toURI()));
     }
 }
