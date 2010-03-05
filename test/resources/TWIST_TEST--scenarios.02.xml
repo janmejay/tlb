@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="0" hostname="fmtstdcsruat34.thoughtworks.com" name="AgentsApi.scn" tests="1" time="77.87" timestamp="2010-03-05T06:21:45">
+  <properties />
+  <testcase classname="com.thoughtworks.twist.core.execution.ant.XMLJunitOutputListener$TestWrapper" name="AgentsApi.scn" time="77.871" />
+</testsuite>

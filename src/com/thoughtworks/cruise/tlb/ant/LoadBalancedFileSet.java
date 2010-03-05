@@ -2,6 +2,7 @@ package com.thoughtworks.cruise.tlb.ant;
 
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.resources.FileResource;
+import com.thoughtworks.cruise.tlb.TlbFileResource;
 import org.apache.tools.ant.BuildException;
 
 import java.util.Iterator;
@@ -10,7 +11,6 @@ import java.util.ArrayList;
 import java.io.File;
 
 import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteriaFactory;
-import com.thoughtworks.cruise.tlb.splitter.JobFamilyAwareSplitterCriteria;
 import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteria;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 import static com.thoughtworks.cruise.tlb.TlbConstants.TLB_CRITERIA;
@@ -37,9 +37,10 @@ public class LoadBalancedFileSet extends FileSet {
     @SuppressWarnings({"unchecked"})
     public Iterator iterator() {
         Iterator<FileResource> files = (Iterator<FileResource>) super.iterator();
-        List<FileResource> matchedFiles = new ArrayList<FileResource>();
+        List<TlbFileResource> matchedFiles = new ArrayList<TlbFileResource>();
         while (files.hasNext()) {
-            matchedFiles.add(files.next());
+            FileResource fileResource = files.next();
+            matchedFiles.add(new JunitFileResource(fileResource));
         }
         return criteria.filter(matchedFiles).iterator();
     }

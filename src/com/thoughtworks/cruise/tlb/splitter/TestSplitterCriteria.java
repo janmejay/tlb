@@ -1,6 +1,6 @@
 package com.thoughtworks.cruise.tlb.splitter;
 
-import org.apache.tools.ant.types.resources.FileResource;
+import com.thoughtworks.cruise.tlb.TlbFileResource;
 
 import java.util.List;
 import java.io.File;
@@ -18,7 +18,7 @@ public abstract class TestSplitterCriteria {
         this.env = env;
     }
 
-    public abstract List<FileResource> filter(List<FileResource> fileResources);
+    public abstract List<TlbFileResource> filter(List<TlbFileResource> fileResources);
 
     public void setDir(File dir) {
         this.dir = dir;

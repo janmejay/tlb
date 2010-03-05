@@ -5,7 +5,7 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import org.junit.Test;
-import org.apache.tools.ant.types.resources.FileResource;
+import com.thoughtworks.cruise.tlb.TlbFileResource;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 import com.thoughtworks.cruise.tlb.TlbConstants;
 import com.thoughtworks.cruise.tlb.service.TalkToCruise;
@@ -76,7 +76,7 @@ public class TestSplitterCriteriaFactoryTest {
             super(env);
         }
 
-        protected List<FileResource> subset(List<FileResource> fileResources) {
+        protected List<TlbFileResource> subset(List<TlbFileResource> fileResources) {
             this.calledFilter = true;
             return null;
         }

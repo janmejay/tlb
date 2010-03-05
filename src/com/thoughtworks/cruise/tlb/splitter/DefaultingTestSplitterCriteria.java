@@ -2,7 +2,7 @@ package com.thoughtworks.cruise.tlb.splitter;
 
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 import com.thoughtworks.cruise.tlb.TlbConstants;
-import org.apache.tools.ant.types.resources.FileResource;
+import com.thoughtworks.cruise.tlb.TlbFileResource;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
 
@@ -32,10 +32,10 @@ public class DefaultingTestSplitterCriteria extends TestSplitterCriteria {
         return env.getProperty(TlbConstants.CRITERIA_DEFAULTING_ORDER).split("\\s*:\\s*");
     }
 
-    public List<FileResource> filter(List<FileResource> fileResources) {
+    public List<TlbFileResource> filter(List<TlbFileResource> fileResources) {
         for (TestSplitterCriteria criteria : criterion) {
             try {
-                List<FileResource> subset = criteria.filter(fileResources);
+                List<TlbFileResource> subset = criteria.filter(fileResources);
                 LOG.info(String.format("Used %s to balance.", criteria.getClass().getCanonicalName()));
                 return subset;
             } catch (Exception e) {

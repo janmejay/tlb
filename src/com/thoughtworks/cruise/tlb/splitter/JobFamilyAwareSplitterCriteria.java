@@ -1,6 +1,6 @@
 package com.thoughtworks.cruise.tlb.splitter;
 
-import org.apache.tools.ant.types.resources.FileResource;
+import com.thoughtworks.cruise.tlb.TlbFileResource;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -17,11 +17,11 @@ import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
  */
 public abstract class JobFamilyAwareSplitterCriteria extends TestSplitterCriteria implements TalksToCruise {
     public static TestSplitterCriteria MATCH_ALL_FILE_SET = new JobFamilyAwareSplitterCriteria(null) {
-        public List<FileResource> filter(List<FileResource> fileResources) {
+        public List<TlbFileResource> filter(List<TlbFileResource> fileResources) {
             return fileResources;
         }
 
-        protected List<FileResource> subset(List<FileResource> fileResources) {
+        protected List<TlbFileResource> subset(List<TlbFileResource> fileResources) {
             throw new RuntimeException("Should never reach here");
         }
     };
@@ -37,18 +37,19 @@ public abstract class JobFamilyAwareSplitterCriteria extends TestSplitterCriteri
         super(env);
     }
 
-    public List<FileResource> filter(List<FileResource> fileResources) {
+    public List<TlbFileResource> filter(List<TlbFileResource> fileResources) {
+
         jobs = pearJobs();
         if (jobs.size() <= 1) {
             return fileResources;
         }
 
-        List<FileResource> subset = subset(fileResources);
+        List<TlbFileResource> subset = subset(fileResources);
         talkToCruise.publishSubsetSize(subset.size());
         return subset;
     }
 
-    protected abstract List<FileResource> subset(List<FileResource> fileResources);
+    protected abstract List<TlbFileResource> subset(List<TlbFileResource> fileResources);
 
     public void talksToCruise(TalkToCruise cruise) {
        this.talkToCruise = cruise;

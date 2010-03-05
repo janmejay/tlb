@@ -10,7 +10,8 @@ import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 import com.thoughtworks.cruise.tlb.TestUtil;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
-import org.apache.tools.ant.types.resources.FileResource;
+import com.thoughtworks.cruise.tlb.ant.JunitFileResource;
+import com.thoughtworks.cruise.tlb.TlbFileResource;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -48,7 +49,7 @@ public class LoadBalancedFileSetTest {
         Iterator files = fileSet.iterator();
 
         assertThat(files.hasNext(), is(true));
-        assertThat(((FileResource) files.next()).getFile(), is(newFile));
+        assertThat(((TlbFileResource) files.next()).getFile(), is(newFile));
         assertThat(files.hasNext(), is(false));
     }
 
@@ -58,7 +59,8 @@ public class LoadBalancedFileSetTest {
         File included = fileUtil.createFileInFolder(projectDir, "included");
 
         JobFamilyAwareSplitterCriteria criteria = mock(JobFamilyAwareSplitterCriteria.class);
-        when(criteria.filter(any(List.class))).thenReturn(Arrays.asList(new FileResource(included)));
+        TlbFileResource fileResource = new JunitFileResource(included);
+        when(criteria.filter(any(List.class))).thenReturn(Arrays.asList(fileResource));
 
         fileSet = new LoadBalancedFileSet(criteria);
         fileSet.setDir(projectDir);
@@ -66,7 +68,7 @@ public class LoadBalancedFileSetTest {
         Iterator files = fileSet.iterator();
 
         assertThat(files.hasNext(), is(true));
-        assertThat(((FileResource) files.next()).getFile(), is(included));
+        assertThat(((TlbFileResource) files.next()).getFile(), is(included));
         assertThat(files.hasNext(), is(false));
     }
 

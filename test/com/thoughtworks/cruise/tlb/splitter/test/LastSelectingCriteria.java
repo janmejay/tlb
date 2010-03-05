@@ -2,8 +2,7 @@ package com.thoughtworks.cruise.tlb.splitter.test;
 
 import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteria;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
-import org.apache.tools.ant.types.resources.FileResource;
-import org.jaxen.util.SingletonList;
+import com.thoughtworks.cruise.tlb.TlbFileResource;
 
 import java.util.List;
 import java.util.Arrays;
@@ -13,7 +12,7 @@ public class LastSelectingCriteria extends TestSplitterCriteria {
         super(env);
     }
 
-    public List<FileResource> filter(List<FileResource> fileResources) {
+    public List<TlbFileResource> filter(List<TlbFileResource> fileResources) {
         return Arrays.asList(fileResources.get(fileResources.size() - 1));
     }
 }

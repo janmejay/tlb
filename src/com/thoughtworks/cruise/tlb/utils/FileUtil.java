@@ -1,14 +1,10 @@
 package com.thoughtworks.cruise.tlb.utils;
 
-import static org.apache.commons.io.FileUtils.writeStringToFile;
+import static com.thoughtworks.cruise.tlb.TlbConstants.TLB_TMP_DIR;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.UUID;
-
-import com.thoughtworks.cruise.tlb.TlbConstants;
-import static com.thoughtworks.cruise.tlb.TlbConstants.TLB_TMP_DIR;
 
 public class FileUtil {
     private SystemEnvironment env;

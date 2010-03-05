@@ -1,10 +1,11 @@
 package com.thoughtworks.cruise.tlb.splitter;
 
 import com.thoughtworks.cruise.tlb.TlbConstants;
+import com.thoughtworks.cruise.tlb.TlbFileResource;
+import com.thoughtworks.cruise.tlb.ant.JunitFileResource;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 import static junit.framework.Assert.fail;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.types.resources.FileResource;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import org.junit.Before;
@@ -28,9 +29,9 @@ public class DefaultingTestSplitterCriteriaTest {
     public void shouldAttemptCriterionSpecifiedInOrder() throws Exception{
         TestSplitterCriteria criteria = defaultingCriteriaWith("com.thoughtworks.cruise.tlb.splitter.test.UnusableCriteria1:com.thoughtworks.cruise.tlb.splitter.test.UnusableCriteria2:com.thoughtworks.cruise.tlb.splitter.test.LastSelectingCriteria");
 
-        FileResource foo = fileResource("foo");
-        FileResource bar = fileResource("bar");
-        List<FileResource> filteredResources = criteria.filter(Arrays.asList(foo, bar));
+        TlbFileResource foo = fileResource("foo");
+        TlbFileResource bar = fileResource("bar");
+        List<TlbFileResource> filteredResources = criteria.filter(Arrays.asList(foo, bar));
         assertThat(filteredResources.size(), is(1));
         assertThat(filteredResources, hasItem(bar));
     }
@@ -39,9 +40,9 @@ public class DefaultingTestSplitterCriteriaTest {
     public void shouldAcceptSpacesBetweenCriterionNamesSpecified() throws Exception{
         TestSplitterCriteria criteria = defaultingCriteriaWith("com.thoughtworks.cruise.tlb.splitter.test.UnusableCriteria1   :   com.thoughtworks.cruise.tlb.splitter.test.UnusableCriteria2 :   com.thoughtworks.cruise.tlb.splitter.test.LastSelectingCriteria");
 
-        FileResource foo = fileResource("foo");
-        FileResource bar = fileResource("bar");
-        List<FileResource> filteredResources = criteria.filter(Arrays.asList(foo, bar));
+        TlbFileResource foo = fileResource("foo");
+        TlbFileResource bar = fileResource("bar");
+        List<TlbFileResource> filteredResources = criteria.filter(Arrays.asList(foo, bar));
         assertThat(filteredResources.size(), is(1));
         assertThat(filteredResources, hasItem(bar));
     }
@@ -57,8 +58,8 @@ public class DefaultingTestSplitterCriteriaTest {
     public void shouldBombIfNoCriteriaCanBeUsedSuccessfully() throws Exception{
         TestSplitterCriteria criteria = defaultingCriteriaWith("com.thoughtworks.cruise.tlb.splitter.test.UnusableCriteria1:com.thoughtworks.cruise.tlb.splitter.test.UnusableCriteria2");
 
-        FileResource foo = fileResource("foo");
-        FileResource bar = fileResource("bar");
+        TlbFileResource foo = fileResource("foo");
+        TlbFileResource bar = fileResource("bar");
         try {
             criteria.filter(Arrays.asList(foo, bar));
             fail("should have raised exception as no usable criteria specified");
@@ -67,7 +68,7 @@ public class DefaultingTestSplitterCriteriaTest {
         }
     }
 
-    private FileResource fileResource(String fileName) {
-        return new FileResource(project, fileName);
+    private JunitFileResource fileResource(String fileName) {
+        return new JunitFileResource(project, fileName);
     }
 }
