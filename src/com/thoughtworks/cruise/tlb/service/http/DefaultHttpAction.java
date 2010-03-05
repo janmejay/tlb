@@ -1,24 +1,23 @@
 package com.thoughtworks.cruise.tlb.service.http;
 
 import com.thoughtworks.cruise.tlb.TlbConstants;
+import com.thoughtworks.cruise.tlb.service.http.request.FollowableHttpRequest;
 import static com.thoughtworks.cruise.tlb.TlbConstants.PASSWORD;
 import static com.thoughtworks.cruise.tlb.TlbConstants.USERNAME;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 import org.apache.commons.httpclient.*;
+import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.StringPart;
-import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -27,22 +26,36 @@ import java.util.Map;
 public class DefaultHttpAction implements HttpAction {
     private final HttpClient client;
     private URI url;
+    private boolean ssl;
+
+    public DefaultHttpAction(HttpClient client, URI url) {
+        this.client = client;
+        this.url = url;
+        ssl = url.getScheme().equals("https");
+    }
 
     public DefaultHttpAction(SystemEnvironment environment) {
+        this(createHttpClient(environment), createUri(environment));
+    }
+
+    private static URI createUri(SystemEnvironment environment) {
+        try {
+            return new URI(environment.getProperty(TlbConstants.CRUISE_SERVER_URL), true);
+        } catch (URIException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static HttpClient createHttpClient(SystemEnvironment environment) {
         HttpClientParams params = new HttpClientParams();
 
         if (environment.getProperty(USERNAME) != null) {
             params.setAuthenticationPreemptive(true);
-            client = new HttpClient(params);
+            HttpClient client = new HttpClient(params);
             client.getState().setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(environment.getProperty(USERNAME), environment.getProperty(PASSWORD)));
+            return client;
         } else {
-            client = new HttpClient(params);
-        }
-        try {
-            url = new URI(environment.getProperty(TlbConstants.CRUISE_SERVER_URL), true);
-            reRegisterProtocol();
-        } catch (URIException e) {
-            throw new RuntimeException(e);
+            return new HttpClient(params);
         }
     }
 
@@ -53,39 +66,21 @@ public class DefaultHttpAction implements HttpAction {
      * Ouch! static state again.
      */
     private void reRegisterProtocol() {
-        Protocol.registerProtocol("https", new Protocol("https", (ProtocolSocketFactory) new PermissiveSSLProtocolSocketFactory(), url.getPort()));
+        if (ssl) Protocol.registerProtocol("https", new Protocol("https", (ProtocolSocketFactory) new PermissiveSSLProtocolSocketFactory(), url.getPort()));
     }
 
-    abstract class FollowableHttpRequest {
-        private HttpClient client;
-
-        protected FollowableHttpRequest(HttpClient client) {
-            this.client = client;
-        }
-
-        public abstract HttpMethodBase createMethod(String url);
-
-        public String executeRequest(String url) {
-            HttpMethodBase method = createMethod(url);
+    public synchronized int executeMethod(HttpMethodBase method) {
+        try {
             reRegisterProtocol();
-            try {
-                int result = client.executeMethod(method);
-                if (result >= 300 && result < 400) {
-                    executeRequest(method.getResponseHeader("Location").getValue());
-                }
-                if (result < 200 || result >= 300) {
-                    throw new RuntimeException(String.format("Something went horribly wrong. Bu Hao. The response[status: %s] looks like: %s", result, method.getResponseBodyAsString()));
-                }
-                return method.getResponseBodyAsString();
-            } catch (IOException e) {
-                throw new RuntimeException("Oops! Something went wrong", e);
-            }
+            return client.executeMethod(method);
+        } catch (IOException e) {
+            throw new RuntimeException("Oops! Something went wrong", e);
         }
     }
 
     class FollowableGetRequest extends FollowableHttpRequest {
-        protected FollowableGetRequest(HttpClient client) {
-            super(client);
+        protected FollowableGetRequest(DefaultHttpAction action) {
+            super(action);
         }
 
         public HttpMethodBase createMethod(String url) {
@@ -96,8 +91,8 @@ public class DefaultHttpAction implements HttpAction {
     class FollowablePutRequest extends FollowableHttpRequest {
         private String data;
 
-        protected FollowablePutRequest(HttpClient client, String data) {
-            super(client);
+        protected FollowablePutRequest(DefaultHttpAction action, String data) {
+            super(action);
             this.data = data;
         }
 
@@ -115,8 +110,8 @@ public class DefaultHttpAction implements HttpAction {
     class FollowablePostRequest extends FollowableHttpRequest {
         private Map<String, String> data;
 
-        protected FollowablePostRequest(HttpClient client, Map<String, String> data) {
-            super(client);
+        protected FollowablePostRequest(DefaultHttpAction action, Map<String, String> data) {
+            super(action);
             this.data = data;
         }
 
@@ -130,17 +125,17 @@ public class DefaultHttpAction implements HttpAction {
     }
 
     public String get(String url) {
-        FollowableGetRequest request = new FollowableGetRequest(client);
+        FollowableGetRequest request = new FollowableGetRequest(this);
         return request.executeRequest(url);
     }
 
     public String post(String url, Map<String,String> data) {
-        FollowablePostRequest request = new FollowablePostRequest(client, data);
+        FollowablePostRequest request = new FollowablePostRequest(this, data);
         return request.executeRequest(url);
     }
 
     public String put(String url, String data) {
-        FollowablePutRequest request = new FollowablePutRequest(client, data);
+        FollowablePutRequest request = new FollowablePutRequest(this, data);
         return request.executeRequest(url);
     }
 }
