@@ -3,6 +3,7 @@ package com.thoughtworks.cruise.tlb.twist;
 import com.thoughtworks.cruise.tlb.service.TalkToCruise;
 import com.thoughtworks.cruise.tlb.service.http.DefaultHttpAction;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
+import com.thoughtworks.cruise.tlb.utils.XmlUtil;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.BuildException;
 import org.apache.commons.io.FileUtils;
@@ -47,7 +48,7 @@ public class PublishScenarioExecutionTime extends Task {
         while(reports.hasNext()) {
             File report = reports.next();
             try {
-                Element element = rootFor(FileUtils.readFileToString(report));
+                Element element = XmlUtil.domFor(FileUtils.readFileToString(report));
                 Element testCase = (Element) element.selectSingleNode("//testcase");
                 talkToCruise.testClassTime(testCase.attribute("name").getText(), toSecond(testCase));
             } catch (IOException e) {
@@ -60,17 +61,4 @@ public class PublishScenarioExecutionTime extends Task {
         double time = Double.parseDouble(testCase.attribute("time").getText());
         return (long)(time * 1000);
     }
-
-    //TODO: Fix this duplication. TalkToCruise has the same method
-    public Element rootFor(String contents) {
-        SAXReader builder = new SAXReader();
-        try {
-            Document dom = builder.read(new StringReader(contents));
-            return dom.getRootElement();
-        } catch (Exception e) {
-            throw new RuntimeException("XML could not be understood -> " + contents, e);
-        }
-    }
-
-
 }

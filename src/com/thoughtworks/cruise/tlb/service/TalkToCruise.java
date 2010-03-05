@@ -1,22 +1,25 @@
 package com.thoughtworks.cruise.tlb.service;
 
-import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
-import com.thoughtworks.cruise.tlb.utils.FileUtil;
+import com.thoughtworks.cruise.tlb.TlbConstants;
 import static com.thoughtworks.cruise.tlb.TlbConstants.*;
 import com.thoughtworks.cruise.tlb.service.http.HttpAction;
-import com.thoughtworks.cruise.tlb.TlbConstants;
-
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import java.io.*;
-
-import org.dom4j.*;
-import org.dom4j.io.SAXReader;
-import org.apache.commons.io.IOUtils;
+import com.thoughtworks.cruise.tlb.utils.FileUtil;
+import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
+import com.thoughtworks.cruise.tlb.utils.XmlUtil;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dom4j.Attribute;
+import org.dom4j.Element;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @understands requesting and posting information to/from cruise
@@ -36,10 +39,6 @@ public class TalkToCruise {
     final String subsetSizeUrl;
 
     public TalkToCruise(SystemEnvironment environment, HttpAction httpAction) {
-        HashMap<String, String> map = new HashMap<String, String>();
-        map.put("a", "http://www.w3.org/2005/Atom");
-        DocumentFactory factory = DocumentFactory.getInstance();
-        factory.setXPathNamespaceURIs(map);
         this.environment = environment;
         this.httpAction = httpAction;
         subsetSize = null;
@@ -63,14 +62,8 @@ public class TalkToCruise {
     }
 
     public Element rootFor(String url) {
-        SAXReader builder = new SAXReader();
         String xmlString = httpAction.get(url);
-        try {
-            Document dom = builder.read(new StringReader(xmlString));
-            return dom.getRootElement();
-        } catch (Exception e) {
-            throw new RuntimeException("XML could not be understood -> " + xmlString, e);
-        }
+        return XmlUtil.domFor(xmlString);
     }
 
     private Object cruiseUrl() {
