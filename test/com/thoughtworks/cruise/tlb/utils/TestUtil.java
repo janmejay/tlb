@@ -1,7 +1,8 @@
-package com.thoughtworks.cruise.tlb;
+package com.thoughtworks.cruise.tlb.utils;
 
 import com.thoughtworks.cruise.tlb.ant.JunitFileResource;
 import com.thoughtworks.cruise.tlb.TlbFileResource;
+import com.thoughtworks.cruise.tlb.twist.SceanrioFileResource;
 import org.apache.tools.ant.Project;
 
 import java.util.List;
@@ -21,14 +22,22 @@ public class TestUtil {
         return resources;
     }
 
-    public static JunitFileResource file(String name) {
+    public static TlbFileResource file(String name) {
         return new JunitFileResource(new File(name));
     }
 
-    public static JunitFileResource file(String dir, String name) {
+    public static TlbFileResource file(String dir, String name) {
         JunitFileResource fileResource = new JunitFileResource(new Project(), dir + File.separator + name + ".class");
         fileResource.setBaseDir(new File("."));
         return fileResource;
+    }
+
+    public static List<TlbFileResource> scenarios(int ... numbers) {
+        List<TlbFileResource> resources = new ArrayList<TlbFileResource>();
+        for (int number : numbers) {
+            resources.add(new SceanrioFileResource(new File("base" + number)));
+        }
+        return resources;
     }
 
     public static SystemEnvironment initEnvironment(String jobName) {

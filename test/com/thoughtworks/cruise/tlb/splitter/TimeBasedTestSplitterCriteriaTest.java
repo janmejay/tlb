@@ -2,8 +2,8 @@ package com.thoughtworks.cruise.tlb.splitter;
 
 import com.thoughtworks.cruise.tlb.service.TalkToCruise;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
-import static com.thoughtworks.cruise.tlb.TestUtil.initEnvironment;
-import static com.thoughtworks.cruise.tlb.TestUtil.file;
+import static com.thoughtworks.cruise.tlb.utils.TestUtil.initEnvironment;
+import static com.thoughtworks.cruise.tlb.utils.TestUtil.file;
 import com.thoughtworks.cruise.tlb.TlbFileResource;
 import org.junit.Before;
 import org.junit.Test;
