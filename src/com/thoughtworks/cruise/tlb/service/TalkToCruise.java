@@ -33,7 +33,7 @@ public class TalkToCruise {
     private Integer subsetSize;
     final String jobLocator;
     final String stageLocator;
-    final String subsetSizeUrl;
+    final String testSubsetSizeFileLocator;
 
     public TalkToCruise(SystemEnvironment environment, HttpAction httpAction) {
         HashMap<String, String> map = new HashMap<String, String>();
@@ -44,8 +44,8 @@ public class TalkToCruise {
         this.httpAction = httpAction;
         subsetSize = null;
         jobLocator = String.format("%s/%s/%s/%s/%s", p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_LABEL), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER), p(CRUISE_JOB_NAME));
+        testSubsetSizeFileLocator = String.format("%s/subset_size", jobLocator);
         stageLocator = String.format("%s/%s/%s/%s", p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_COUNTER), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER));
-        subsetSizeUrl = String.format("%s/properties/%s/%s", cruiseUrl(), jobLocator, TlbConstants.TEST_SUBSET_SIZE_FILE);
     }
 
     public List<String> getJobs() {
@@ -96,7 +96,6 @@ public class TalkToCruise {
             httpAction.put(artifactFileUrl(TEST_TIME_FILE), buffer.toString());
             clearSuiteTimeCachingFile();
         }
-
     }
 
     private String artifactFileUrl(String atrifactFile) {
@@ -104,18 +103,14 @@ public class TalkToCruise {
     }
 
     private List<String> cacheAndPersist(String line, String fileIdentifier) {
+        persist(line, fileIdentifier);
+        return cache(fileIdentifier);
+    }
+
+    List<String> cache(String fileIdentifier) {
         File cacheFile = FileUtil.getUniqueFile(fileIdentifier);
-        FileOutputStream out = null;
         FileInputStream in = null;
         List<String> lines = null;
-        try {
-            out = new FileOutputStream(cacheFile, true);
-            IOUtils.write(line, out);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            IOUtils.closeQuietly(out);
-        }
         try {
             in = new FileInputStream(cacheFile);
             lines = IOUtils.readLines(in);
@@ -127,10 +122,23 @@ public class TalkToCruise {
         return lines;
     }
 
+    void persist(String line, String fileIdentifier) {
+        File cacheFile = FileUtil.getUniqueFile(fileIdentifier);
+        FileOutputStream out = null;
+        try {
+            out = new FileOutputStream(cacheFile, true);
+            IOUtils.write(line, out);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            IOUtils.closeQuietly(out);
+        }
+    }
+
     private int subsetSize() {
         if (subsetSize == null) {
-            String[] subsetSizes = httpAction.get(artifactFileUrl(TlbConstants.TEST_SUBSET_SIZE_FILE)).split("\n");
-            String propertyValue = subsetSizes[subsetSizes.length - 1];
+            List<String> subsetSizes = cache(testSubsetSizeFileLocator);
+            String propertyValue = subsetSizes.get(subsetSizes.size() - 1);
             subsetSize = Integer.parseInt(propertyValue);
         }
         return subsetSize;
@@ -200,12 +208,15 @@ public class TalkToCruise {
     }
 
     public void publishSubsetSize(int size) {
-        httpAction.put(artifactFileUrl(TlbConstants.TEST_SUBSET_SIZE_FILE), String.valueOf(size) + "\n");
+        String line = String.valueOf(size) + "\n";
+        persist(line, testSubsetSizeFileLocator);
+        httpAction.put(artifactFileUrl(TlbConstants.TEST_SUBSET_SIZE_FILE), line);
     }
 
     public void clearSuiteTimeCachingFile() {
         try {
             FileUtils.forceDelete(FileUtil.getUniqueFile(jobLocator));
+            FileUtils.forceDelete(FileUtil.getUniqueFile(testSubsetSizeFileLocator));
         } catch (IOException e) {
             LOG.error("could not delete suite time cache file: " + e.getMessage());
         }
