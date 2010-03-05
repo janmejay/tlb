@@ -9,7 +9,7 @@ import com.thoughtworks.cruise.tlb.utils.RetryAfter;
 import com.thoughtworks.cruise.tlb.service.http.DefaultHttpAction;
 
 /**
- * @understands
+ * @understands error ressilient http request handling
 */
 public abstract class FollowableHttpRequest {
     private DefaultHttpAction defaultHttpAction;
