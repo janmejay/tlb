@@ -3,13 +3,11 @@ package com.thoughtworks.cruise.tlb;
 import org.apache.tools.ant.types.resources.FileResource;
 import org.apache.tools.ant.Project;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 import java.io.File;
 
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
+import com.thoughtworks.cruise.tlb.utils.FileUtil;
 
 public class TestUtil {
     public static List<FileResource> files(int ... numbers) {
@@ -35,5 +33,12 @@ public class TestUtil {
         map.put(com.thoughtworks.cruise.tlb.TlbConstants.CRUISE_JOB_NAME, jobName);
         map.put(com.thoughtworks.cruise.tlb.TlbConstants.CRUISE_STAGE_NAME, "stage-1");
         return new SystemEnvironment(map);
+    }
+
+    public static File createTempFolder() {
+        final File file = new File(System.getProperty(FileUtil.TMP_DIR), UUID.randomUUID().toString());
+        file.mkdirs();
+        file.deleteOnExit();
+        return file;
     }
 }

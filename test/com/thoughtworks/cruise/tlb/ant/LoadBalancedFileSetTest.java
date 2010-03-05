@@ -3,11 +3,11 @@ package com.thoughtworks.cruise.tlb.ant;
 import static com.thoughtworks.cruise.tlb.TlbConstants.CRUISE_SERVER_URL;
 import static com.thoughtworks.cruise.tlb.TlbConstants.TLB_CRITERIA;
 import com.thoughtworks.cruise.tlb.splitter.CountBasedTestSplitterCriteria;
-import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteriaFactory;
 import com.thoughtworks.cruise.tlb.splitter.JobFamilyAwareSplitterCriteria;
+import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteriaFactory;
 import com.thoughtworks.cruise.tlb.utils.FileUtil;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
-import com.thoughtworks.cruise.tlb.ant.LoadBalancedFileSet;
+import com.thoughtworks.cruise.tlb.TestUtil;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.resources.FileResource;
@@ -17,9 +17,7 @@ import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 import java.io.File;
 import java.util.*;
@@ -27,11 +25,14 @@ import java.util.*;
 public class LoadBalancedFileSetTest {
     private LoadBalancedFileSet fileSet;
     private File projectDir;
+    private FileUtil fileUtil;
 
     @Before
     public void setUp() throws Exception {
-        fileSet = new LoadBalancedFileSet(new SystemEnvironment(new HashMap<String, String>()));
-        projectDir = FileUtil.createTempFolder();
+        SystemEnvironment env = new SystemEnvironment(new HashMap<String, String>());
+        fileSet = new LoadBalancedFileSet(env);
+        fileUtil = new FileUtil(env);
+        projectDir = TestUtil.createTempFolder();
         initFileSet(fileSet);
     }
 
@@ -42,7 +43,7 @@ public class LoadBalancedFileSetTest {
 
     @Test
     public void shouldReturnAllFilesWhenThereIsNothingToSplit() {
-        File newFile = FileUtil.createFileInFolder(projectDir, "abc");
+        File newFile = fileUtil.createFileInFolder(projectDir, "abc");
 
         Iterator files = fileSet.iterator();
 
@@ -53,8 +54,8 @@ public class LoadBalancedFileSetTest {
 
     @Test
     public void shouldReturnAListOfFilesWhichMatchAGivenMatcher() {
-        FileUtil.createFileInFolder(projectDir, "excluded");
-        File included = FileUtil.createFileInFolder(projectDir, "included");
+        fileUtil.createFileInFolder(projectDir, "excluded");
+        File included = fileUtil.createFileInFolder(projectDir, "included");
 
         JobFamilyAwareSplitterCriteria criteria = mock(JobFamilyAwareSplitterCriteria.class);
         when(criteria.filter(any(List.class))).thenReturn(Arrays.asList(new FileResource(included)));

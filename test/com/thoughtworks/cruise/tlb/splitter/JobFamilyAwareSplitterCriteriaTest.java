@@ -23,11 +23,12 @@ public class JobFamilyAwareSplitterCriteriaTest {
         envMap.put(TlbConstants.CRUISE_JOB_NAME, "build-1");
         TalkToCruise toCruise = mock(TalkToCruise.class);
         when(toCruise.getJobs()).thenReturn(Arrays.asList("build-1", "build-2", "build-3"));
-        JobFamilyAwareSplitterCriteria criteria = new JobFamilyAwareSplitterCriteria(toCruise, new SystemEnvironment(envMap)) {
+        JobFamilyAwareSplitterCriteria criteria = new JobFamilyAwareSplitterCriteria(new SystemEnvironment(envMap)) {
             protected List<FileResource> subset(List<FileResource> fileResources) {
                 return Arrays.asList(new FileResource(new File("foo")), new FileResource(new File("bar")));
             }
         };
+        criteria.talksToCruise(toCruise);
         List<FileResource> resources = criteria.filter(new ArrayList<FileResource>());
         assertThat(resources.size(), is(2));
         verify(toCruise).publishSubsetSize(2);

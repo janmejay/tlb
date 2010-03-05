@@ -34,6 +34,7 @@ public class TalkToCruise {
     final String jobLocator;
     final String stageLocator;
     final String testSubsetSizeFileLocator;
+    private final FileUtil fileUtil;
 
     public TalkToCruise(SystemEnvironment environment, HttpAction httpAction) {
         HashMap<String, String> map = new HashMap<String, String>();
@@ -46,6 +47,7 @@ public class TalkToCruise {
         jobLocator = String.format("%s/%s/%s/%s/%s", p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_LABEL), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER), p(CRUISE_JOB_NAME));
         testSubsetSizeFileLocator = String.format("%s/subset_size", jobLocator);
         stageLocator = String.format("%s/%s/%s/%s", p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_COUNTER), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER));
+        fileUtil = new FileUtil(environment);
     }
 
     public List<String> getJobs() {
@@ -108,7 +110,7 @@ public class TalkToCruise {
     }
 
     List<String> cache(String fileIdentifier) {
-        File cacheFile = FileUtil.getUniqueFile(fileIdentifier);
+        File cacheFile = fileUtil.getUniqueFile(fileIdentifier);
         FileInputStream in = null;
         List<String> lines = null;
         try {
@@ -123,7 +125,7 @@ public class TalkToCruise {
     }
 
     void persist(String line, String fileIdentifier) {
-        File cacheFile = FileUtil.getUniqueFile(fileIdentifier);
+        File cacheFile = fileUtil.getUniqueFile(fileIdentifier);
         FileOutputStream out = null;
         try {
             out = new FileOutputStream(cacheFile, true);
@@ -215,8 +217,8 @@ public class TalkToCruise {
 
     public void clearSuiteTimeCachingFile() {
         try {
-            FileUtils.forceDelete(FileUtil.getUniqueFile(jobLocator));
-            FileUtils.forceDelete(FileUtil.getUniqueFile(testSubsetSizeFileLocator));
+            FileUtils.forceDelete(fileUtil.getUniqueFile(jobLocator));
+            FileUtils.forceDelete(fileUtil.getUniqueFile(testSubsetSizeFileLocator));
         } catch (IOException e) {
             LOG.error("could not delete suite time cache file: " + e.getMessage());
         }
