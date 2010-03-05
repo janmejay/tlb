@@ -6,10 +6,10 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
 import static org.hamcrest.core.Is.is;
-import org.apache.tools.ant.types.resources.FileResource;
+import com.thoughtworks.cruise.tlb.ant.JunitFileResource;
+import com.thoughtworks.cruise.tlb.TlbFileResource;
 import com.thoughtworks.cruise.tlb.service.TalkToCruise;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
-import com.thoughtworks.cruise.tlb.TestUtil;
 import static com.thoughtworks.cruise.tlb.TestUtil.files;
 import static com.thoughtworks.cruise.tlb.TestUtil.initEnvironment;
 import static com.thoughtworks.cruise.tlb.TestUtil.file;
@@ -33,10 +33,10 @@ public class CountBasedTestSplitterCriteriaTest {
 
         SystemEnvironment env = initEnvironment("job-1");
 
-        FileResource first = file("first");
-        FileResource second = file("second");
-        FileResource third = file("third");
-        List<FileResource> resources = Arrays.asList(first, second, third);
+        TlbFileResource first = file("first");
+        TlbFileResource second = file("second");
+        TlbFileResource third = file("third");
+        List<TlbFileResource> resources = Arrays.asList(first, second, third);
 
         CountBasedTestSplitterCriteria criteria = new CountBasedTestSplitterCriteria(talkToCruise, env);
         assertThat(criteria.filter(resources), is(Arrays.asList(first, second, third)));
@@ -48,9 +48,9 @@ public class CountBasedTestSplitterCriteriaTest {
 
         SystemEnvironment env = initEnvironment("job-1");
 
-        FileResource first = file("first");
-        FileResource second = file("second");
-        List<FileResource> resources = Arrays.asList(first, second, file("third"), file("fourth"), file("fifth"));
+        TlbFileResource first = file("first");
+        TlbFileResource second = file("second");
+        List<TlbFileResource> resources = Arrays.asList(first, second, file("third"), file("fourth"), file("fifth"));
 
         CountBasedTestSplitterCriteria criteria = new CountBasedTestSplitterCriteria(talkToCruise, env);
         assertThat(criteria.filter(resources), is(Arrays.asList(first, second)));
@@ -62,10 +62,10 @@ public class CountBasedTestSplitterCriteriaTest {
 
         SystemEnvironment env = initEnvironment("job-2");
 
-        FileResource third = file("third");
-        FileResource fourth = file("fourth");
-        FileResource fifth = file("fifth");
-        List<FileResource> resources = Arrays.asList(file("first"), file("second"), third, fourth, fifth);
+        TlbFileResource third = file("third");
+        TlbFileResource fourth = file("fourth");
+        TlbFileResource fifth = file("fifth");
+        List<TlbFileResource> resources = Arrays.asList(file("first"), file("second"), third, fourth, fifth);
 
         CountBasedTestSplitterCriteria criteria = new CountBasedTestSplitterCriteria(talkToCruise, env);
         assertThat(criteria.filter(resources), is(Arrays.asList(third, fourth, fifth)));
@@ -77,10 +77,10 @@ public class CountBasedTestSplitterCriteriaTest {
 
         SystemEnvironment env = initEnvironment("job-2");
 
-        FileResource third = file("third");
-        FileResource fourth = file("fourth");
-        FileResource fifth = file("fifth");
-        List<FileResource> resources = Arrays.asList(file("first"), file("second"), third, fourth, fifth);
+        TlbFileResource third = file("third");
+        TlbFileResource fourth = file("fourth");
+        TlbFileResource fifth = file("fifth");
+        List<TlbFileResource> resources = Arrays.asList(file("first"), file("second"), third, fourth, fifth);
 
         CountBasedTestSplitterCriteria criteria = new CountBasedTestSplitterCriteria(talkToCruise, env);
         assertThat(criteria.filter(resources), is(Arrays.asList(third, fourth, fifth)));
@@ -92,10 +92,10 @@ public class CountBasedTestSplitterCriteriaTest {
 
         SystemEnvironment env = initEnvironment("job-e2345678-1234-3456-7890-abcdef123456");
 
-        FileResource third = file("third");
-        FileResource fourth = file("fourth");
-        FileResource fifth = file("fifth");
-        List<FileResource> resources = Arrays.asList(file("first"), file("second"), third, fourth, fifth);
+        TlbFileResource third = file("third");
+        TlbFileResource fourth = file("fourth");
+        TlbFileResource fifth = file("fifth");
+        List<TlbFileResource> resources = Arrays.asList(file("first"), file("second"), third, fourth, fifth);
 
         CountBasedTestSplitterCriteria criteria = new CountBasedTestSplitterCriteria(talkToCruise, env);
         assertThat(criteria.filter(resources), is(Arrays.asList(third, fourth, fifth)));
@@ -105,7 +105,7 @@ public class CountBasedTestSplitterCriteriaTest {
     public void shouldNotSplitTestsWhenJobNameDoesntEndInNumberOrUUID() {
         when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-abcdef12-1234-3456-7890-abcdef123456", "jj", "pavan"));
 
-        List<FileResource> resources = files(1, 2, 3, 4, 5);
+        List<TlbFileResource> resources = files(1, 2, 3, 4, 5);
 
         assertThat(criteria("job-abcdef12-1234-3456-7890-abcdef123456").filter(resources), is(resources));
 
@@ -116,10 +116,10 @@ public class CountBasedTestSplitterCriteriaTest {
     public void shouldSplitTestsBalanced() {
         when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
 
-        ArrayList<FileResource> resources = new ArrayList<FileResource>();
+        ArrayList<TlbFileResource> resources = new ArrayList<TlbFileResource>();
 
         for(int i = 0; i < 11; i++) {
-            resources.add(new FileResource(new File("base" + i)));
+            resources.add(new JunitFileResource(new File("base" + i)));
         }
 
         assertThat(criteria("job-1").filter(resources), is(files(0, 1, 2)));
@@ -133,10 +133,10 @@ public class CountBasedTestSplitterCriteriaTest {
     public void shouldSplitTestsWhenTheSplitsAreMoreThanTests() {
         when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
 
-        ArrayList<FileResource> resources = new ArrayList<FileResource>();
+        ArrayList<TlbFileResource> resources = new ArrayList<TlbFileResource>();
 
         for(int i = 0; i < 2; i++) {
-            resources.add(new FileResource(new File("base" + i)));
+            resources.add(new JunitFileResource(new File("base" + i)));
         }
 
         assertThat(criteria("job-1").filter(resources), is(files()));
@@ -148,10 +148,10 @@ public class CountBasedTestSplitterCriteriaTest {
     public void shouldSplitTestsWhenTheSplitsIsEqualToNumberOfTests() {
         when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
 
-        ArrayList<FileResource> resources = new ArrayList<FileResource>();
+        ArrayList<TlbFileResource> resources = new ArrayList<TlbFileResource>();
 
         for(int i = 0; i < 3; i++) {
-            resources.add(new FileResource(new File("base" + i)));
+            resources.add(new JunitFileResource(new File("base" + i)));
         }
 
         assertThat(criteria("job-1").filter(resources), is(files(0)));
@@ -163,10 +163,10 @@ public class CountBasedTestSplitterCriteriaTest {
     public void shouldSplitTestsBalancedFor37testsAcross7Jobs() {
         when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4", "job-5", "job-6", "job-7"));
 
-        ArrayList<FileResource> resources = new ArrayList<FileResource>();
+        ArrayList<TlbFileResource> resources = new ArrayList<TlbFileResource>();
 
         for(int i = 0; i < 37; i++) {
-            resources.add(new FileResource(new File("base" + i)));
+            resources.add(new JunitFileResource(new File("base" + i)));
         }
 
         assertThat(criteria("job-1").filter(resources), is(files(0, 1, 2, 3, 4))); //2/7
@@ -188,10 +188,10 @@ public class CountBasedTestSplitterCriteriaTest {
     public void shouldSplitTestsBalancedFor41testsAcross7Jobs() {
         when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4", "job-5", "job-6", "job-7"));
 
-        ArrayList<FileResource> resources = new ArrayList<FileResource>();
+        ArrayList<TlbFileResource> resources = new ArrayList<TlbFileResource>();
 
         for(int i = 0; i < 41; i++) {
-            resources.add(new FileResource(new File("base" + i)));
+            resources.add(new JunitFileResource(new File("base" + i)));
         }
 
         assertThat(criteria("job-1").filter(resources), is(files(0, 1, 2, 3, 4))); //6/7
@@ -213,10 +213,10 @@ public class CountBasedTestSplitterCriteriaTest {
     public void shouldSplitTestsBalancedFor36testsAcross6Jobs() {
         when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4", "job-5", "job-6"));
 
-        ArrayList<FileResource> resources = new ArrayList<FileResource>();
+        ArrayList<TlbFileResource> resources = new ArrayList<TlbFileResource>();
 
         for(int i = 0; i < 36; i++) {
-            resources.add(new FileResource(new File("base" + i)));
+            resources.add(new JunitFileResource(new File("base" + i)));
         }
 
         assertThat(criteria("job-1").filter(resources), is(files(0, 1, 2, 3, 4, 5)));

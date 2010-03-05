@@ -1,6 +1,7 @@
 package com.thoughtworks.cruise.tlb;
 
-import org.apache.tools.ant.types.resources.FileResource;
+import com.thoughtworks.cruise.tlb.ant.JunitFileResource;
+import com.thoughtworks.cruise.tlb.TlbFileResource;
 import org.apache.tools.ant.Project;
 
 import java.util.List;
@@ -12,20 +13,20 @@ import java.io.File;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 
 public class TestUtil {
-    public static List<FileResource> files(int ... numbers) {
-        ArrayList<FileResource> resources = new ArrayList<FileResource>();
+    public static List<TlbFileResource> files(int ... numbers) {
+        ArrayList<TlbFileResource> resources = new ArrayList<TlbFileResource>();
         for (int number : numbers) {
             resources.add(file("base" + number));
         }
         return resources;
     }
 
-    public static FileResource file(String name) {
-        return new FileResource(new File(name));
+    public static JunitFileResource file(String name) {
+        return new JunitFileResource(new File(name));
     }
 
-    public static FileResource file(String dir, String name) {
-        FileResource fileResource = new FileResource(new Project(), dir + File.separator + name + ".class");
+    public static JunitFileResource file(String dir, String name) {
+        JunitFileResource fileResource = new JunitFileResource(new Project(), dir + File.separator + name + ".class");
         fileResource.setBaseDir(new File("."));
         return fileResource;
     }

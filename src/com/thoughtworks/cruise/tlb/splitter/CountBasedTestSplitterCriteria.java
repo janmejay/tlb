@@ -2,7 +2,7 @@ package com.thoughtworks.cruise.tlb.splitter;
 
 import com.thoughtworks.cruise.tlb.service.TalkToCruise;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
-import org.apache.tools.ant.types.resources.FileResource;
+import com.thoughtworks.cruise.tlb.TlbFileResource;
 
 import java.util.List;
 
@@ -29,7 +29,7 @@ public class CountBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriter
      * @param files
      * @return filtered list
      */
-    protected List<FileResource> subset(List<FileResource> files) {
+    protected List<TlbFileResource> subset(List<TlbFileResource> files) {
         int index = jobs.indexOf(jobName());
         int splitRatio = files.size() / jobs.size();
         int reminder = files.size() % jobs.size();

@@ -2,11 +2,11 @@ package com.thoughtworks.cruise.tlb.splitter;
 
 import org.junit.Test;
 import static org.junit.Assert.assertThat;
-import org.apache.tools.ant.types.resources.FileResource;
+import com.thoughtworks.cruise.tlb.ant.JunitFileResource;
+import com.thoughtworks.cruise.tlb.TlbFileResource;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import org.hamcrest.core.Is;
 import static org.hamcrest.core.Is.is;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 import com.thoughtworks.cruise.tlb.TlbConstants;
@@ -24,11 +24,13 @@ public class JobFamilyAwareSplitterCriteriaTest {
         TalkToCruise toCruise = mock(TalkToCruise.class);
         when(toCruise.getJobs()).thenReturn(Arrays.asList("build-1", "build-2", "build-3"));
         JobFamilyAwareSplitterCriteria criteria = new JobFamilyAwareSplitterCriteria(toCruise, new SystemEnvironment(envMap)) {
-            protected List<FileResource> subset(List<FileResource> fileResources) {
-                return Arrays.asList(new FileResource(new File("foo")), new FileResource(new File("bar")));
+            protected List<TlbFileResource> subset(List<TlbFileResource> fileResources) {
+                TlbFileResource foo = new JunitFileResource(new File("foo"));
+                TlbFileResource bar = new JunitFileResource(new File("bar"));
+                return Arrays.asList(foo, bar);
             }
         };
-        List<FileResource> resources = criteria.filter(new ArrayList<FileResource>());
+        List<TlbFileResource> resources = criteria.filter(new ArrayList<TlbFileResource>());
         assertThat(resources.size(), is(2));
         verify(toCruise).publishSubsetSize(2);
     }
