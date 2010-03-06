@@ -33,6 +33,7 @@ public class JunitDataRecorder implements JUnitResultFormatter {
     public void startTestSuite(JUnitTest jUnitTest) throws BuildException {}
 
     public void endTestSuite(JUnitTest jUnitTest) throws BuildException {
+        talkToCruise.testClassFailure(jUnitTest.getName(), (jUnitTest.failureCount() + jUnitTest.errorCount()) > 0);
         talkToCruise.testClassTime(jUnitTest.getName(), jUnitTest.getRunTime());
     }
 

@@ -38,6 +38,8 @@ public class TalkToCruise {
     final String stageLocator;
     final String testSubsetSizeFileLocator;
     private final FileUtil fileUtil;
+    public static final String FAILED_TESTS_FILE = "tlb/failed_tests";
+    public final String failedTestsListFileLocator;
 
     public TalkToCruise(SystemEnvironment environment, HttpAction httpAction) {
         this.environment = environment;
@@ -45,6 +47,7 @@ public class TalkToCruise {
         subsetSize = null;
         jobLocator = String.format("%s/%s/%s/%s/%s", p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_LABEL), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER), p(CRUISE_JOB_NAME));
         testSubsetSizeFileLocator = String.format("%s/subset_size", jobLocator);
+        failedTestsListFileLocator = String.format("%s/failed_tests", jobLocator);
         stageLocator = String.format("%s/%s/%s/%s", p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_COUNTER), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER));
         fileUtil = new FileUtil(environment);
     }
@@ -83,13 +86,34 @@ public class TalkToCruise {
     public void testClassTime(String className, long time) {
         List<String> testTimes = cacheAndPersist(String.format("%s: %s\n", className, time), jobLocator);
         if (subsetSize() == testTimes.size()) {
-            StringBuffer buffer = new StringBuffer();
-            for (String testTime : testTimes) {
-                buffer.append(testTime);
-                buffer.append("\n");
+            postLinesToServer(testTimes, artifactFileUrl(TEST_TIME_FILE));
+        }
+    }
+
+    private void postLinesToServer(List<String> testTimes, String url) {
+        StringBuffer buffer = new StringBuffer();
+        for (String testTime : testTimes) {
+            buffer.append(testTime);
+            buffer.append("\n");
+        }
+
+        httpAction.put(url, buffer.toString());
+        clearSuiteTimeCachingFile();
+    }
+
+    public void testClassFailure(String className, boolean hasFailed) {
+        persist(String.format("%s: %s\n", className, hasFailed), failedTestsListFileLocator);
+        List<String> runTests = cache(failedTestsListFileLocator);
+
+
+        if (subsetSize() == runTests.size()) {
+            List<String> failedTests = new ArrayList<String>();
+            for (String runTest : runTests) {
+                if (runTest.matches("(.+?)\\:\\strue$")) {
+                    failedTests.add(runTest.substring(0, runTest.indexOf(":")));
+                }
             }
-            httpAction.put(artifactFileUrl(TEST_TIME_FILE), buffer.toString());
-            clearSuiteTimeCachingFile();
+            postLinesToServer(failedTests, artifactFileUrl(FAILED_TESTS_FILE));
         }
     }
 
@@ -106,6 +130,9 @@ public class TalkToCruise {
         File cacheFile = fileUtil.getUniqueFile(fileIdentifier);
         FileInputStream in = null;
         List<String> lines = null;
+        if (!cacheFile.exists()) {
+            return new ArrayList<String>();
+        }
         try {
             in = new FileInputStream(cacheFile);
             lines = IOUtils.readLines(in);
@@ -209,11 +236,12 @@ public class TalkToCruise {
     }
 
     public void clearSuiteTimeCachingFile() {
-        try {
-            FileUtils.forceDelete(fileUtil.getUniqueFile(jobLocator));
-            FileUtils.forceDelete(fileUtil.getUniqueFile(testSubsetSizeFileLocator));
-        } catch (IOException e) {
-            LOG.error("could not delete suite time cache file: " + e.getMessage());
+        for (String fileIdentifier : Arrays.asList(jobLocator, testSubsetSizeFileLocator, failedTestsListFileLocator)) {
+            try {
+                FileUtils.forceDelete(fileUtil.getUniqueFile(fileIdentifier));
+            } catch (IOException e) {
+                LOG.error("could not delete suite time cache file: " + e.getMessage());
+            }
         }
     }
 }
