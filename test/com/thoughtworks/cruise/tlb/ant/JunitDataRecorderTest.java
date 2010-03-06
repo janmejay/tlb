@@ -6,11 +6,11 @@ import static org.mockito.Mockito.verify;
 import org.apache.tools.ant.taskdefs.optional.junit.JUnitTest;
 import com.thoughtworks.cruise.tlb.service.TalkToCruise;
 
-public class JunitTimeRecorderTest {
+public class JunitDataRecorderTest {
     @Test
     public void shouldCaptureAndPutTestTime() throws Exception{
         TalkToCruise talkToCruise = mock(TalkToCruise.class);
-        JunitTimeRecorder recorder = new JunitTimeRecorder(talkToCruise);
+        JunitDataRecorder recorder = new JunitDataRecorder(talkToCruise);
         JUnitTest test = new JUnitTest("com.thoughtworks.tlb.TestWorks");
         recorder.startTestSuite(test);
         test.setRunTime(11);

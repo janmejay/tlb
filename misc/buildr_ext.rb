@@ -40,7 +40,7 @@ if ENV['load_balance'] == 'true'
           ant.formatter :type=>'xml'
           ant.batchtest :todir=>task.report_to.to_s, :failureproperty=>'failed' do
             ant.load_balanced_fileset(:dir => 'target/tlb/test/classes', :includes => "**/*Test.class")
-            ant.formatter :classname=> "com.thoughtworks.cruise.tlb.ant.JunitTimeRecorder"
+            ant.formatter :classname=> "com.thoughtworks.cruise.tlb.ant.JunitDataRecorder"
             ant.formatter :type=>'plain'
           end
         end

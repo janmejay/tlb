@@ -5,7 +5,6 @@ import org.apache.tools.ant.taskdefs.optional.junit.JUnitTest;
 import org.apache.tools.ant.BuildException;
 
 import java.io.OutputStream;
-import java.net.URL;
 
 import junit.framework.Test;
 import junit.framework.AssertionFailedError;
@@ -16,21 +15,21 @@ import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 /**
  * @understands recording test suite time as cruise artifact
  */
-public class JunitTimeRecorder implements JUnitResultFormatter {
+public class JunitDataRecorder implements JUnitResultFormatter {
     private TalkToCruise talkToCruise;
 
-    public JunitTimeRecorder(TalkToCruise talkToCruise) {
+    public JunitDataRecorder(TalkToCruise talkToCruise) {
         this.talkToCruise = talkToCruise;
     }
 
-    public JunitTimeRecorder() {//default constructor
+    public JunitDataRecorder() {//default constructor
         this(new SystemEnvironment());
     }
 
-    private JunitTimeRecorder(SystemEnvironment systemEnvironment) {
+    private JunitDataRecorder(SystemEnvironment systemEnvironment) {
         this(new TalkToCruise(systemEnvironment, new DefaultHttpAction(systemEnvironment)));
     }
-    
+
     public void startTestSuite(JUnitTest jUnitTest) throws BuildException {}
 
     public void endTestSuite(JUnitTest jUnitTest) throws BuildException {
