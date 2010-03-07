@@ -1,13 +1,9 @@
 package com.thoughtworks.cruise.tlb.twist;
 
 import org.apache.tools.ant.*;
-import org.apache.tools.ant.types.*;
-import org.apache.tools.ant.taskdefs.Java;
-
-import java.io.File;
 
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
-import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteriaFactory;
+import com.thoughtworks.cruise.tlb.factory.TlbFactory;
 import static com.thoughtworks.cruise.tlb.TlbConstants.TLB_CRITERIA;
 
 public class FilterScenariosTask extends Task {
@@ -24,7 +20,7 @@ public class FilterScenariosTask extends Task {
     }
 
     private FilterScenariosTask(SystemEnvironment systemEnvironment) {
-        this(new LoadBalancedTwistSuite(TestSplitterCriteriaFactory.getCriteria(systemEnvironment.getProperty(TLB_CRITERIA), systemEnvironment)));
+        this(new LoadBalancedTwistSuite(TlbFactory.getCriteria(systemEnvironment.getProperty(TLB_CRITERIA), systemEnvironment)));
     }
     
     FilterScenariosTask(LoadBalancedTwistSuite suite) {

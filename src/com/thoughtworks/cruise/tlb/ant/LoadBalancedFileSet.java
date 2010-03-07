@@ -3,14 +3,17 @@ package com.thoughtworks.cruise.tlb.ant;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.resources.FileResource;
 import com.thoughtworks.cruise.tlb.TlbFileResource;
+import com.thoughtworks.cruise.tlb.TlbConstants;
+import com.thoughtworks.cruise.tlb.orderer.TestOrderer;
 import org.apache.tools.ant.BuildException;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.io.File;
 
-import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteriaFactory;
+import com.thoughtworks.cruise.tlb.factory.TlbFactory;
 import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteria;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 import static com.thoughtworks.cruise.tlb.TlbConstants.TLB_CRITERIA;
@@ -20,13 +23,16 @@ import static com.thoughtworks.cruise.tlb.TlbConstants.TLB_CRITERIA;
  */
 public class LoadBalancedFileSet extends FileSet {
     private final TestSplitterCriteria criteria;
+    private final TestOrderer orderer;
 
-    public LoadBalancedFileSet(TestSplitterCriteria criteria) {
+    public LoadBalancedFileSet(TestSplitterCriteria criteria, TestOrderer orderer) {
         this.criteria = criteria;
+        this.orderer = orderer;
     }
 
     public LoadBalancedFileSet(SystemEnvironment systemEnvironment) {
-        this(TestSplitterCriteriaFactory.getCriteria(systemEnvironment.getProperty(TLB_CRITERIA), systemEnvironment));
+        this(TlbFactory.getCriteria(systemEnvironment.getProperty(TLB_CRITERIA), systemEnvironment),
+                TlbFactory.getOrderer(systemEnvironment.getProperty(TlbConstants.TLB_ORDERER), systemEnvironment));
     }
 
     public LoadBalancedFileSet() {
@@ -43,6 +49,7 @@ public class LoadBalancedFileSet extends FileSet {
             matchedFiles.add(new JunitFileResource(fileResource));
         }
         List<TlbFileResource> matchedTlbFileResources = criteria.filter(matchedFiles);
+        Collections.sort(matchedTlbFileResources, orderer);
         List<FileResource> matchedFileResources = new ArrayList<FileResource>();
         for (TlbFileResource matchedTlbFileResource : matchedTlbFileResources) {
             JunitFileResource fileResource = (JunitFileResource) matchedTlbFileResource;
