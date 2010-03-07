@@ -244,4 +244,8 @@ public class TalkToCruise {
             }
         }
     }
+
+    public List<String> failedTests() {
+        throw new RuntimeException("Not yet implemented");
+    }
 }

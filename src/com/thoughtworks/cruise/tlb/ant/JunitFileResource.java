@@ -51,4 +51,11 @@ public class JunitFileResource implements TlbFileResource {
     public int hashCode() {
         return fileResource.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return "JunitFileResource{" +
+                "fileResource=" + fileResource +
+                '}';
+    }
 }
