@@ -25,7 +25,7 @@ public class FailedFirstOrderer extends TestOrderer implements TalksToCruise {
     public int compare(TlbFileResource o1, TlbFileResource o2) {
         if (failedTestFiles == null) {
             failedTestFiles = new ArrayList<String>();
-            for (String failedTestClass : toCruise.failedTests()) {
+            for (String failedTestClass : toCruise.getLastRunFailedTests(null)) {
                 failedTestFiles.add(fileUtil.classFileRelativePath(failedTestClass));
             }
         }

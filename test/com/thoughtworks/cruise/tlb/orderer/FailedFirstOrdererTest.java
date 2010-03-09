@@ -47,7 +47,7 @@ public class FailedFirstOrdererTest {
         JunitFileResource quuxClass = junitFileResource(baseDir, "foo/baz/Quux.class");
         JunitFileResource bangClass = junitFileResource(baseDir, "foo/baz/Bang.class");
         List<String> failedTests = Arrays.asList("baz.bang.Foo.class", "foo.bar.Bang.class");
-        when(toCruise.failedTests()).thenReturn(failedTests);
+        when(toCruise.getLastRunFailedTests(null)).thenReturn(failedTests);
         List<JunitFileResource> fileList = Arrays.asList(bazClass, quuxClass, bangClass);
         Collections.sort(fileList, orderer);
         assertThat(fileList, is(Arrays.asList(bazClass, quuxClass, bangClass)));
@@ -60,7 +60,7 @@ public class FailedFirstOrdererTest {
         JunitFileResource failedFooClass = junitFileResource(baseDir, "baz/bang/Foo.class");
         JunitFileResource failedBangClass = junitFileResource(baseDir, "foo/bar/Bang.class");
         List<String> failedTests = Arrays.asList("baz.bang.Foo", "foo.bar.Bang");
-        when(toCruise.failedTests()).thenReturn(failedTests);
+        when(toCruise.getLastRunFailedTests(null)).thenReturn(failedTests);
         List<JunitFileResource> fileList = Arrays.asList(bazClass, failedFooClass, quuxClass, failedBangClass);
         Collections.sort(fileList, orderer);
 

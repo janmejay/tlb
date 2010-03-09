@@ -167,15 +167,27 @@ public class TalkToCruise {
     }
 
     public Map<String, String> getLastRunTestTimes(List<String> jobNames) {
+        return mergedProperties(tlbArtifactPayloadLines(lastRunArtifactUrls(jobNames, TEST_TIME_FILE)));
+    }
+
+    private List<String> lastRunArtifactUrls(List<String> jobNames, String urlSuffix) {
         String stageFeedUrl = String.format("%s/api/feeds/stages.xml", cruiseUrl());
         String stageDetailUrl = lastRunStageDetailUrl(stageFeedUrl);
         List<Attribute> jobLinks = jobLinks(stageDetailUrl);
-        List<String> tlbTestTimeUrls = tlbTestTimeUrls(jobLinks, jobNames);
-        return mergedProperties(tlbTestTimeUrls);
+        return tlbTestTimeUrls(jobLinks, jobNames, urlSuffix);
     }
 
-    private Map<String, String> mergedProperties(List<String> tlbTestTimeUrls) {
+    private Map<String, String> mergedProperties(StringTokenizer suiteTimeLines) {
         HashMap<String, String> suiteTimeMap = new HashMap<String, String>();
+        while (suiteTimeLines.hasMoreTokens()) {
+            String tuple = suiteTimeLines.nextToken();
+            Matcher matcher = SUITE_TIME_STRING.matcher(tuple);
+            if (matcher.matches()) suiteTimeMap.put(matcher.group(1), matcher.group(2));
+        }
+        return suiteTimeMap;
+    }
+
+    private StringTokenizer tlbArtifactPayloadLines(List<String> tlbTestTimeUrls) {
         StringBuffer buffer = new StringBuffer();
         for (String tlbTestTimeUrl : tlbTestTimeUrls) {
             try {
@@ -184,23 +196,17 @@ public class TalkToCruise {
                 continue; //FIXME!
             }
         }
-        StringTokenizer suiteTimes = new StringTokenizer(buffer.toString(), "\n");
-        while (suiteTimes.hasMoreTokens()) {
-            String tuple = suiteTimes.nextToken();
-            Matcher matcher = SUITE_TIME_STRING.matcher(tuple);
-            if (matcher.matches()) suiteTimeMap.put(matcher.group(1), matcher.group(2));
-        }
-        return suiteTimeMap;
+        return new StringTokenizer(buffer.toString(), "\n");
     }
 
-    private List<String> tlbTestTimeUrls(List<Attribute> jobLinks, List<String> jobNames) {
+    private List<String> tlbTestTimeUrls(List<Attribute> jobLinks, List<String> jobNames, String urlSuffix) {
         ArrayList<String> tlbTestTimeUrls = new ArrayList<String>();
         for (Attribute jobLink : jobLinks) {
             Element jobDom = rootFor(jobLink.getValue());
             String jobName = jobDom.attribute("name").getValue().trim();
             if (jobNames.contains(jobName)) {
                 String atrifactBaseUrl = jobDom.selectSingleNode("//artifacts/@baseUrl").getText();
-                tlbTestTimeUrls.add(String.format("%s/%s", atrifactBaseUrl, TEST_TIME_FILE));
+                tlbTestTimeUrls.add(String.format("%s/%s", atrifactBaseUrl, urlSuffix));
             }
         }
         return tlbTestTimeUrls;
@@ -245,7 +251,12 @@ public class TalkToCruise {
         }
     }
 
-    public List<String> failedTests() {
-        throw new RuntimeException("Not yet implemented");
+    public List<String> getLastRunFailedTests(List<String> jobNames) {
+        StringTokenizer failedTestTokenizer = tlbArtifactPayloadLines(lastRunArtifactUrls(jobNames, FAILED_TESTS_FILE));
+        ArrayList<String> failedTestNames = new ArrayList<String>();
+        while(failedTestTokenizer.hasMoreTokens()) {
+            failedTestNames.add(failedTestTokenizer.nextToken());
+        }
+        return failedTestNames;
     }
 }
