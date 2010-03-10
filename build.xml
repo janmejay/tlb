@@ -72,7 +72,7 @@
     <target name="package.jar" depends="init, compile, -load.short.rev">
         <jar destfile="target/tlb-g${short_rev}.jar">
             <fileset dir="target/classes"/>
-            <fileset dir="target/src">
+            <fileset dir="src">
                 <include name="commons-logging.properties"/>
             </fileset>
         </jar>
