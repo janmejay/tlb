@@ -1,20 +1,20 @@
 package com.thoughtworks.cruise.tlb.splitter;
 
-import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 import com.thoughtworks.cruise.tlb.TlbConstants;
 import com.thoughtworks.cruise.tlb.TlbFileResource;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.Log;
+import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @understands choosing criteria in order of preference
  */
 public class DefaultingTestSplitterCriteria extends TestSplitterCriteria {
-    private static final Log LOG = LogFactory.getLog(DefaultingTestSplitterCriteria.class);
+    private static final Logger logger = Logger.getLogger(DefaultingTestSplitterCriteria.class.getName());
 
     private ArrayList<TestSplitterCriteria> criterion;
 
@@ -36,11 +36,10 @@ public class DefaultingTestSplitterCriteria extends TestSplitterCriteria {
         for (TestSplitterCriteria criteria : criterion) {
             try {
                 List<TlbFileResource> subset = criteria.filter(fileResources);
-                LOG.info(String.format("Used %s to balance.", criteria.getClass().getCanonicalName()));
+                logger.info(String.format("Used %s to balance.", criteria.getClass().getCanonicalName()));
                 return subset;
             } catch (Exception e) {
-                LOG.error(String.format("Could not use %s for balancing because: %s.", criteria.getClass().getCanonicalName(), e.getMessage()));
-                e.printStackTrace(System.err);
+                logger.log(Level.WARNING, String.format("Could not use %s for balancing because: %s.", criteria.getClass().getCanonicalName(), e.getMessage()), e);
                 continue;
             }
         }

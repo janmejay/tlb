@@ -8,8 +8,6 @@ import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 import com.thoughtworks.cruise.tlb.utils.XmlUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.dom4j.Attribute;
 import org.dom4j.Element;
 
@@ -18,6 +16,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  * @understands requesting and posting information to/from cruise
  */
 public class TalkToCruise {
-    private static final Log LOG = LogFactory.getLog(TalkToCruise.class);
+    private static final Logger logger = Logger.getLogger(TalkToCruise.class.getName());
 
     private final SystemEnvironment environment;
     private final HttpAction httpAction;
@@ -213,7 +213,7 @@ public class TalkToCruise {
             FileUtils.forceDelete(fileUtil.getUniqueFile(jobLocator));
             FileUtils.forceDelete(fileUtil.getUniqueFile(testSubsetSizeFileLocator));
         } catch (IOException e) {
-            LOG.error("could not delete suite time cache file: " + e.getMessage());
+            logger.log(Level.WARNING, "could not delete suite time cache file: " + e.getMessage(), e);
         }
     }
 }

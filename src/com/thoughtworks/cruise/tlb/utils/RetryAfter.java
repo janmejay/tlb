@@ -1,17 +1,17 @@
 package com.thoughtworks.cruise.tlb.utils;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jaxen.util.SingletonList;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @understands catching exception and retrying
  */
 public class RetryAfter {
-    private static final Log LOG = LogFactory.getLog(RetryAfter.class);
+    private static final Logger logger = Logger.getLogger(RetryAfter.class.getName());
 
     private List<Integer> intervals = new ArrayList<Integer>(new SingletonList(0));
 
@@ -40,6 +40,7 @@ public class RetryAfter {
 
     public <T> T tryFn(Fn<T> fn) {
         List<String> messages = new ArrayList<String>();
+        Exception lastException = null;
         for (int interval : intervals) {
             try {
                 Thread.sleep(interval);
@@ -47,12 +48,13 @@ public class RetryAfter {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             } catch (Exception e) {
-                e.printStackTrace();
-                messages.add(e.getMessage());
+                lastException = e;
+                logger.log(Level.INFO, "(Re)attempt failed", lastException);
+                messages.add(lastException.getMessage());
             }
         }
         String message = String.format("Exausted reattempts, tried %s times, failed with messages %s at the interval of %s mills.", intervals.size(), messages, intervals);
-        LOG.fatal(message);
-        throw new RuntimeException(message);
+        logger.log(Level.WARNING, message, lastException);
+        throw new RuntimeException(message, lastException);
     }
 }
