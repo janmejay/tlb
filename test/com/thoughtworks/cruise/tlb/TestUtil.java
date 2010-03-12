@@ -27,8 +27,8 @@ public class TestUtil {
 
         public void assertHeard(String partOfMessage, int expectedOccurances) {
             int actualOccurances = totalOccurances(partOfMessage);
-            assertThat(String.format("log message '%s' should have been heard %s times, but was actually heard %s times in %s statements",
-                    partOfMessage, expectedOccurances, actualOccurances, handler.messages.size()), actualOccurances, is(expectedOccurances));
+            assertThat(String.format("log message '%s' should have been heard %s times, but was actually heard %s times in %s statements %s",
+                    partOfMessage, expectedOccurances, actualOccurances, handler.messages.size(), handler.messages), actualOccurances, is(expectedOccurances));
         }
 
         private int totalOccurances(String partOfMessage) {

@@ -3,6 +3,7 @@ package com.thoughtworks.cruise.tlb.service.http.request;
 import com.thoughtworks.cruise.tlb.service.http.DefaultHttpAction;
 import com.thoughtworks.cruise.tlb.service.http.PermissiveSSLProtocolSocketFactory;
 import com.thoughtworks.cruise.tlb.utils.RetryAfter;
+import com.thoughtworks.cruise.tlb.TestUtil;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
@@ -11,6 +12,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.After;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -19,17 +21,24 @@ import java.util.List;
 
 public class FollowableHttpRequestTest {
     private int attemptCount;
+    private TestUtil.LogFixture logFixture;
 
     @Before
     public void setUp() throws Exception {
         attemptCount = 0;
+        logFixture = new TestUtil.LogFixture();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        logFixture.stopListening();
     }
 
     @Test
     public void shouldRetryOnTheNewLocationFor3XX() throws Exception{
         final GetMethod getMethod = mock(GetMethod.class);
         when(getMethod.getResponseBodyAsString()).thenReturn("redirected");
-        when(getMethod.getRequestHeader("Location")).thenReturn(new Header("Location", "http://some_cruise:8153/cruise/redirected"));
+        when(getMethod.getResponseHeader("Location")).thenReturn(new Header("Location", "http://some_cruise:8153/cruise/redirected"));
         final GetMethod redirectedMethod = mock(GetMethod.class);
         when(redirectedMethod.getResponseBodyAsString()).thenReturn("actual body");
         HttpClient client = mock(HttpClient.class);
@@ -38,10 +47,15 @@ public class FollowableHttpRequestTest {
         when(client.executeMethod(redirectedMethod)).thenReturn(200);
         FollowableHttpRequest req = new FollowableHttpRequest(action) {
             public HttpMethodBase createMethod(String url) {
-                return url.endsWith("redirected") ? getMethod : redirectedMethod;
+                return url.endsWith("redirected") ? redirectedMethod : getMethod;
             }
         };
+        logFixture.startListening();
         assertThat(req.executeRequest("http://some_cruise:8153/cruise"), is("actual body"));
+        logFixture.assertHeard("attempting http request to http://some_cruise:8153/cruise with " + getMethod.getClass().getSimpleName());
+        logFixture.assertHeard(String.format("http request to http://some_cruise:8153/cruise with %s returned 302", getMethod.getClass().getSimpleName()));
+        logFixture.assertHeard("attempting http request to http://some_cruise:8153/cruise/redirected with " + redirectedMethod.getClass().getSimpleName());
+        logFixture.assertHeard(String.format("http request to http://some_cruise:8153/cruise/redirected with %s returned 200", redirectedMethod.getClass().getSimpleName()));
     }
 
     @Test
@@ -56,7 +70,10 @@ public class FollowableHttpRequestTest {
         };
         DefaultHttpAction action = new DefaultHttpAction(client, new URI("https://some.host:8154/cruise", true));
         GetMethod getMethod = mock(GetMethod.class);
+        logFixture.startListening();
         assertThat(action.executeMethod(getMethod), is(201));
+        logFixture.assertHeard("(Re)registering https protocol");
+        logFixture.assertHeard("Executing http request with " + getMethod.getClass().getSimpleName());
     }
 
     @Test
