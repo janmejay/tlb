@@ -1,14 +1,16 @@
 package com.thoughtworks.cruise.tlb;
 
+import com.thoughtworks.cruise.tlb.ant.JunitFileResource;
 import com.thoughtworks.cruise.tlb.utils.FileUtil;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
+import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.types.resources.FileResource;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.logging.Handler;
 import java.util.logging.LogManager;
@@ -16,6 +18,27 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 public class TestUtil {
+    public static List<TlbFileResource> tlbFileResources(int ... numbers) {
+        ArrayList<TlbFileResource> resources = new ArrayList<TlbFileResource>();
+        for (int number : numbers) {
+            resources.add(junitFileResource("base" + number));
+        }
+        return resources;
+    }
+
+    public static TlbFileResource junitFileResource(String name) {
+        return new JunitFileResource(new File(name));
+    }
+
+    public static TlbFileResource tlbFileResource(String dir, String name) {
+        JunitFileResource fileResource = new JunitFileResource(new Project(), dir + File.separator + name + ".class");
+        fileResource.setBaseDir(new File("."));
+        return fileResource;
+    }
+
+    public static String fileContents(String filePath) throws IOException, URISyntaxException {
+        return FileUtils.readFileToString(new File(com.thoughtworks.cruise.tlb.TestUtil.class.getClassLoader().getResource(filePath).toURI()));
+    }
 
     public static class LogFixture {
         private ArrayList<Logger> loggersRegisteredTo;
@@ -86,23 +109,6 @@ public class TestUtil {
                 logger.removeHandler(handler);
             }
         }
-    }
-    public static List<FileResource> files(int ... numbers) {
-        ArrayList<FileResource> resources = new ArrayList<FileResource>();
-        for (int number : numbers) {
-            resources.add(file("base" + number));
-        }
-        return resources;
-    }
-
-    public static FileResource file(String name) {
-        return new FileResource(new File(name));
-    }
-
-    public static FileResource file(String dir, String name) {
-        FileResource fileResource = new FileResource(new Project(), dir + File.separator + name + ".class");
-        fileResource.setBaseDir(new File("."));
-        return fileResource;
     }
 
     public static SystemEnvironment initEnvironment(String jobName) {

@@ -10,7 +10,6 @@ import static org.mockito.Mockito.when;
 import static org.hamcrest.core.Is.is;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 import com.thoughtworks.cruise.tlb.TlbConstants;
-import static com.thoughtworks.cruise.tlb.utils.TestUtil.file;
 import com.thoughtworks.cruise.tlb.service.TalkToCruise;
 
 import java.util.*;

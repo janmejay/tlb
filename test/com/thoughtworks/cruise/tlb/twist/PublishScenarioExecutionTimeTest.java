@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import com.thoughtworks.cruise.tlb.service.TalkToCruise;
-import com.thoughtworks.cruise.tlb.utils.TestUtil;
 
 public class PublishScenarioExecutionTimeTest {
 
@@ -39,6 +38,6 @@ public class PublishScenarioExecutionTimeTest {
         File file = new File(reportsFolder.getAbsolutePath(), name);
         file.createNewFile();
         file.deleteOnExit();
-        FileUtils.writeStringToFile(file, TestUtil.fileContents("resources/" + name));
+        FileUtils.writeStringToFile(file, com.thoughtworks.cruise.tlb.TestUtil.fileContents("resources/" + name));
     }
 }

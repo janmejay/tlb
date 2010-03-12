@@ -2,9 +2,9 @@ package com.thoughtworks.cruise.tlb.splitter;
 
 import com.thoughtworks.cruise.tlb.service.TalkToCruise;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
-import static com.thoughtworks.cruise.tlb.utils.TestUtil.initEnvironment;
-import static com.thoughtworks.cruise.tlb.utils.TestUtil.file;
+import static com.thoughtworks.cruise.tlb.TestUtil.initEnvironment;
 import com.thoughtworks.cruise.tlb.TlbFileResource;
+import com.thoughtworks.cruise.tlb.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.matchers.JUnitMatchers.hasItem;
@@ -31,11 +31,11 @@ public class TimeBasedTestSplitterCriteriaTest {
     public void shouldConsumeAllTestsWhenNoJobsToBalanceWith() {
         when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "foo", "bar"));
 
-        SystemEnvironment env = initEnvironment("job-1");
+        SystemEnvironment env = TestUtil.initEnvironment("job-1");
 
-        TlbFileResource first = file("first");
-        TlbFileResource second = file("second");
-        TlbFileResource third = file("third");
+        TlbFileResource first = com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("first");
+        TlbFileResource second = com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("second");
+        TlbFileResource third = com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("third");
         List<TlbFileResource> resources = Arrays.asList(first, second, third);
 
         TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToCruise, env);
@@ -48,17 +48,17 @@ public class TimeBasedTestSplitterCriteriaTest {
         HashMap<String, String> map = testTimes();
         when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2"))).thenReturn(map);
 
-        TlbFileResource first = file("com/foo", "First");
-        TlbFileResource second = file("com/foo", "Second");
-        TlbFileResource third = file("com/bar", "Third");
-        TlbFileResource fourth = file("foo/baz", "Fourth");
-        TlbFileResource fifth = file("foo/bar", "Fourth");
+        TlbFileResource first = TestUtil.tlbFileResource("com/foo", "First");
+        TlbFileResource second = TestUtil.tlbFileResource("com/foo", "Second");
+        TlbFileResource third = TestUtil.tlbFileResource("com/bar", "Third");
+        TlbFileResource fourth = TestUtil.tlbFileResource("foo/baz", "Fourth");
+        TlbFileResource fifth = TestUtil.tlbFileResource("foo/bar", "Fourth");
         List<TlbFileResource> resources = Arrays.asList(first, second, third, fourth, fifth);
 
-        TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToCruise, initEnvironment("job-1"));
+        TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-1"));
         assertThat(criteria.filter(resources), is(Arrays.asList(second, first, third)));
 
-        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, initEnvironment("job-2"));
+        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-2"));
         assertThat(criteria.filter(resources), is(Arrays.asList(fourth, fifth)));
     }
 
@@ -68,23 +68,23 @@ public class TimeBasedTestSplitterCriteriaTest {
         HashMap<String, String> map = testTimes();
         when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2", "job-3", "job-4"))).thenReturn(map);
 
-        TlbFileResource first = file("com/foo", "First");
-        TlbFileResource second = file("com/foo", "Second");
-        TlbFileResource third = file("com/bar", "Third");
-        TlbFileResource fourth = file("foo/baz", "Fourth");
-        TlbFileResource fifth = file("foo/bar", "Fourth");
+        TlbFileResource first = TestUtil.tlbFileResource("com/foo", "First");
+        TlbFileResource second = TestUtil.tlbFileResource("com/foo", "Second");
+        TlbFileResource third = TestUtil.tlbFileResource("com/bar", "Third");
+        TlbFileResource fourth = TestUtil.tlbFileResource("foo/baz", "Fourth");
+        TlbFileResource fifth = TestUtil.tlbFileResource("foo/bar", "Fourth");
         List<TlbFileResource> resources = Arrays.asList(first, second, third, fourth, fifth);
 
-        TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToCruise, initEnvironment("job-1"));
+        TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-1"));
         assertThat(criteria.filter(resources), is(Arrays.asList(second)));
 
-        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, initEnvironment("job-2"));
+        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-2"));
         assertThat(criteria.filter(resources), is(Arrays.asList(fourth)));
 
-        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, initEnvironment("job-3"));
+        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-3"));
         assertThat(criteria.filter(resources), is(Arrays.asList(fifth)));
 
-        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, initEnvironment("job-4"));
+        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-4"));
         assertThat(criteria.filter(resources), is(Arrays.asList(first, third)));
     }
 
@@ -94,21 +94,21 @@ public class TimeBasedTestSplitterCriteriaTest {
         HashMap<String, String> map = testTimes();
         when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2"))).thenReturn(map);
 
-        TlbFileResource first = file("com/foo", "First");
-        TlbFileResource second = file("com/foo", "Second");
-        TlbFileResource third = file("com/bar", "Third");
-        TlbFileResource fourth = file("foo/baz", "Fourth");
-        TlbFileResource fifth = file("foo/bar", "Fourth");
-        TlbFileResource firstNew = file("foo/quux", "First");
-        TlbFileResource secondNew = file("foo/quux", "Second");
+        TlbFileResource first = TestUtil.tlbFileResource("com/foo", "First");
+        TlbFileResource second = TestUtil.tlbFileResource("com/foo", "Second");
+        TlbFileResource third = TestUtil.tlbFileResource("com/bar", "Third");
+        TlbFileResource fourth = TestUtil.tlbFileResource("foo/baz", "Fourth");
+        TlbFileResource fifth = TestUtil.tlbFileResource("foo/bar", "Fourth");
+        TlbFileResource firstNew = TestUtil.tlbFileResource("foo/quux", "First");
+        TlbFileResource secondNew = TestUtil.tlbFileResource("foo/quux", "Second");
         List<TlbFileResource> resources = Arrays.asList(first, second, third, fourth, fifth, firstNew, secondNew);
 
-        TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToCruise, initEnvironment("job-1"));
+        TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-1"));
         List<TlbFileResource> filteredResources = criteria.filter(resources);
         assertThat(filteredResources.size(), is(4));
         assertThat(filteredResources, hasItems(second, first, third, secondNew));
 
-        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, initEnvironment("job-2"));
+        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-2"));
         filteredResources = criteria.filter(resources);
         assertThat(filteredResources.size(), is(3));
         assertThat(filteredResources, hasItems(fourth, fifth, firstNew));
@@ -120,16 +120,16 @@ public class TimeBasedTestSplitterCriteriaTest {
         HashMap<String, String> map = testTimes();
         when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2"))).thenReturn(map);
 
-        TlbFileResource first = file("com/foo", "First");
-        TlbFileResource second = file("com/foo", "Second");
-        TlbFileResource third = file("com/bar", "Third");
+        TlbFileResource first = TestUtil.tlbFileResource("com/foo", "First");
+        TlbFileResource second = TestUtil.tlbFileResource("com/foo", "Second");
+        TlbFileResource third = TestUtil.tlbFileResource("com/bar", "Third");
 
         List<TlbFileResource> resources = Arrays.asList(second, first, third);
 
-        TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToCruise, initEnvironment("job-1"));
+        TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-1"));
         assertThat(criteria.filter(resources), is(Arrays.asList(second)));
 
-        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, initEnvironment("job-2"));
+        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-2"));
         assertThat(criteria.filter(resources), is(Arrays.asList(first, third)));
     }
 

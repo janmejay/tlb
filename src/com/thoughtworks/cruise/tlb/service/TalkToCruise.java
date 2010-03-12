@@ -88,6 +88,7 @@ public class TalkToCruise {
                 buffer.append(testTime);
                 buffer.append("\n");
             }
+            logger.info(String.format("Posting test run times for %s suite to the cruise server.", subsetSize()));
             httpAction.put(artifactFileUrl(TEST_TIME_FILE), buffer.toString());
             clearSuiteTimeCachingFile();
         }
@@ -114,6 +115,7 @@ public class TalkToCruise {
         } finally {
             IOUtils.closeQuietly(in);
         }
+        logger.info(String.format("Cached 3 lines from %s [ identified by: %s ], the last of which was [ %s ]", cacheFile.getAbsolutePath(), fileIdentifier, lines.get(lines.size() - 1)));
         return lines;
     }
 
@@ -128,6 +130,7 @@ public class TalkToCruise {
         } finally {
             IOUtils.closeQuietly(out);
         }
+        logger.info(String.format("Wrote [ %s ] to %s [ identified by: %s ]", line, fileUtil.getUniqueFile("foo"), fileIdentifier));
     }
 
     private int subsetSize() {
@@ -205,6 +208,7 @@ public class TalkToCruise {
     public void publishSubsetSize(int size) {
         String line = String.valueOf(size) + "\n";
         persist(line, testSubsetSizeFileLocator);
+        logger.info(String.format("Posting balanced subset size as %s to cruise server", size));
         httpAction.put(artifactFileUrl(TlbConstants.TEST_SUBSET_SIZE_FILE), line);
     }
 
