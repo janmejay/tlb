@@ -4,14 +4,17 @@ import com.thoughtworks.cruise.tlb.service.TalkToCruise;
 import com.thoughtworks.cruise.tlb.utils.FileUtil;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 import com.thoughtworks.cruise.tlb.TlbFileResource;
+import com.thoughtworks.cruise.tlb.TlbConstants;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * @understands criteria for splitting tests based on time taken
  */
 public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteria implements TalksToCruise {
     private final FileUtil fileUtil;
+    private static Logger logger = Logger.getLogger(TimeBasedTestSplitterCriteria.class.getName());
 
     public TimeBasedTestSplitterCriteria(TalkToCruise talkToCruise, SystemEnvironment env) {
         this(env);
@@ -26,6 +29,7 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
     protected List<TlbFileResource> subset(List<TlbFileResource> fileResources) {
         List<TestFile> testFiles = testFiles(jobs, fileResources);
         Bucket thisBucket = buckets(jobs, testFiles);
+
         return resourcesFrom(thisBucket);
     }
 
@@ -53,6 +57,7 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
 
     private List<TestFile> testFiles(List<String> jobs, List<TlbFileResource> fileResources) {
         Map<String, String> classToTime = talkToCruise.getLastRunTestTimes(jobs);
+        logger.info(String.format("historical test time data has entries for %s suites", classToTime.size()));
         Map<String, TlbFileResource> fileNameToResource = new HashMap<String, TlbFileResource>();
         Set<String> currentFileNames = new HashSet<String>();
         for (TlbFileResource fileResource : fileResources) {
@@ -70,8 +75,11 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
             totalTime += time;
             if (currentFileNames.remove(fileName)) testFiles.add(new TestFile(fileNameToResource.get(fileName), time));
         }
+        logger.info(String.format("%s entries of historical test time data found relavent", testFiles.size()));
 
         double avgTime = totalTime / classToTime.size();
+
+        logger.info(String.format("encountered %s new files which don't have historical time data, used average time [ %s ] to balance", currentFileNames.size(), avgTime));
 
         for (String newFile : currentFileNames) {
             testFiles.add(new TestFile(fileNameToResource.get(newFile), avgTime));

@@ -2,11 +2,11 @@ package com.thoughtworks.cruise.tlb.splitter;
 
 import com.thoughtworks.cruise.tlb.service.TalkToCruise;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
-import static com.thoughtworks.cruise.tlb.TestUtil.initEnvironment;
 import com.thoughtworks.cruise.tlb.TlbFileResource;
 import com.thoughtworks.cruise.tlb.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.After;
 import static org.junit.matchers.JUnitMatchers.hasItem;
 import static org.junit.matchers.JUnitMatchers.hasItems;
 import static org.junit.Assert.assertThat;
@@ -21,10 +21,17 @@ import java.util.HashMap;
 public class TimeBasedTestSplitterCriteriaTest {
 
     private TalkToCruise talkToCruise;
+    private TestUtil.LogFixture logFixture;
 
     @Before
     public void setUp() throws Exception {
         talkToCruise = mock(TalkToCruise.class);
+        logFixture = new TestUtil.LogFixture();
+    }
+
+    @After
+    public void tearDown() {
+        logFixture.stopListening();
     }
 
     @Test
@@ -39,7 +46,9 @@ public class TimeBasedTestSplitterCriteriaTest {
         List<TlbFileResource> resources = Arrays.asList(first, second, third);
 
         TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToCruise, env);
+        logFixture.startListening();
         assertThat(criteria.filter(resources), is(Arrays.asList(first, second, third)));
+        logFixture.assertHeard("total jobs to distribute load [ 1 ]");
     }
 
     @Test
@@ -104,12 +113,25 @@ public class TimeBasedTestSplitterCriteriaTest {
         List<TlbFileResource> resources = Arrays.asList(first, second, third, fourth, fifth, firstNew, secondNew);
 
         TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-1"));
+        logFixture.startListening();
         List<TlbFileResource> filteredResources = criteria.filter(resources);
+        logFixture.assertHeard("got total of 7 files to balance");
+        logFixture.assertHeard("total jobs to distribute load [ 2 ]");
+        logFixture.assertHeard("historical test time data has entries for 5 suites");
+        logFixture.assertHeard("5 entries of historical test time data found relavent");
+        logFixture.assertHeard("encountered 2 new files which don't have historical time data, used average time [ 3.0 ] to balance");
+        logFixture.assertHeard("assigned total of 4 files to [ job-1 ]");
         assertThat(filteredResources.size(), is(4));
         assertThat(filteredResources, hasItems(second, first, third, secondNew));
 
         criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-2"));
         filteredResources = criteria.filter(resources);
+        logFixture.assertHeard("got total of 7 files to balance", 2);
+        logFixture.assertHeard("total jobs to distribute load [ 2 ]", 2);
+        logFixture.assertHeard("historical test time data has entries for 5 suites", 2);
+        logFixture.assertHeard("5 entries of historical test time data found relavent", 2);
+        logFixture.assertHeard("encountered 2 new files which don't have historical time data, used average time [ 3.0 ] to balance", 2);
+        logFixture.assertHeard("assigned total of 3 files to [ job-2 ]");
         assertThat(filteredResources.size(), is(3));
         assertThat(filteredResources, hasItems(fourth, fifth, firstNew));
     }
@@ -127,10 +149,25 @@ public class TimeBasedTestSplitterCriteriaTest {
         List<TlbFileResource> resources = Arrays.asList(second, first, third);
 
         TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-1"));
+        logFixture.startListening();
+
         assertThat(criteria.filter(resources), is(Arrays.asList(second)));
+        logFixture.assertHeard("got total of 3 files to balance");
+        logFixture.assertHeard("total jobs to distribute load [ 2 ]");
+        logFixture.assertHeard("historical test time data has entries for 5 suites");
+        logFixture.assertHeard("3 entries of historical test time data found relavent");
+        logFixture.assertHeard("encountered 0 new files which don't have historical time data, used average time [ 3.0 ] to balance");
+        logFixture.assertHeard("assigned total of 1 files to [ job-1 ]");
 
         criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-2"));
+
         assertThat(criteria.filter(resources), is(Arrays.asList(first, third)));
+        logFixture.assertHeard("got total of 3 files to balance", 2);
+        logFixture.assertHeard("total jobs to distribute load [ 2 ]", 2);
+        logFixture.assertHeard("historical test time data has entries for 5 suites", 2);
+        logFixture.assertHeard("3 entries of historical test time data found relavent", 2);
+        logFixture.assertHeard("encountered 0 new files which don't have historical time data, used average time [ 3.0 ] to balance", 2);
+        logFixture.assertHeard("assigned total of 2 files to [ job-2 ]");
     }
 
     private HashMap<String, String> testTimes() {
