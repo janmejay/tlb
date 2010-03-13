@@ -20,10 +20,12 @@ import static junit.framework.Assert.fail;
 
 public class CountBasedTestSplitterCriteriaTest {
     private TalkToCruise talkToCruise;
+    private TestUtil.LogFixture logFixture;
 
     @Before
     public void setUp() throws Exception {
         talkToCruise = mock(TalkToCruise.class);
+        logFixture = new TestUtil.LogFixture();
     }
 
     @Test
@@ -52,7 +54,12 @@ public class CountBasedTestSplitterCriteriaTest {
         List<TlbFileResource> resources = Arrays.asList(first, second, com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("third"), com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("fourth"), com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("fifth"));
 
         CountBasedTestSplitterCriteria criteria = new CountBasedTestSplitterCriteria(talkToCruise, env);
+        logFixture.startListening();
         assertThat(criteria.filter(resources), is(Arrays.asList(first, second)));
+        logFixture.assertHeard("got total of 5 files to balance");
+        logFixture.assertHeard("total jobs to distribute load [ 2 ]");
+        logFixture.assertHeard("count balancing to approximately 2 files per job with 1 extra file to bucket");
+        logFixture.assertHeard("assigned total of 2 files to [ job-1 ]");
     }
 
     @Test
@@ -67,7 +74,12 @@ public class CountBasedTestSplitterCriteriaTest {
         List<TlbFileResource> resources = Arrays.asList(com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("first"), com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("second"), third, fourth, fifth);
 
         CountBasedTestSplitterCriteria criteria = new CountBasedTestSplitterCriteria(talkToCruise, env);
+        logFixture.startListening();
         assertThat(criteria.filter(resources), is(Arrays.asList(third, fourth, fifth)));
+        logFixture.assertHeard("got total of 5 files to balance");
+        logFixture.assertHeard("total jobs to distribute load [ 2 ]");
+        logFixture.assertHeard("count balancing to approximately 2 files per job with 1 extra file to bucket");
+        logFixture.assertHeard("assigned total of 3 files to [ job-2 ]");
     }
 
     @Test
@@ -121,11 +133,18 @@ public class CountBasedTestSplitterCriteriaTest {
             resources.add(new JunitFileResource(new File("base" + i)));
         }
 
+        logFixture.startListening();
         assertThat(criteria("job-1").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(0, 1, 2)));
+        logFixture.assertHeard("count balancing to approximately 3 files per job with 2 extra file to bucket");
+        logFixture.assertHeard("assigned total of 3 files to [ job-1 ]");
 
         assertThat(criteria("job-2").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(3, 4, 5, 6)));
+        logFixture.assertHeard("count balancing to approximately 3 files per job with 2 extra file to bucket", 2);
+        logFixture.assertHeard("assigned total of 4 files to [ job-2 ]");
 
         assertThat(criteria("job-3").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(7, 8, 9, 10)));
+        logFixture.assertHeard("count balancing to approximately 3 files per job with 2 extra file to bucket", 3);
+        logFixture.assertHeard("assigned total of 4 files to [ job-3 ]");
     }
 
     @Test
