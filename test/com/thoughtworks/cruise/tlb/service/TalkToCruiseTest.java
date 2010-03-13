@@ -130,7 +130,6 @@ public class TalkToCruiseTest {
         TalkToCruise cruise = new TalkToCruise(env, action);
         cruise.clearSuiteTimeCachingFile();
         cruise.persist("5\n", cruise.testSubsetSizeFileLocator);
-        cruise.clearSuiteTimeCachingFile();
         cruise.testClassTime("com.thoughtworks.tlb.TestSuite", 12);
         assertCacheState(env, cruise, 1, "com.thoughtworks.tlb.TestSuite: 12");
         cruise.testClassTime("com.thoughtworks.tlb.TestTimeBased", 15);
@@ -271,7 +270,9 @@ public class TalkToCruiseTest {
         stubJobDetails(action);
 
         TalkToCruise cruise = new TalkToCruise(environment, action);
+        logFixture.startListening();
         assertThat(cruise.getJobs(), is(Arrays.asList("firefox-1", "firefox-2", "firefox-3", "rails", "smoke")));
+        logFixture.assertHeard("jobs found [firefox-1, firefox-2, firefox-3, rails, smoke]");
     }
 
     private void stubJobDetails(HttpAction action) throws IOException, URISyntaxException {

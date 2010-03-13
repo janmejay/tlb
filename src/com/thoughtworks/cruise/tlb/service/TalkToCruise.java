@@ -54,6 +54,7 @@ public class TalkToCruise {
         for (Attribute jobLink : jobLinks(String.format("%s/pipelines/%s.xml", cruiseUrl(), stageLocator))) {
             jobNames.add(rootFor(jobLink.getValue()).attributeValue(JOB_NAME));
         }
+        logger.info(String.format("jobs found %s", jobNames));
         return jobNames;
     }
 
