@@ -62,6 +62,12 @@ public class TestUtil {
             return numberOfOccurances;
         }
 
+        public void assertNotHeard(String partOfMessage) {
+            int actualOccurances = totalOccurances(partOfMessage);
+            assertThat(String.format("log message '%s' should NOT have been heard at all, but was actually heard %s times in %s statements %s",
+                    partOfMessage, actualOccurances, handler.messages.size(), handler.messages), actualOccurances, is(0));
+        }
+
         class TestHandler extends Handler {
             private ArrayList<String> messages;
 
