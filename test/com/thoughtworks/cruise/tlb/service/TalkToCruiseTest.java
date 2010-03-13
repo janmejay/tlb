@@ -22,11 +22,46 @@ import java.io.FileInputStream;
 import java.net.URISyntaxException;
 
 public class TalkToCruiseTest {
+    private TalkToCruise cruise;
 
     @Test
     public void shouldReturnTheListOfJobsIntheGivenStage() throws Exception {
         SystemEnvironment environment = initEnvironment("http://test.host:8153/cruise");
         assertCanFindJobsFrom("http://test.host:8153/cruise", environment);
+    }
+    
+    @Test
+    public void shouldReturnSortedListOfPearJobs() throws Exception{
+        Map<String, String> envMap = initEnvMap("http://test.host:8153/cruise");
+        envMap.put(TlbConstants.CRUISE_JOB_NAME, "firefox-2");
+        SystemEnvironment environment = new SystemEnvironment(envMap);
+        HttpAction action = mock(HttpAction.class);
+
+        when(action.get("http://test.host:8153/cruise/pipelines/pipeline/2/stage/1.xml")).thenReturn(TestUtil.fileContents("resources/stage_detail_with_jobs_in_random_order.xml"));
+        stubJobDetails(action);
+
+        cruise = new TalkToCruise(environment, action);
+        assertThat(cruise.getJobs(), is(Arrays.asList("firefox-3", "rails", "firefox-1", "smoke", "firefox-2")));
+        assertThat(cruise.pearJobs(), is(Arrays.asList("firefox-1", "firefox-2", "firefox-3")));
+    }
+
+    @Test
+    public void shouldReturnSortedListOfPearJobsIdentifiedOnUUID() throws Exception{
+        Map<String, String> envMap = initEnvMap("http://test.host:8153/cruise");
+        envMap.put(TlbConstants.CRUISE_JOB_NAME, "firefox-bbcdef12-1234-1234-1234-abcdef123456");
+        SystemEnvironment environment = new SystemEnvironment(envMap);
+        HttpAction action = mock(HttpAction.class);
+
+        when(action.get("http://test.host:8153/cruise/pipelines/pipeline/2/stage/1.xml")).thenReturn(TestUtil.fileContents("resources/stage_detail_with_jobs_in_random_order.xml"));
+        when(action.get("http://test.host:8153/cruise/api/jobs/140.xml")).thenReturn(TestUtil.fileContents("resources/job_details_140_UUID.xml"));
+        when(action.get("http://test.host:8153/cruise/api/jobs/139.xml")).thenReturn(TestUtil.fileContents("resources/job_details_139.xml"));
+        when(action.get("http://test.host:8153/cruise/api/jobs/141.xml")).thenReturn(TestUtil.fileContents("resources/job_details_141_UUID.xml"));
+        when(action.get("http://test.host:8153/cruise/api/jobs/142.xml")).thenReturn(TestUtil.fileContents("resources/job_details_142_UUID.xml"));
+        when(action.get("http://test.host:8153/cruise/api/jobs/143.xml")).thenReturn(TestUtil.fileContents("resources/job_details_143.xml"));
+
+        cruise = new TalkToCruise(environment, action);
+        assertThat(cruise.getJobs(), is(Arrays.asList("firefox-cbcdef12-1234-1234-1234-abcdef123456", "rails", "firefox-abcdef12-1234-1234-1234-abcdef123456", "smoke", "firefox-bbcdef12-1234-1234-1234-abcdef123456")));
+        assertThat(cruise.pearJobs(), is(Arrays.asList("firefox-abcdef12-1234-1234-1234-abcdef123456", "firefox-bbcdef12-1234-1234-1234-abcdef123456", "firefox-cbcdef12-1234-1234-1234-abcdef123456")));
     }
 
     @Test
@@ -278,7 +313,7 @@ public class TalkToCruiseTest {
         when(action.get(baseUrl + "/pipelines/pipeline/2/stage/1.xml")).thenReturn(TestUtil.fileContents("resources/stage_detail.xml"));
         stubJobDetails(action);
 
-        TalkToCruise cruise = new TalkToCruise(environment, action);
+        cruise = new TalkToCruise(environment, action);
         assertThat(cruise.getJobs(), is(Arrays.asList("firefox-1", "firefox-2", "firefox-3", "rails", "smoke")));
     }
 

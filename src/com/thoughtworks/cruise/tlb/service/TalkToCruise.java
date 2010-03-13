@@ -41,6 +41,12 @@ public class TalkToCruise {
     public static final String FAILED_TESTS_FILE = "tlb/failed_tests";
     public final String failedTestsListFileLocator;
 
+    private static final String INT = "\\d+";
+    private static final Pattern NUMBER_BASED_LOAD_BALANCED_JOB = Pattern.compile("(.*?)-(" + INT + ")");
+    private static final String HEX = "[a-fA-F0-9]";
+    private static final String UUID = HEX + "{8}-" + HEX + "{4}-" + HEX + "{4}-" + HEX + "{4}-" + HEX + "{12}";
+    private static final Pattern UUID_BASED_LOAD_BALANCED_JOB = Pattern.compile("(.*?)-(" + UUID + ")");
+
     public TalkToCruise(SystemEnvironment environment, HttpAction httpAction) {
         this.environment = environment;
         this.httpAction = httpAction;
@@ -174,7 +180,7 @@ public class TalkToCruise {
         String stageFeedUrl = String.format("%s/api/feeds/stages.xml", cruiseUrl());
         String stageDetailUrl = lastRunStageDetailUrl(stageFeedUrl);
         List<Attribute> jobLinks = jobLinks(stageDetailUrl);
-        return tlbTestTimeUrls(jobLinks, jobNames, urlSuffix);
+        return tlbArtifactUrls(jobLinks, jobNames, urlSuffix);
     }
 
     private Map<String, String> mergedProperties(StringTokenizer suiteTimeLines) {
@@ -199,17 +205,17 @@ public class TalkToCruise {
         return new StringTokenizer(buffer.toString(), "\n");
     }
 
-    private List<String> tlbTestTimeUrls(List<Attribute> jobLinks, List<String> jobNames, String urlSuffix) {
-        ArrayList<String> tlbTestTimeUrls = new ArrayList<String>();
+    private List<String> tlbArtifactUrls(List<Attribute> jobLinks, List<String> jobNames, String urlSuffix) {
+        ArrayList<String> tlbAtrifactUrls = new ArrayList<String>();
         for (Attribute jobLink : jobLinks) {
             Element jobDom = rootFor(jobLink.getValue());
             String jobName = jobDom.attribute("name").getValue().trim();
             if (jobNames.contains(jobName)) {
                 String atrifactBaseUrl = jobDom.selectSingleNode("//artifacts/@baseUrl").getText();
-                tlbTestTimeUrls.add(String.format("%s/%s", atrifactBaseUrl, urlSuffix));
+                tlbAtrifactUrls.add(String.format("%s/%s", atrifactBaseUrl, urlSuffix));
             }
         }
-        return tlbTestTimeUrls;
+        return tlbAtrifactUrls;
     }
 
     @SuppressWarnings({"unchecked"})
@@ -258,5 +264,42 @@ public class TalkToCruise {
             failedTestNames.add(failedTestTokenizer.nextToken());
         }
         return failedTestNames;
+    }
+
+    protected String jobName() {
+        return environment.getProperty(TlbConstants.CRUISE_JOB_NAME);
+    }
+
+    private String jobBaseName() {
+        Matcher matcher = NUMBER_BASED_LOAD_BALANCED_JOB.matcher(jobName());
+        if (matcher.matches()) {
+            return matcher.group(1);
+        }
+        matcher = UUID_BASED_LOAD_BALANCED_JOB.matcher(jobName());
+        if (matcher.matches()) {
+            return matcher.group(1);
+        }
+        return jobName();
+    }
+
+    private Pattern getMatcher() {
+        return Pattern.compile(String.format("^%s-(" + INT + "|" + UUID + ")$", jobBaseName()));
+    }
+
+    private List<String> jobsInTheSameFamily(List<String> jobs) {
+        List<String> family = new ArrayList<String>();
+        Pattern pattern = getMatcher();
+        for (String job : jobs) {
+            if (pattern.matcher(job).matches()) {
+                family.add(job);
+            }
+        }
+        return family;
+    }
+
+    public List<String> pearJobs() {
+        List<String> jobs = jobsInTheSameFamily(getJobs());
+        Collections.sort(jobs);
+        return jobs;
     }
 }

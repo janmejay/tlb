@@ -44,7 +44,7 @@ public class TimeBasedTestSplitterCriteriaTest {
 
     @Test
     public void shouldSplitTestsBasedOnTimeForTwoJob() {
-        when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2"));
+        when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2"));
         HashMap<String, String> map = testTimes();
         when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2"))).thenReturn(map);
 
@@ -63,8 +63,8 @@ public class TimeBasedTestSplitterCriteriaTest {
     }
 
     @Test
-    public void shouldSplitTestsBasedOnTimeForFourJob() {
-        when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-4", "job-3"));
+    public void shouldSplitTestsBasedOnTimeForFourJobs() {
+        when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4"));
         HashMap<String, String> map = testTimes();
         when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2", "job-3", "job-4"))).thenReturn(map);
 
@@ -90,7 +90,7 @@ public class TimeBasedTestSplitterCriteriaTest {
 
     @Test
     public void shouldDistributeUnknownTestsBasedOnAverageTime() throws Exception{
-        when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2"));
+        when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2"));
         HashMap<String, String> map = testTimes();
         when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2"))).thenReturn(map);
 
@@ -116,7 +116,7 @@ public class TimeBasedTestSplitterCriteriaTest {
 
     @Test
     public void shouldIgnoreDeletedTests() throws Exception{
-        when(talkToCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2"));
+        when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2"));
         HashMap<String, String> map = testTimes();
         when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2"))).thenReturn(map);
 

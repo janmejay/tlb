@@ -22,7 +22,7 @@ public class JobFamilyAwareSplitterCriteriaTest {
         HashMap<String, String> envMap = new HashMap<String, String>();
         envMap.put(TlbConstants.CRUISE_JOB_NAME, "build-1");
         TalkToCruise toCruise = mock(TalkToCruise.class);
-        when(toCruise.getJobs()).thenReturn(Arrays.asList("build-1", "build-2", "build-3"));
+        when(toCruise.pearJobs()).thenReturn(Arrays.asList("build-1", "build-2", "build-3"));
 
         JobFamilyAwareSplitterCriteria criteria = new JobFamilyAwareSplitterCriteria(new SystemEnvironment(envMap)) {
             protected List<TlbFileResource> subset(List<TlbFileResource> fileResources) {

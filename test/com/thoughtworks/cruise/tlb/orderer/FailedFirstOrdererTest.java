@@ -1,6 +1,7 @@
 package com.thoughtworks.cruise.tlb.orderer;
 
 import com.thoughtworks.cruise.tlb.TestUtil;
+import static com.thoughtworks.cruise.tlb.TestUtil.initEnvironment;
 import com.thoughtworks.cruise.tlb.ant.JunitFileResource;
 import com.thoughtworks.cruise.tlb.service.TalkToCruise;
 import com.thoughtworks.cruise.tlb.splitter.TalksToCruise;
@@ -28,7 +29,7 @@ public class FailedFirstOrdererTest {
 
     @Before
     public void setUp() throws Exception {
-        orderer = new FailedFirstOrderer(new SystemEnvironment());
+        orderer = new FailedFirstOrderer(initEnvironment("job-1"));
         toCruise = mock(TalkToCruise.class);
         project = new Project();
         baseDir = TestUtil.createTempFolder().getAbsolutePath();
@@ -47,7 +48,8 @@ public class FailedFirstOrdererTest {
         JunitFileResource quuxClass = junitFileResource(baseDir, "foo/baz/Quux.class");
         JunitFileResource bangClass = junitFileResource(baseDir, "foo/baz/Bang.class");
         List<String> failedTests = Arrays.asList("baz.bang.Foo.class", "foo.bar.Bang.class");
-        when(toCruise.getLastRunFailedTests(null)).thenReturn(failedTests);
+        when(toCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "foo", "bar"));
+        when(toCruise.getLastRunFailedTests(Arrays.asList("job-1", "job-2", "job-3"))).thenReturn(failedTests);
         List<JunitFileResource> fileList = Arrays.asList(bazClass, quuxClass, bangClass);
         Collections.sort(fileList, orderer);
         assertThat(fileList, is(Arrays.asList(bazClass, quuxClass, bangClass)));
@@ -60,7 +62,8 @@ public class FailedFirstOrdererTest {
         JunitFileResource failedFooClass = junitFileResource(baseDir, "baz/bang/Foo.class");
         JunitFileResource failedBangClass = junitFileResource(baseDir, "foo/bar/Bang.class");
         List<String> failedTests = Arrays.asList("baz.bang.Foo", "foo.bar.Bang");
-        when(toCruise.getLastRunFailedTests(null)).thenReturn(failedTests);
+        when(toCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
+        when(toCruise.getLastRunFailedTests(Arrays.asList("job-1", "job-2", "job-3"))).thenReturn(failedTests);
         List<JunitFileResource> fileList = Arrays.asList(bazClass, failedFooClass, quuxClass, failedBangClass);
         Collections.sort(fileList, orderer);
 
