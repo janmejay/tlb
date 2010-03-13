@@ -8,11 +8,10 @@ import static org.mockito.Mockito.mock;
 import static org.hamcrest.core.Is.is;
 import com.thoughtworks.cruise.tlb.ant.JunitFileResource;
 import com.thoughtworks.cruise.tlb.TlbFileResource;
+import com.thoughtworks.cruise.tlb.TestUtil;
 import com.thoughtworks.cruise.tlb.service.TalkToCruise;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
-import static com.thoughtworks.cruise.tlb.utils.TestUtil.files;
-import static com.thoughtworks.cruise.tlb.utils.TestUtil.initEnvironment;
-import static com.thoughtworks.cruise.tlb.utils.TestUtil.file;
+import static com.thoughtworks.cruise.tlb.TestUtil.initEnvironment;
 
 import java.util.*;
 import java.io.File;
@@ -21,21 +20,23 @@ import static junit.framework.Assert.fail;
 
 public class CountBasedTestSplitterCriteriaTest {
     private TalkToCruise talkToCruise;
+    private TestUtil.LogFixture logFixture;
 
     @Before
     public void setUp() throws Exception {
         talkToCruise = mock(TalkToCruise.class);
+        logFixture = new TestUtil.LogFixture();
     }
 
     @Test
     public void shouldConsumeAllTestsWhenNoJobsToBalanceWith() {
         when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1"));
 
-        SystemEnvironment env = initEnvironment("job-1");
+        SystemEnvironment env = TestUtil.initEnvironment("job-1");
 
-        TlbFileResource first = file("first");
-        TlbFileResource second = file("second");
-        TlbFileResource third = file("third");
+        TlbFileResource first = com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("first");
+        TlbFileResource second = com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("second");
+        TlbFileResource third = com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("third");
         List<TlbFileResource> resources = Arrays.asList(first, second, third);
 
         CountBasedTestSplitterCriteria criteria = new CountBasedTestSplitterCriteria(talkToCruise, env);
@@ -46,41 +47,51 @@ public class CountBasedTestSplitterCriteriaTest {
     public void shouldSplitTestsBasedOnSplitFactorForTheFirstJob() {
         when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2"));
 
-        SystemEnvironment env = initEnvironment("job-1");
+        SystemEnvironment env = TestUtil.initEnvironment("job-1");
 
-        TlbFileResource first = file("first");
-        TlbFileResource second = file("second");
-        List<TlbFileResource> resources = Arrays.asList(first, second, file("third"), file("fourth"), file("fifth"));
+        TlbFileResource first = com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("first");
+        TlbFileResource second = com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("second");
+        List<TlbFileResource> resources = Arrays.asList(first, second, com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("third"), com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("fourth"), com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("fifth"));
 
         CountBasedTestSplitterCriteria criteria = new CountBasedTestSplitterCriteria(talkToCruise, env);
+        logFixture.startListening();
         assertThat(criteria.filter(resources), is(Arrays.asList(first, second)));
+        logFixture.assertHeard("got total of 5 files to balance");
+        logFixture.assertHeard("total jobs to distribute load [ 2 ]");
+        logFixture.assertHeard("count balancing to approximately 2 files per job with 1 extra file to bucket");
+        logFixture.assertHeard("assigned total of 2 files to [ job-1 ]");
     }
 
     @Test
     public void shouldSplitTestsBasedOnSplitFactorForTheSecondJob() {
         when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2"));
 
-        SystemEnvironment env = initEnvironment("job-2");
+        SystemEnvironment env = TestUtil.initEnvironment("job-2");
 
-        TlbFileResource third = file("third");
-        TlbFileResource fourth = file("fourth");
-        TlbFileResource fifth = file("fifth");
-        List<TlbFileResource> resources = Arrays.asList(file("first"), file("second"), third, fourth, fifth);
+        TlbFileResource third = com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("third");
+        TlbFileResource fourth = com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("fourth");
+        TlbFileResource fifth = com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("fifth");
+        List<TlbFileResource> resources = Arrays.asList(com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("first"), com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("second"), third, fourth, fifth);
 
         CountBasedTestSplitterCriteria criteria = new CountBasedTestSplitterCriteria(talkToCruise, env);
+        logFixture.startListening();
         assertThat(criteria.filter(resources), is(Arrays.asList(third, fourth, fifth)));
+        logFixture.assertHeard("got total of 5 files to balance");
+        logFixture.assertHeard("total jobs to distribute load [ 2 ]");
+        logFixture.assertHeard("count balancing to approximately 2 files per job with 1 extra file to bucket");
+        logFixture.assertHeard("assigned total of 3 files to [ job-2 ]");
     }
 
     @Test
     public void shouldSplitTestsJobWithUUID() {
         when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-abcdef12-1234-3456-7890-abcdef123456", "job-e2345678-1234-3456-7890-abcdef123456"));
 
-        SystemEnvironment env = initEnvironment("job-e2345678-1234-3456-7890-abcdef123456");
+        SystemEnvironment env = TestUtil.initEnvironment("job-e2345678-1234-3456-7890-abcdef123456");
 
-        TlbFileResource third = file("third");
-        TlbFileResource fourth = file("fourth");
-        TlbFileResource fifth = file("fifth");
-        List<TlbFileResource> resources = Arrays.asList(file("first"), file("second"), third, fourth, fifth);
+        TlbFileResource third = com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("third");
+        TlbFileResource fourth = com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("fourth");
+        TlbFileResource fifth = com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("fifth");
+        List<TlbFileResource> resources = Arrays.asList(com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("first"), com.thoughtworks.cruise.tlb.TestUtil.junitFileResource("second"), third, fourth, fifth);
 
         CountBasedTestSplitterCriteria criteria = new CountBasedTestSplitterCriteria(talkToCruise, env);
         assertThat(criteria.filter(resources), is(Arrays.asList(third, fourth, fifth)));
@@ -96,11 +107,18 @@ public class CountBasedTestSplitterCriteriaTest {
             resources.add(new JunitFileResource(new File("base" + i)));
         }
 
-        assertThat(criteria("job-1").filter(resources), is(files(0, 1, 2)));
+        logFixture.startListening();
+        assertThat(criteria("job-1").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(0, 1, 2)));
+        logFixture.assertHeard("count balancing to approximately 3 files per job with 2 extra file to bucket");
+        logFixture.assertHeard("assigned total of 3 files to [ job-1 ]");
 
-        assertThat(criteria("job-2").filter(resources), is(files(3, 4, 5, 6)));
+        assertThat(criteria("job-2").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(3, 4, 5, 6)));
+        logFixture.assertHeard("count balancing to approximately 3 files per job with 2 extra file to bucket", 2);
+        logFixture.assertHeard("assigned total of 4 files to [ job-2 ]");
 
-        assertThat(criteria("job-3").filter(resources), is(files(7, 8, 9, 10)));
+        assertThat(criteria("job-3").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(7, 8, 9, 10)));
+        logFixture.assertHeard("count balancing to approximately 3 files per job with 2 extra file to bucket", 3);
+        logFixture.assertHeard("assigned total of 4 files to [ job-3 ]");
     }
 
     @Test
@@ -113,9 +131,9 @@ public class CountBasedTestSplitterCriteriaTest {
             resources.add(new JunitFileResource(new File("base" + i)));
         }
 
-        assertThat(criteria("job-1").filter(resources), is(files()));
-        assertThat(criteria("job-2").filter(resources), is(files(0)));
-        assertThat(criteria("job-3").filter(resources), is(files(1)));
+        assertThat(criteria("job-1").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources()));
+        assertThat(criteria("job-2").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(0)));
+        assertThat(criteria("job-3").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(1)));
     }
 
     @Test
@@ -128,9 +146,9 @@ public class CountBasedTestSplitterCriteriaTest {
             resources.add(new JunitFileResource(new File("base" + i)));
         }
 
-        assertThat(criteria("job-1").filter(resources), is(files(0)));
-        assertThat(criteria("job-2").filter(resources), is(files(1)));
-        assertThat(criteria("job-3").filter(resources), is(files(2)));
+        assertThat(criteria("job-1").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(0)));
+        assertThat(criteria("job-2").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(1)));
+        assertThat(criteria("job-3").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(2)));
     }
 
     @Test//to assertain it really works as expected
@@ -143,19 +161,19 @@ public class CountBasedTestSplitterCriteriaTest {
             resources.add(new JunitFileResource(new File("base" + i)));
         }
 
-        assertThat(criteria("job-1").filter(resources), is(files(0, 1, 2, 3, 4))); //2/7
+        assertThat(criteria("job-1").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(0, 1, 2, 3, 4))); //2/7
 
-        assertThat(criteria("job-2").filter(resources), is(files(5, 6, 7, 8, 9))); //4/7
+        assertThat(criteria("job-2").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(5, 6, 7, 8, 9))); //4/7
 
-        assertThat(criteria("job-3").filter(resources), is(files(10, 11, 12, 13, 14))); //6/7
+        assertThat(criteria("job-3").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(10, 11, 12, 13, 14))); //6/7
 
-        assertThat(criteria("job-4").filter(resources), is(files(15, 16, 17, 18, 19, 20))); //1/7
+        assertThat(criteria("job-4").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(15, 16, 17, 18, 19, 20))); //1/7
 
-        assertThat(criteria("job-5").filter(resources), is(files(21, 22, 23, 24, 25))); //3/7
+        assertThat(criteria("job-5").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(21, 22, 23, 24, 25))); //3/7
 
-        assertThat(criteria("job-6").filter(resources), is(files(26, 27, 28, 29, 30))); //5/7
+        assertThat(criteria("job-6").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(26, 27, 28, 29, 30))); //5/7
 
-        assertThat(criteria("job-7").filter(resources), is(files(31, 32, 33, 34, 35, 36))); //7/7
+        assertThat(criteria("job-7").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(31, 32, 33, 34, 35, 36))); //7/7
     }
 
     @Test//to assertain it really works as expected
@@ -168,19 +186,19 @@ public class CountBasedTestSplitterCriteriaTest {
             resources.add(new JunitFileResource(new File("base" + i)));
         }
 
-        assertThat(criteria("job-1").filter(resources), is(files(0, 1, 2, 3, 4))); //6/7
+        assertThat(criteria("job-1").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(0, 1, 2, 3, 4))); //6/7
 
-        assertThat(criteria("job-2").filter(resources), is(files(5, 6, 7, 8, 9, 10))); //12/7 = 5/7
+        assertThat(criteria("job-2").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(5, 6, 7, 8, 9, 10))); //12/7 = 5/7
 
-        assertThat(criteria("job-3").filter(resources), is(files(11, 12, 13, 14, 15, 16))); //18/7 = 4/7
+        assertThat(criteria("job-3").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(11, 12, 13, 14, 15, 16))); //18/7 = 4/7
 
-        assertThat(criteria("job-4").filter(resources), is(files(17, 18, 19, 20, 21, 22))); //24/7 = 3/7
+        assertThat(criteria("job-4").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(17, 18, 19, 20, 21, 22))); //24/7 = 3/7
 
-        assertThat(criteria("job-5").filter(resources), is(files(23, 24, 25, 26, 27, 28))); //30/7 = 2/7
+        assertThat(criteria("job-5").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(23, 24, 25, 26, 27, 28))); //30/7 = 2/7
 
-        assertThat(criteria("job-6").filter(resources), is(files(29, 30, 31, 32, 33, 34))); //36/7 = 1/7
+        assertThat(criteria("job-6").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(29, 30, 31, 32, 33, 34))); //36/7 = 1/7
 
-        assertThat(criteria("job-7").filter(resources), is(files(35, 36, 37, 38, 39, 40))); //42/7 = 7/7
+        assertThat(criteria("job-7").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(35, 36, 37, 38, 39, 40))); //42/7 = 7/7
     }
 
     @Test//to assertain it really works as expected
@@ -193,22 +211,22 @@ public class CountBasedTestSplitterCriteriaTest {
             resources.add(new JunitFileResource(new File("base" + i)));
         }
 
-        assertThat(criteria("job-1").filter(resources), is(files(0, 1, 2, 3, 4, 5)));
+        assertThat(criteria("job-1").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(0, 1, 2, 3, 4, 5)));
 
-        assertThat(criteria("job-2").filter(resources), is(files(6, 7, 8, 9, 10, 11)));
+        assertThat(criteria("job-2").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(6, 7, 8, 9, 10, 11)));
 
-        assertThat(criteria("job-3").filter(resources), is(files(12, 13, 14, 15, 16, 17)));
+        assertThat(criteria("job-3").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(12, 13, 14, 15, 16, 17)));
 
-        assertThat(criteria("job-4").filter(resources), is(files(18, 19, 20, 21, 22, 23)));
+        assertThat(criteria("job-4").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(18, 19, 20, 21, 22, 23)));
 
-        assertThat(criteria("job-5").filter(resources), is(files(24, 25, 26, 27, 28, 29)));
+        assertThat(criteria("job-5").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(24, 25, 26, 27, 28, 29)));
 
-        assertThat(criteria("job-6").filter(resources), is(files(30, 31, 32, 33, 34, 35)));
+        assertThat(criteria("job-6").filter(resources), is(com.thoughtworks.cruise.tlb.TestUtil.tlbFileResources(30, 31, 32, 33, 34, 35)));
     }
 
 
     private CountBasedTestSplitterCriteria criteria(String jobName) {
-        return new CountBasedTestSplitterCriteria(talkToCruise, initEnvironment(jobName));
+        return new CountBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment(jobName));
     }
 
 }

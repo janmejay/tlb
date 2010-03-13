@@ -46,7 +46,7 @@ public class LoadBalancedFileSetTest {
 
     @Test
     public void shouldReturnAllFilesWhenThereIsNothingToSplit() {
-        File newFile = fileUtil.createFileInFolder(projectDir, "abc");
+        File newFile = TestUtil.createFileInFolder(projectDir, "abc");
 
         Iterator files = fileSet.iterator();
 
@@ -56,9 +56,9 @@ public class LoadBalancedFileSetTest {
     }
 
     @Test
-    public void shouldReturnAListOfFilesWhichMatchAGivenFilteringCriteria() {
-        fileUtil.createFileInFolder(projectDir, "excluded");
-        File included = fileUtil.createFileInFolder(projectDir, "included");
+    public void shouldReturnAListOfFilesWhichMatchAGivenMatcher() {
+        TestUtil.createFileInFolder(projectDir, "excluded");
+        File included = TestUtil.createFileInFolder(projectDir, "included");
 
         JobFamilyAwareSplitterCriteria criteria = mock(JobFamilyAwareSplitterCriteria.class);
         TlbFileResource fileResource = new JunitFileResource(included);
@@ -76,10 +76,10 @@ public class LoadBalancedFileSetTest {
 
     @Test
     public void shouldReturnAListOfFilesInOrderReturnedByReorderer() {
-        fileUtil.createFileInFolder(projectDir, "excluded");
-        JunitFileResource resourceOne = new JunitFileResource(fileUtil.createFileInFolder(projectDir, "C"));
-        JunitFileResource resourceTwo = new JunitFileResource(fileUtil.createFileInFolder(projectDir, "B"));
-        JunitFileResource resourceThree = new JunitFileResource(fileUtil.createFileInFolder(projectDir, "A"));
+        TestUtil.createFileInFolder(projectDir, "excluded");
+        JunitFileResource resourceOne = new JunitFileResource(TestUtil.createFileInFolder(projectDir, "C"));
+        JunitFileResource resourceTwo = new JunitFileResource(TestUtil.createFileInFolder(projectDir, "B"));
+        JunitFileResource resourceThree = new JunitFileResource(TestUtil.createFileInFolder(projectDir, "A"));
 
         JobFamilyAwareSplitterCriteria criteria = mock(JobFamilyAwareSplitterCriteria.class);
 

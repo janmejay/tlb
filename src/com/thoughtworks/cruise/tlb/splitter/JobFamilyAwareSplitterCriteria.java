@@ -5,6 +5,7 @@ import com.thoughtworks.cruise.tlb.TlbFileResource;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -28,17 +29,23 @@ public abstract class JobFamilyAwareSplitterCriteria extends TestSplitterCriteri
     protected TalkToCruise talkToCruise;
     protected List<String> jobs;
 
+    private static final Logger logger = Logger.getLogger(JobFamilyAwareSplitterCriteria.class.getName());
+
     public JobFamilyAwareSplitterCriteria(SystemEnvironment env) {
         super(env);
     }
 
     public List<TlbFileResource> filter(List<TlbFileResource> fileResources) {
+        logger.info(String.format("got total of %s files to balance", fileResources.size()));
+
         jobs = pearJobs();
+        logger.info(String.format("total jobs to distribute load [ %s ]", jobs.size()));
         if (jobs.size() <= 1) {
             return fileResources;
         }
 
         List<TlbFileResource> subset = subset(fileResources);
+        logger.info(String.format("assigned total of %s files to [ %s ]", subset.size(), env.getProperty(TlbConstants.CRUISE_JOB_NAME)));
         talkToCruise.publishSubsetSize(subset.size());
         return subset;
     }

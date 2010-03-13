@@ -63,6 +63,7 @@ public class TalkToCruise {
         for (Attribute jobLink : jobLinks(String.format("%s/pipelines/%s.xml", cruiseUrl(), stageLocator))) {
             jobNames.add(rootFor(jobLink.getValue()).attributeValue(JOB_NAME));
         }
+        logger.info(String.format("jobs found %s", jobNames));
         return jobNames;
     }
 
@@ -90,8 +91,10 @@ public class TalkToCruise {
     }
 
     public void testClassTime(String className, long time) {
+        logger.info(String.format("recording run time for suite %s", className));
         List<String> testTimes = cacheAndPersist(String.format("%s: %s\n", className, time), jobLocator);
         if (subsetSize() == testTimes.size()) {
+            logger.info(String.format("Posting test run times for %s suite to the cruise server.", subsetSize()));
             postLinesToServer(testTimes, artifactFileUrl(TEST_TIME_FILE));
         }
     }
@@ -102,7 +105,6 @@ public class TalkToCruise {
             buffer.append(testTime);
             buffer.append("\n");
         }
-
         httpAction.put(url, buffer.toString());
         clearSuiteTimeCachingFile();
     }
@@ -147,6 +149,7 @@ public class TalkToCruise {
         } finally {
             IOUtils.closeQuietly(in);
         }
+        logger.info(String.format("Cached 3 lines from %s [ identified by: %s ], the last of which was [ %s ]", cacheFile.getAbsolutePath(), fileIdentifier, lines.get(lines.size() - 1)));
         return lines;
     }
 
@@ -161,6 +164,7 @@ public class TalkToCruise {
         } finally {
             IOUtils.closeQuietly(out);
         }
+        logger.info(String.format("Wrote [ %s ] to %s [ identified by: %s ]", line, fileUtil.getUniqueFile("foo"), fileIdentifier));
     }
 
     private int subsetSize() {
@@ -244,6 +248,7 @@ public class TalkToCruise {
     public void publishSubsetSize(int size) {
         String line = String.valueOf(size) + "\n";
         persist(line, testSubsetSizeFileLocator);
+        logger.info(String.format("Posting balanced subset size as %s to cruise server", size));
         httpAction.put(artifactFileUrl(TlbConstants.TEST_SUBSET_SIZE_FILE), line);
     }
 

@@ -9,6 +9,8 @@ import static org.hamcrest.core.Is.is;
 import java.util.List;
 import java.util.HashMap;
 
+import com.thoughtworks.cruise.tlb.TestUtil;
+
 public class XmlUtilTest {
     @Test
     public void shouldUnderstandsLoadingStringAsXML() throws Exception{
@@ -41,7 +43,7 @@ public class XmlUtilTest {
         map.put("a", "http://foo.com/bar/baz");
         DocumentFactory.getInstance().setXPathNamespaceURIs(map);
 
-        String stageFeedPage = TestUtil.fileContents("resources/stages_p1.xml");
+        String stageFeedPage = com.thoughtworks.cruise.tlb.TestUtil.fileContents("resources/stages_p1.xml");
         Element element = XmlUtil.domFor(stageFeedPage);
         List entryIds = element.selectNodes("//a:entry/a:id");
         assertThat(entryIds.size(), is(3));

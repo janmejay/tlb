@@ -5,11 +5,13 @@ import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 import com.thoughtworks.cruise.tlb.TlbFileResource;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * @understands the criteria for splitting tests based on the number of tests
  */
 public class CountBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteria {
+    private static final Logger logger = Logger.getLogger(CountBasedTestSplitterCriteria.class.getName());
 
     public CountBasedTestSplitterCriteria(SystemEnvironment env) {
         super(env);
@@ -34,6 +36,7 @@ public class CountBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriter
         int index = jobs.indexOf(jobName());
         int splitRatio = files.size() / jobs.size();
         int reminder = files.size() % jobs.size();
+        logger.info(String.format("count balancing to approximately %s files per job with %s extra file to bucket", splitRatio, reminder));
 
         double balance = (double) (reminder * (index + 1)) / jobs.size();
         double lastBalance = (double) (reminder * index) / jobs.size();

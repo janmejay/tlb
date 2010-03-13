@@ -19,6 +19,7 @@ import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import java.io.UnsupportedEncodingException;
 import java.io.IOException;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * @understands talking http protocol using http client
@@ -27,6 +28,7 @@ public class DefaultHttpAction implements HttpAction {
     private final HttpClient client;
     private URI url;
     private boolean ssl;
+    private static final Logger logger = Logger.getLogger(DefaultHttpAction.class.getName());
 
     public DefaultHttpAction(HttpClient client, URI url) {
         this.client = client;
@@ -66,12 +68,16 @@ public class DefaultHttpAction implements HttpAction {
      * Ouch! static state again.
      */
     private void reRegisterProtocol() {
-        if (ssl) Protocol.registerProtocol("https", new Protocol("https", (ProtocolSocketFactory) new PermissiveSSLProtocolSocketFactory(), url.getPort()));
+        if (ssl) {
+            logger.info("(Re)registering https protocol");
+            Protocol.registerProtocol("https", new Protocol("https", (ProtocolSocketFactory) new PermissiveSSLProtocolSocketFactory(), url.getPort()));
+        }
     }
 
     public synchronized int executeMethod(HttpMethodBase method) {
         try {
             reRegisterProtocol();
+            logger.info(String.format("Executing http request with %s", method.getClass().getSimpleName()));
             return client.executeMethod(method);
         } catch (IOException e) {
             throw new RuntimeException("Oops! Something went wrong", e);

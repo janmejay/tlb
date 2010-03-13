@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.ArrayList;
 
 import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteria;
-import static com.thoughtworks.cruise.tlb.utils.TestUtil.file;
-import static com.thoughtworks.cruise.tlb.utils.TestUtil.scenarios;
 import com.thoughtworks.cruise.tlb.TlbFileResource;
 
 public class LoadBalancedTwistSuiteTest {
