@@ -1,42 +1,62 @@
-package com.thoughtworks.cruise.tlb.splitter;
+package com.thoughtworks.cruise.tlb.factory;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import org.hamcrest.core.Is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import org.junit.Test;
 import com.thoughtworks.cruise.tlb.TlbFileResource;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 import com.thoughtworks.cruise.tlb.TlbConstants;
+import com.thoughtworks.cruise.tlb.orderer.TestOrderer;
+import com.thoughtworks.cruise.tlb.orderer.FailedFirstOrderer;
+import com.thoughtworks.cruise.tlb.factory.TlbFactory;
+import com.thoughtworks.cruise.tlb.splitter.*;
 import com.thoughtworks.cruise.tlb.service.TalkToCruise;
 
 import java.util.HashMap;
 import java.util.List;
 
-public class TestSplitterCriteriaFactoryTest {
+public class TlbFactoryTest {
 
     @Test
     public void shouldReturnDefaultMatchAllCriteriaForEmpty() {
-        TestSplitterCriteria criteria = TestSplitterCriteriaFactory.getCriteria((String) null, env());
+        TestSplitterCriteria criteria = TlbFactory.getCriteria(null, env());
+        assertThat(criteria, Is.is(JobFamilyAwareSplitterCriteria.MATCH_ALL_FILE_SET));
+        criteria = TlbFactory.getCriteria("", env());
         assertThat(criteria, is(JobFamilyAwareSplitterCriteria.MATCH_ALL_FILE_SET));
-        criteria = TestSplitterCriteriaFactory.getCriteria("", env());
-        assertThat(criteria, is(JobFamilyAwareSplitterCriteria.MATCH_ALL_FILE_SET));
+    }
+    
+    @Test
+    public void shouldReturnNoOPOrdererForEmpty() {
+        TestOrderer orderer = TlbFactory.getOrderer(null, env());
+        assertThat(orderer, Is.is(TestOrderer.NO_OP));
+        orderer = TlbFactory.getOrderer("", env());
+        assertThat(orderer, is(TestOrderer.NO_OP));
     }
 
     @Test
     public void shouldThrowAnExceptionWhenTheCriteriaClassIsNotFound() {
         try {
-            TestSplitterCriteriaFactory.getCriteria("com.thoughtworks.cruise.tlb.MissingCriteria", env());
+            TlbFactory.getCriteria("com.thoughtworks.cruise.tlb.MissingCriteria", env());
             fail("should not be able to create random criteria!");
         } catch (IllegalArgumentException e) {
             assertThat(e.getMessage(), is("Unable to locate Criteria class 'com.thoughtworks.cruise.tlb.MissingCriteria'"));
+        }
+
+        try {
+            TlbFactory.getOrderer("com.thoughtworks.cruise.tlb.MissingOrderer", env());
+            fail("should not be able to create random orderer!");
+        } catch (IllegalArgumentException e) {
+            assertThat(e.getMessage(), is("Unable to locate Criteria class 'com.thoughtworks.cruise.tlb.MissingOrderer'"));
         }
     }
 
     @Test
     public void shouldThrowAnExceptionWhenTheCriteriaClassDoesNotImplementTestSplitterCriteria() {
         try {
-            TestSplitterCriteriaFactory.getCriteria("java.lang.String", env());
+            TlbFactory.getCriteria("java.lang.String", env());
             fail("should not be able to create criteria that doesn't implement TestSplitterCriteria");
         } catch (IllegalArgumentException e) {
             assertThat(e.getMessage(), is("Class 'java.lang.String' does not implement TestSplitterCriteria"));
@@ -45,21 +65,28 @@ public class TestSplitterCriteriaFactoryTest {
 
     @Test
     public void shouldReturnCountBasedCriteria() {
-        TestSplitterCriteria criteria = TestSplitterCriteriaFactory.getCriteria(TestSplitterCriteriaFactory.COUNT, env());
+        TestSplitterCriteria criteria = TlbFactory.getCriteria(TlbFactory.COUNT, env());
         assertThat(criteria, instanceOf(CountBasedTestSplitterCriteria.class));
     }
 
     @Test
     public void shouldInjectCruiseCommunicatorWhenImplementsTalkToCruise() {
-        TestSplitterCriteria criteria = TestSplitterCriteriaFactory.getCriteria(MockCriteria.class, env());
+        TlbFactory<TestSplitterCriteria> criteriaFactory = new TlbFactory<TestSplitterCriteria>(TestSplitterCriteria.class, JobFamilyAwareSplitterCriteria.MATCH_ALL_FILE_SET);
+        TestSplitterCriteria criteria = criteriaFactory.getInstance(MockCriteria.class, env());
         assertThat(criteria, instanceOf(MockCriteria.class));
         assertThat(((MockCriteria)criteria).calledTalksToCruise, is(true));
     }
 
     @Test
     public void shouldReturnTimeBasedCriteria() {
-        TestSplitterCriteria criteria = TestSplitterCriteriaFactory.getCriteria(TestSplitterCriteriaFactory.TIME, env());
+        TestSplitterCriteria criteria = TlbFactory.getCriteria(TlbFactory.TIME, env());
         assertThat(criteria, instanceOf(TimeBasedTestSplitterCriteria.class));
+    }
+
+    @Test
+    public void shouldReturnFailedFirstOrderer() {
+        TestOrderer failedTestsFirstOrderer = TlbFactory.getOrderer(TlbFactory.FAILED_FIRST, env());
+        assertThat(failedTestsFirstOrderer, instanceOf(FailedFirstOrderer.class));
     }
 
     private SystemEnvironment env() {

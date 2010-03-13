@@ -18,4 +18,5 @@ public interface TlbConstants {
     final String TEST_SUBSET_SIZE_FILE = "tlb/subset_size";
     final String CRITERIA_DEFAULTING_ORDER = "CRITERIA_DEFAULTING_ORDER";
     final String TLB_TMP_DIR = "TLB_TMP_DIR";
+    final String TLB_ORDERER = "TLB_ORDERER";
 }

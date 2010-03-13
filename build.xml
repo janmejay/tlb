@@ -111,7 +111,7 @@
             <classpath refid="test.classpath"/>
             <batchtest todir="target/reports">
                 <load-balanced-fileset dir="target/test-classes" includes="**/*Test.class"/>
-                <formatter classname="com.thoughtworks.cruise.tlb.ant.JunitTimeRecorder"/>
+                <formatter classname="com.thoughtworks.cruise.tlb.ant.JunitDataRecorder"/>
                 <formatter type="plain"/>
             </batchtest>
         </junit>
@@ -130,7 +130,7 @@
             <classpath refid="integration-test.classpath"/>
             <batchtest todir="target/reports">
                 <load-balanced-fileset dir="target/integration-test-classes" includes="**/*Test.class"/>
-                <formatter classname="com.thoughtworks.cruise.tlb.ant.JunitTimeRecorder"/>
+                <formatter classname="com.thoughtworks.cruise.tlb.ant.JunitDataRecorder"/>
                 <formatter type="plain"/>
             </batchtest>
         </junit>

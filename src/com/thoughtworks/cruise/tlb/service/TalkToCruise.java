@@ -38,6 +38,14 @@ public class TalkToCruise {
     final String stageLocator;
     final String testSubsetSizeFileLocator;
     private final FileUtil fileUtil;
+    public static final String FAILED_TESTS_FILE = "tlb/failed_tests";
+    public final String failedTestsListFileLocator;
+
+    private static final String INT = "\\d+";
+    private static final Pattern NUMBER_BASED_LOAD_BALANCED_JOB = Pattern.compile("(.*?)-(" + INT + ")");
+    private static final String HEX = "[a-fA-F0-9]";
+    private static final String UUID = HEX + "{8}-" + HEX + "{4}-" + HEX + "{4}-" + HEX + "{4}-" + HEX + "{12}";
+    private static final Pattern UUID_BASED_LOAD_BALANCED_JOB = Pattern.compile("(.*?)-(" + UUID + ")");
 
     public TalkToCruise(SystemEnvironment environment, HttpAction httpAction) {
         this.environment = environment;
@@ -45,6 +53,7 @@ public class TalkToCruise {
         subsetSize = null;
         jobLocator = String.format("%s/%s/%s/%s/%s", p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_LABEL), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER), p(CRUISE_JOB_NAME));
         testSubsetSizeFileLocator = String.format("%s/subset_size", jobLocator);
+        failedTestsListFileLocator = String.format("%s/failed_tests", jobLocator);
         stageLocator = String.format("%s/%s/%s/%s", p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_COUNTER), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER));
         fileUtil = new FileUtil(environment);
     }
@@ -83,13 +92,34 @@ public class TalkToCruise {
     public void testClassTime(String className, long time) {
         List<String> testTimes = cacheAndPersist(String.format("%s: %s\n", className, time), jobLocator);
         if (subsetSize() == testTimes.size()) {
-            StringBuffer buffer = new StringBuffer();
-            for (String testTime : testTimes) {
-                buffer.append(testTime);
-                buffer.append("\n");
+            postLinesToServer(testTimes, artifactFileUrl(TEST_TIME_FILE));
+        }
+    }
+
+    private void postLinesToServer(List<String> testTimes, String url) {
+        StringBuffer buffer = new StringBuffer();
+        for (String testTime : testTimes) {
+            buffer.append(testTime);
+            buffer.append("\n");
+        }
+
+        httpAction.put(url, buffer.toString());
+        clearSuiteTimeCachingFile();
+    }
+
+    public void testClassFailure(String className, boolean hasFailed) {
+        persist(String.format("%s: %s\n", className, hasFailed), failedTestsListFileLocator);
+        List<String> runTests = cache(failedTestsListFileLocator);
+
+
+        if (subsetSize() == runTests.size()) {
+            List<String> failedTests = new ArrayList<String>();
+            for (String runTest : runTests) {
+                if (runTest.matches("(.+?)\\:\\strue$")) {
+                    failedTests.add(runTest.substring(0, runTest.indexOf(":")));
+                }
             }
-            httpAction.put(artifactFileUrl(TEST_TIME_FILE), buffer.toString());
-            clearSuiteTimeCachingFile();
+            postLinesToServer(failedTests, artifactFileUrl(FAILED_TESTS_FILE));
         }
     }
 
@@ -106,6 +136,9 @@ public class TalkToCruise {
         File cacheFile = fileUtil.getUniqueFile(fileIdentifier);
         FileInputStream in = null;
         List<String> lines = null;
+        if (!cacheFile.exists()) {
+            return new ArrayList<String>();
+        }
         try {
             in = new FileInputStream(cacheFile);
             lines = IOUtils.readLines(in);
@@ -140,15 +173,27 @@ public class TalkToCruise {
     }
 
     public Map<String, String> getLastRunTestTimes(List<String> jobNames) {
+        return mergedProperties(tlbArtifactPayloadLines(lastRunArtifactUrls(jobNames, TEST_TIME_FILE)));
+    }
+
+    private List<String> lastRunArtifactUrls(List<String> jobNames, String urlSuffix) {
         String stageFeedUrl = String.format("%s/api/feeds/stages.xml", cruiseUrl());
         String stageDetailUrl = lastRunStageDetailUrl(stageFeedUrl);
         List<Attribute> jobLinks = jobLinks(stageDetailUrl);
-        List<String> tlbTestTimeUrls = tlbTestTimeUrls(jobLinks, jobNames);
-        return mergedProperties(tlbTestTimeUrls);
+        return tlbArtifactUrls(jobLinks, jobNames, urlSuffix);
     }
 
-    private Map<String, String> mergedProperties(List<String> tlbTestTimeUrls) {
+    private Map<String, String> mergedProperties(StringTokenizer suiteTimeLines) {
         HashMap<String, String> suiteTimeMap = new HashMap<String, String>();
+        while (suiteTimeLines.hasMoreTokens()) {
+            String tuple = suiteTimeLines.nextToken();
+            Matcher matcher = SUITE_TIME_STRING.matcher(tuple);
+            if (matcher.matches()) suiteTimeMap.put(matcher.group(1), matcher.group(2));
+        }
+        return suiteTimeMap;
+    }
+
+    private StringTokenizer tlbArtifactPayloadLines(List<String> tlbTestTimeUrls) {
         StringBuffer buffer = new StringBuffer();
         for (String tlbTestTimeUrl : tlbTestTimeUrls) {
             try {
@@ -157,26 +202,20 @@ public class TalkToCruise {
                 continue; //FIXME!
             }
         }
-        StringTokenizer suiteTimes = new StringTokenizer(buffer.toString(), "\n");
-        while (suiteTimes.hasMoreTokens()) {
-            String tuple = suiteTimes.nextToken();
-            Matcher matcher = SUITE_TIME_STRING.matcher(tuple);
-            if (matcher.matches()) suiteTimeMap.put(matcher.group(1), matcher.group(2));
-        }
-        return suiteTimeMap;
+        return new StringTokenizer(buffer.toString(), "\n");
     }
 
-    private List<String> tlbTestTimeUrls(List<Attribute> jobLinks, List<String> jobNames) {
-        ArrayList<String> tlbTestTimeUrls = new ArrayList<String>();
+    private List<String> tlbArtifactUrls(List<Attribute> jobLinks, List<String> jobNames, String urlSuffix) {
+        ArrayList<String> tlbAtrifactUrls = new ArrayList<String>();
         for (Attribute jobLink : jobLinks) {
             Element jobDom = rootFor(jobLink.getValue());
             String jobName = jobDom.attribute("name").getValue().trim();
             if (jobNames.contains(jobName)) {
                 String atrifactBaseUrl = jobDom.selectSingleNode("//artifacts/@baseUrl").getText();
-                tlbTestTimeUrls.add(String.format("%s/%s", atrifactBaseUrl, TEST_TIME_FILE));
+                tlbAtrifactUrls.add(String.format("%s/%s", atrifactBaseUrl, urlSuffix));
             }
         }
-        return tlbTestTimeUrls;
+        return tlbAtrifactUrls;
     }
 
     @SuppressWarnings({"unchecked"})
@@ -209,11 +248,58 @@ public class TalkToCruise {
     }
 
     public void clearSuiteTimeCachingFile() {
-        try {
-            FileUtils.forceDelete(fileUtil.getUniqueFile(jobLocator));
-            FileUtils.forceDelete(fileUtil.getUniqueFile(testSubsetSizeFileLocator));
-        } catch (IOException e) {
-            logger.log(Level.WARNING, "could not delete suite time cache file: " + e.getMessage(), e);
+        for (String fileIdentifier : Arrays.asList(jobLocator, testSubsetSizeFileLocator, failedTestsListFileLocator)) {
+            try {
+                FileUtils.forceDelete(fileUtil.getUniqueFile(fileIdentifier));
+            } catch (IOException e) {
+                logger.log(Level.WARNING, "could not delete suite time cache file: " + e.getMessage(), e);
+            }
         }
+    }
+
+    public List<String> getLastRunFailedTests(List<String> jobNames) {
+        StringTokenizer failedTestTokenizer = tlbArtifactPayloadLines(lastRunArtifactUrls(jobNames, FAILED_TESTS_FILE));
+        ArrayList<String> failedTestNames = new ArrayList<String>();
+        while(failedTestTokenizer.hasMoreTokens()) {
+            failedTestNames.add(failedTestTokenizer.nextToken());
+        }
+        return failedTestNames;
+    }
+
+    protected String jobName() {
+        return environment.getProperty(TlbConstants.CRUISE_JOB_NAME);
+    }
+
+    private String jobBaseName() {
+        Matcher matcher = NUMBER_BASED_LOAD_BALANCED_JOB.matcher(jobName());
+        if (matcher.matches()) {
+            return matcher.group(1);
+        }
+        matcher = UUID_BASED_LOAD_BALANCED_JOB.matcher(jobName());
+        if (matcher.matches()) {
+            return matcher.group(1);
+        }
+        return jobName();
+    }
+
+    private Pattern getMatcher() {
+        return Pattern.compile(String.format("^%s-(" + INT + "|" + UUID + ")$", jobBaseName()));
+    }
+
+    private List<String> jobsInTheSameFamily(List<String> jobs) {
+        List<String> family = new ArrayList<String>();
+        Pattern pattern = getMatcher();
+        for (String job : jobs) {
+            if (pattern.matcher(job).matches()) {
+                family.add(job);
+            }
+        }
+        return family;
+    }
+
+    public List<String> pearJobs() {
+        List<String> jobs = jobsInTheSameFamily(getJobs());
+        Collections.sort(jobs);
+        return jobs;
     }
 }

@@ -2,6 +2,7 @@ package com.thoughtworks.cruise.tlb.splitter;
 
 import com.thoughtworks.cruise.tlb.TlbConstants;
 import com.thoughtworks.cruise.tlb.TlbFileResource;
+import com.thoughtworks.cruise.tlb.factory.TlbFactory;
 import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class DefaultingTestSplitterCriteria extends TestSplitterCriteria {
         criterion = new ArrayList<TestSplitterCriteria>();
         String[] criteriaNames = criteriaNames(env);
         for (String criteriaName : criteriaNames) {
-            TestSplitterCriteria splitterCriteria = TestSplitterCriteriaFactory.getCriteria(criteriaName, env);
+            TestSplitterCriteria splitterCriteria = TlbFactory.getCriteria(criteriaName, env);
             criterion.add(splitterCriteria);
         }
     }

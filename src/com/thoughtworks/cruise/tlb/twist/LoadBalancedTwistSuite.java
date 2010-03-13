@@ -1,15 +1,11 @@
 package com.thoughtworks.cruise.tlb.twist;
 
-import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteriaFactory;
 import com.thoughtworks.cruise.tlb.splitter.TestSplitterCriteria;
-import static com.thoughtworks.cruise.tlb.TlbConstants.TLB_CRITERIA;
-import com.thoughtworks.cruise.tlb.utils.SystemEnvironment;
 import com.thoughtworks.cruise.tlb.TlbFileResource;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
