@@ -28,7 +28,7 @@ public class DefaultHttpAction implements HttpAction {
     private final HttpClient client;
     private URI url;
     private boolean ssl;
-    private static Logger logger = Logger.getLogger(DefaultHttpAction.class.getName());
+    private static final Logger logger = Logger.getLogger(DefaultHttpAction.class.getName());
 
     public DefaultHttpAction(HttpClient client, URI url) {
         this.client = client;

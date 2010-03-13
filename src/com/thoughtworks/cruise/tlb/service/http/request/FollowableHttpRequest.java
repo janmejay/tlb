@@ -15,7 +15,7 @@ import com.thoughtworks.cruise.tlb.service.http.DefaultHttpAction;
 public abstract class FollowableHttpRequest {
     private DefaultHttpAction defaultHttpAction;
     private RetryAfter retryer;
-    private static Logger logger = Logger.getLogger(FollowableHttpRequest.class.getName());
+    private static final Logger logger = Logger.getLogger(FollowableHttpRequest.class.getName());
 
     public FollowableHttpRequest(DefaultHttpAction defaultHttpAction) {
         this(defaultHttpAction, new RetryAfter(RetryAfter.seq(10, 8*6)));

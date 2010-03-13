@@ -14,7 +14,7 @@ import java.util.logging.Logger;
  */
 public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteria implements TalksToCruise {
     private final FileUtil fileUtil;
-    private static Logger logger = Logger.getLogger(TimeBasedTestSplitterCriteria.class.getName());
+    private static final Logger logger = Logger.getLogger(TimeBasedTestSplitterCriteria.class.getName());
 
     public TimeBasedTestSplitterCriteria(TalkToCruise talkToCruise, SystemEnvironment env) {
         this(env);
