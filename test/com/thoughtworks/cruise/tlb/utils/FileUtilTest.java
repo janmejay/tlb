@@ -61,8 +61,10 @@ public class FileUtilTest {
 
     @Test
     public void testGetsUniqueFileForGivenStringUnderTmpDir() {
+        logFixture.startListening();
         File uniqueFile = fileUtil.getUniqueFile("foo_bar_baz");
         assertThat(uniqueFile.getParentFile().getAbsolutePath(), is(overriddenTmpDir));
+        logFixture.assertHeard(String.format("unique file name foo_bar_baz translated to %s", uniqueFile.getAbsolutePath()));
     }
 
     @Test

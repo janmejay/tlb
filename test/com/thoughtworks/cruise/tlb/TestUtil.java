@@ -40,6 +40,17 @@ public class TestUtil {
         return FileUtils.readFileToString(new File(com.thoughtworks.cruise.tlb.TestUtil.class.getClassLoader().getResource(filePath).toURI()));
     }
 
+    public static File createFileInFolder(File folder, String fileName) {
+        File file = new File(folder, fileName);
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        file.deleteOnExit();
+        return file;
+    }
+
     public static class LogFixture {
         private ArrayList<Logger> loggersRegisteredTo;
         private TestUtil.LogFixture.TestHandler handler;

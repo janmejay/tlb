@@ -51,23 +51,14 @@ public class FileUtil {
         }
     }
 
-    public File createFileInFolder(File folder, String fileName) {
-        File file = new File(folder, fileName);
-        try {
-            file.createNewFile();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        file.deleteOnExit();
-        return file;
-    }
-
     public String classFileRelativePath(String testClass) {
         return testClass.replaceAll("\\.", "/") + ".class";
     }
 
     public File getUniqueFile(String seedString) {
         String fileName = DigestUtils.md5Hex(seedString);
-        return new File(new File(tmpDir()), fileName);
+        File file = new File(new File(tmpDir()), fileName);
+        logger.info(String.format("unique file name foo_bar_baz translated to %s", file.getAbsolutePath()));
+        return file;
     }
 }
