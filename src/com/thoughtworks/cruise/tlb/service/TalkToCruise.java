@@ -81,6 +81,7 @@ public class TalkToCruise {
     }
 
     public void testClassTime(String className, long time) {
+        logger.info(String.format("recording run time for suite %s", className));
         List<String> testTimes = cacheAndPersist(String.format("%s: %s\n", className, time), jobLocator);
         if (subsetSize() == testTimes.size()) {
             StringBuffer buffer = new StringBuffer();

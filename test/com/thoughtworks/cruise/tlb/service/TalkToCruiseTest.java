@@ -82,6 +82,7 @@ public class TalkToCruiseTest {
         cruise.persist("1\n", cruise.testSubsetSizeFileLocator);
         logFixture.startListening();
         cruise.testClassTime("com.thoughtworks.tlb.TestSuite", 12);
+        logFixture.assertHeard("recording run time for suite com.thoughtworks.tlb.TestSuite");
         logFixture.assertHeard("Posting test run times for 1 suite to the cruise server.");
         verify(action).put(url, data);
     }
