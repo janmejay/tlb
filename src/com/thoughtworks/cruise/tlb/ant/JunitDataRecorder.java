@@ -36,12 +36,11 @@ public class JunitDataRecorder implements JUnitResultFormatter {
 
     public void endTestSuite(JUnitTest jUnitTest) throws BuildException {
         String suiteName = jUnitTest.getName();
-
-        talkToCruise.testClassFailure(suiteName, (jUnitTest.failureCount() + jUnitTest.errorCount()) > 0);
         try {
+            talkToCruise.testClassFailure(suiteName, (jUnitTest.failureCount() + jUnitTest.errorCount()) > 0);
             talkToCruise.testClassTime(suiteName, jUnitTest.getRunTime());
         } catch (Exception e) {
-            logger.log(Level.WARNING, String.format("recording suite time failed for %s, gobbling exception, time balancing may not work too well for the next run", suiteName), e);
+            logger.log(Level.WARNING, String.format("recording suite time failed for %s, gobbling exception, things may not work too well for the next run", suiteName), e);
         }
     }
 

@@ -212,7 +212,9 @@ public class TalkToCruiseTest {
 
         cruise.testClassFailure("com.thoughtworks.tlb.PassingSuiteThree", false);
 
-        assertThat(fileUtil.getUniqueFile(cruise.failedTestsListFileLocator).exists(), is(false));
+        assertThat(fileUtil.getUniqueFile(cruise.failedTestsListFileLocator).exists(), is(true));
+        assertThat(fileUtil.getUniqueFile(cruise.testSubsetSizeFileLocator).exists(), is(true));
+        //should not clear files as test time post(which happens after this) needs it
 
         verify(action).put(url, data);
     }

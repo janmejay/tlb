@@ -96,6 +96,7 @@ public class TalkToCruise {
         if (subsetSize() == testTimes.size()) {
             logger.info(String.format("Posting test run times for %s suite to the cruise server.", subsetSize()));
             postLinesToServer(testTimes, artifactFileUrl(TEST_TIME_FILE));
+            clearSuiteTimeCachingFile();
         }
     }
 
@@ -106,7 +107,6 @@ public class TalkToCruise {
             buffer.append("\n");
         }
         httpAction.put(url, buffer.toString());
-        clearSuiteTimeCachingFile();
     }
 
     public void testClassFailure(String className, boolean hasFailed) {
