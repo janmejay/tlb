@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteria implements TalksToCruise {
     private final FileUtil fileUtil;
     private static final Logger logger = Logger.getLogger(TimeBasedTestSplitterCriteria.class.getName());
+    private static final String NO_HISTORICAL_DATA = "no historical test time data, aborting attempt to balance based on time";
 
     public TimeBasedTestSplitterCriteria(TalkToCruise talkToCruise, SystemEnvironment env) {
         this(env);
@@ -58,6 +59,10 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
     private List<TestFile> testFiles(List<String> jobs, List<TlbFileResource> fileResources) {
         Map<String, String> classToTime = talkToCruise.getLastRunTestTimes(jobs);
         logger.info(String.format("historical test time data has entries for %s suites", classToTime.size()));
+        if (classToTime.isEmpty()) {
+            logger.warning(NO_HISTORICAL_DATA);
+            throw new IllegalStateException(NO_HISTORICAL_DATA);
+        }
         Map<String, TlbFileResource> fileNameToResource = new HashMap<String, TlbFileResource>();
         Set<String> currentFileNames = new HashSet<String>();
         for (TlbFileResource fileResource : fileResources) {

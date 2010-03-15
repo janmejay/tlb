@@ -10,6 +10,7 @@ import org.junit.After;
 import static org.junit.matchers.JUnitMatchers.hasItem;
 import static org.junit.matchers.JUnitMatchers.hasItems;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.hamcrest.core.Is.is;
@@ -69,6 +70,45 @@ public class TimeBasedTestSplitterCriteriaTest {
 
         criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-2"));
         assertThat(criteria.filter(resources), is(Arrays.asList(fourth, fifth)));
+    }
+
+    @Test
+    public void shouldBombWhenNoTestTimeDataAvailable() {
+        when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4"));
+        when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2", "job-3", "job-4"))).thenReturn(new HashMap<String, String>());
+
+        TlbFileResource first = TestUtil.tlbFileResource("com/foo", "First");
+        TlbFileResource second = TestUtil.tlbFileResource("com/foo", "Second");
+        TlbFileResource third = TestUtil.tlbFileResource("com/bar", "Third");
+        TlbFileResource fourth = TestUtil.tlbFileResource("foo/baz", "Fourth");
+        TlbFileResource fifth = TestUtil.tlbFileResource("foo/bar", "Fourth");
+        List<TlbFileResource> resources = Arrays.asList(first, second, third, fourth, fifth);
+
+
+        TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-1"));
+        logFixture.startListening();
+        assertAbortsForNoHistoricalTimeData(resources, criteria);
+
+        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-2"));
+        assertAbortsForNoHistoricalTimeData(resources, criteria);
+
+        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-3"));
+        assertAbortsForNoHistoricalTimeData(resources, criteria);
+
+        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-4"));
+        assertAbortsForNoHistoricalTimeData(resources, criteria);
+    }
+
+    private void assertAbortsForNoHistoricalTimeData(List<TlbFileResource> resources, TimeBasedTestSplitterCriteria criteria) {
+        try {
+            criteria.filter(resources);
+            fail("should have aborted, as no historical test time data was given");
+        } catch (Exception e) {
+            String message = "no historical test time data, aborting attempt to balance based on time";
+            logFixture.assertHeard(message);
+            logFixture.clearHistory();
+            assertThat(e.getMessage(), is(message));
+        }
     }
 
     @Test

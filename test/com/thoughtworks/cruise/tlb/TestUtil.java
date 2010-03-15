@@ -59,6 +59,10 @@ public class TestUtil {
             assertHeard(partOfMessage, 1);
         }
 
+        public void clearHistory() {
+            handler.clearHistory();
+        }
+
         public void assertHeard(String partOfMessage, int expectedOccurances) {
             int actualOccurances = totalOccurances(partOfMessage);
             assertThat(String.format("log message '%s' should have been heard %s times, but was actually heard %s times in %s statements %s",
@@ -96,6 +100,10 @@ public class TestUtil {
 
             public void close() throws SecurityException {
                 //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public void clearHistory() {
+                messages.clear();
             }
         }
 
