@@ -3,6 +3,9 @@ package com.github.tlb.service;
 import com.github.tlb.TlbConstants;
 
 import static com.github.tlb.TlbConstants.*;
+
+import com.github.tlb.domain.SuiteResultEntry;
+import com.github.tlb.domain.SuiteTimeEntry;
 import com.github.tlb.service.http.HttpAction;
 import com.github.tlb.utils.FileUtil;
 import com.github.tlb.utils.SystemEnvironment;
@@ -33,7 +36,6 @@ public class TalkToCruise {
     private static final String JOB_NAME = "name";
     protected static final String TEST_TIME_FILE = "tlb/test_time.properties";
     private static final Pattern STAGE_LOCATOR = Pattern.compile("(.*?)/\\d+/(.*?)/\\d+");
-    private static final Pattern SUITE_TIME_STRING = Pattern.compile("(.*?):\\s*(\\d+)");
     private Integer subsetSize;
     final String jobLocator;
     final String stageLocator;
@@ -93,36 +95,26 @@ public class TalkToCruise {
 
     public void testClassTime(String className, long time) {
         logger.info(String.format("recording run time for suite %s", className));
-        List<String> testTimes = cacheAndPersist(String.format("%s: %s\n", className, time), jobLocator);
+        List<String> testTimes = cacheAndPersist(new SuiteTimeEntry(className, time).dump(), jobLocator);
         if (subsetSize() == testTimes.size()) {
             logger.info(String.format("Posting test run times for %s suite to the cruise server.", subsetSize()));
-            postLinesToServer(testTimes, artifactFileUrl(TEST_TIME_FILE));
+            postLinesToServer(SuiteTimeEntry.dump(SuiteTimeEntry.parse(testTimes)), artifactFileUrl(TEST_TIME_FILE));
             clearSuiteTimeCachingFile();
         }
     }
 
-    private void postLinesToServer(List<String> testTimes, String url) {
-        StringBuffer buffer = new StringBuffer();
-        for (String testTime : testTimes) {
-            buffer.append(testTime);
-            buffer.append("\n");
-        }
-        httpAction.put(url, buffer.toString());
+    private void postLinesToServer(String buffer, String url) {
+        httpAction.put(url, buffer);
     }
 
     public void testClassFailure(String className, boolean hasFailed) {
-        persist(String.format("%s: %s\n", className, hasFailed), failedTestsListFileLocator);
+        persist(new SuiteResultEntry(className, hasFailed).dump(), failedTestsListFileLocator);
         List<String> runTests = cache(failedTestsListFileLocator);
 
 
         if (subsetSize() == runTests.size()) {
-            List<String> failedTests = new ArrayList<String>();
-            for (String runTest : runTests) {
-                if (runTest.matches("(.+?)\\:\\strue$")) {
-                    failedTests.add(runTest.substring(0, runTest.indexOf(":")));
-                }
-            }
-            postLinesToServer(failedTests, artifactFileUrl(FAILED_TESTS_FILE));
+            List<SuiteResultEntry> resultEntries = SuiteResultEntry.parse(runTests);
+            postLinesToServer(SuiteResultEntry.dumpFailures(resultEntries), artifactFileUrl(FAILED_TESTS_FILE));
         }
     }
 
@@ -177,8 +169,8 @@ public class TalkToCruise {
         return subsetSize;
     }
 
-    public Map<String, String> getLastRunTestTimes(List<String> jobNames) {
-        return mergedProperties(tlbArtifactPayloadLines(lastRunArtifactUrls(jobNames, TEST_TIME_FILE)));
+    public List<SuiteTimeEntry> getLastRunTestTimes(List<String> jobNames) {
+        return SuiteTimeEntry.parse(tlbArtifactPayloadLines(lastRunArtifactUrls(jobNames, TEST_TIME_FILE)));
     }
 
     private List<String> lastRunArtifactUrls(List<String> jobNames, String urlSuffix) {
@@ -192,13 +184,13 @@ public class TalkToCruise {
         HashMap<String, String> suiteTimeMap = new HashMap<String, String>();
         while (suiteTimeLines.hasMoreTokens()) {
             String tuple = suiteTimeLines.nextToken();
-            Matcher matcher = SUITE_TIME_STRING.matcher(tuple);
+            Matcher matcher = SuiteTimeEntry.SUITE_TIME_STRING.matcher(tuple);
             if (matcher.matches()) suiteTimeMap.put(matcher.group(1), matcher.group(2));
         }
         return suiteTimeMap;
     }
 
-    private StringTokenizer tlbArtifactPayloadLines(List<String> tlbTestTimeUrls) {
+    private String tlbArtifactPayloadLines(List<String> tlbTestTimeUrls) {
         StringBuffer buffer = new StringBuffer();
         for (String tlbTestTimeUrl : tlbTestTimeUrls) {
             try {
@@ -207,7 +199,7 @@ public class TalkToCruise {
                 continue; //FIXME!
             }
         }
-        return new StringTokenizer(buffer.toString(), "\n");
+        return buffer.toString();
     }
 
     private List<String> tlbArtifactUrls(List<Attribute> jobLinks, List<String> jobNames, String urlSuffix) {
@@ -263,13 +255,8 @@ public class TalkToCruise {
         }
     }
 
-    public List<String> getLastRunFailedTests(List<String> jobNames) {
-        StringTokenizer failedTestTokenizer = tlbArtifactPayloadLines(lastRunArtifactUrls(jobNames, FAILED_TESTS_FILE));
-        ArrayList<String> failedTestNames = new ArrayList<String>();
-        while(failedTestTokenizer.hasMoreTokens()) {
-            failedTestNames.add(failedTestTokenizer.nextToken());
-        }
-        return failedTestNames;
+    public List<SuiteResultEntry> getLastRunFailedTests(List<String> jobNames) {
+        return SuiteResultEntry.parseFailures(tlbArtifactPayloadLines(lastRunArtifactUrls(jobNames, FAILED_TESTS_FILE)));
     }
 
     protected String jobName() {

@@ -5,6 +5,9 @@ import com.github.tlb.TlbConstants;
 
 import static com.github.tlb.TestUtil.fileContents;
 import static com.github.tlb.TlbConstants.*;
+
+import com.github.tlb.domain.SuiteResultEntry;
+import com.github.tlb.domain.SuiteTimeEntry;
 import com.github.tlb.service.http.DefaultHttpAction;
 import com.github.tlb.service.http.HttpAction;
 import com.github.tlb.utils.FileUtil;
@@ -285,10 +288,20 @@ public class TalkToCruiseTest {
         when(action.get("http://localhost:8153/cruise/files/pipeline/1/stage/1/firefox-1/tlb/failed_tests")).thenReturn(TestUtil.fileContents("resources/failed_tests_1"));
         when(action.get("http://localhost:8153/cruise/files/pipeline/1/stage/1/firefox-2/tlb/failed_tests")).thenReturn(TestUtil.fileContents("resources/failed_tests_2"));
         TalkToCruise cruise = new TalkToCruise(initEnvironment("http://localhost:8153/cruise"), action);
-        List<String> failedTests = cruise.getLastRunFailedTests(Arrays.asList("firefox-1", "firefox-2"));
+        List<SuiteResultEntry> failedTestEntries = cruise.getLastRunFailedTests(Arrays.asList("firefox-1", "firefox-2"));
+        List<String> failedTests = failedTestNames(failedTestEntries);
         Collections.sort(failedTests);
         assertThat(failedTests, is(Arrays.asList("com.thoughtworks.cruise.AnotherFailedTest", "com.thoughtworks.cruise.FailedTest", "com.thoughtworks.cruise.YetAnotherFailedTest")));
     }
+
+    private List<String> failedTestNames(List<SuiteResultEntry> failedTestEntries) {
+        ArrayList<String> failedTestNames = new ArrayList<String>();
+        for (SuiteResultEntry failedTestEntry : failedTestEntries) {
+            failedTestNames.add(failedTestEntry.getName());
+        }
+        return failedTestNames;
+    }
+
 
     @Test
     public void shouldFindTestTimesFromLastRunStage() throws Exception{
@@ -300,14 +313,14 @@ public class TalkToCruiseTest {
         when(action.get("http://localhost:8153/cruise/files/pipeline/1/stage/1/firefox-1/tlb/test_time.properties")).thenReturn(fileContents("resources/test_time_1.properties"));
         when(action.get("http://localhost:8153/cruise/files/pipeline/1/stage/1/firefox-2/tlb/test_time.properties")).thenReturn(fileContents("resources/test_time_2.properties"));
         TalkToCruise cruise = new TalkToCruise(initEnvironment("http://localhost:8153/cruise"), action);
-        Map<String, String> runTimes = cruise.getLastRunTestTimes(Arrays.asList("firefox-1", "firefox-2"));
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("com.thoughtworks.cruise.one.One", "10");
-        map.put("com.thoughtworks.cruise.two.Two", "20");
-        map.put("com.thoughtworks.cruise.three.Three", "30");
-        map.put("com.thoughtworks.cruise.four.Four", "40");
-        map.put("com.thoughtworks.cruise.five.Five", "50");
-        assertThat(runTimes, is(map));
+        List<SuiteTimeEntry> runTimes = cruise.getLastRunTestTimes(Arrays.asList("firefox-1", "firefox-2"));
+        List<SuiteTimeEntry> expected = new ArrayList<SuiteTimeEntry>();
+        expected.add(new SuiteTimeEntry("com.thoughtworks.cruise.one.One", 10l));
+        expected.add(new SuiteTimeEntry("com.thoughtworks.cruise.two.Two", 20l));
+        expected.add(new SuiteTimeEntry("com.thoughtworks.cruise.three.Three", 30l));
+        expected.add(new SuiteTimeEntry("com.thoughtworks.cruise.four.Four", 40l));
+        expected.add(new SuiteTimeEntry("com.thoughtworks.cruise.five.Five", 50l));
+        assertThat(runTimes, is(expected));
     }
 
     @Test
@@ -326,14 +339,14 @@ public class TalkToCruiseTest {
         envMap.put(CRUISE_PIPELINE_NAME, "old_pipeline");
         envMap.put(CRUISE_STAGE_NAME, "old_stage");
         TalkToCruise cruise = new TalkToCruise(new SystemEnvironment(envMap), action);
-        Map<String, String> runTimes = cruise.getLastRunTestTimes(Arrays.asList("firefox-1", "firefox-2"));
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("com.thoughtworks.cruise.one.One", "10");
-        map.put("com.thoughtworks.cruise.two.Two", "20");
-        map.put("com.thoughtworks.cruise.three.Three", "30");
-        map.put("com.thoughtworks.cruise.four.Four", "40");
-        map.put("com.thoughtworks.cruise.five.Five", "50");
-        assertThat(runTimes, is(map));
+        List<SuiteTimeEntry> runTimes = cruise.getLastRunTestTimes(Arrays.asList("firefox-1", "firefox-2"));
+        List<SuiteTimeEntry> expected = new ArrayList<SuiteTimeEntry>();
+        expected.add(new SuiteTimeEntry("com.thoughtworks.cruise.one.One", 10l));
+        expected.add(new SuiteTimeEntry("com.thoughtworks.cruise.two.Two", 20l));
+        expected.add(new SuiteTimeEntry("com.thoughtworks.cruise.three.Three", 30l));
+        expected.add(new SuiteTimeEntry("com.thoughtworks.cruise.four.Four", 40l));
+        expected.add(new SuiteTimeEntry("com.thoughtworks.cruise.five.Five", 50l));
+        assertThat(runTimes, is(expected));
     }
 
     private SystemEnvironment initEnvironment(String url) {

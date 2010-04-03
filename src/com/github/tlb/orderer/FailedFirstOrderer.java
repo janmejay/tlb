@@ -1,6 +1,7 @@
 package com.github.tlb.orderer;
 
 import com.github.tlb.TlbFileResource;
+import com.github.tlb.domain.SuiteResultEntry;
 import com.github.tlb.service.TalkToCruise;
 import com.github.tlb.splitter.TalksToCruise;
 import com.github.tlb.utils.SystemEnvironment;
@@ -25,8 +26,8 @@ public class FailedFirstOrderer extends TestOrderer implements TalksToCruise {
     public int compare(TlbFileResource o1, TlbFileResource o2) {
         if (failedTestFiles == null) {
             failedTestFiles = new ArrayList<String>();
-            for (String failedTestClass : toCruise.getLastRunFailedTests(toCruise.pearJobs())) {
-                failedTestFiles.add(fileUtil.classFileRelativePath(failedTestClass));
+            for (SuiteResultEntry failedSuiteEntry : toCruise.getLastRunFailedTests(toCruise.pearJobs())) {
+                failedTestFiles.add(fileUtil.classFileRelativePath(failedSuiteEntry.getName()));
             }
         }
         if (failedTestFiles.contains(o1.getName()))

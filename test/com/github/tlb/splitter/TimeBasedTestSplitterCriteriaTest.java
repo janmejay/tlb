@@ -2,6 +2,7 @@ package com.github.tlb.splitter;
 
 import com.github.tlb.TestUtil;
 import com.github.tlb.TlbFileResource;
+import com.github.tlb.domain.SuiteTimeEntry;
 import com.github.tlb.service.TalkToCruise;
 import com.github.tlb.utils.SystemEnvironment;
 import org.junit.Before;
@@ -15,6 +16,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.hamcrest.core.Is.is;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.HashMap;
@@ -55,8 +57,8 @@ public class TimeBasedTestSplitterCriteriaTest {
     @Test
     public void shouldSplitTestsBasedOnTimeForTwoJob() {
         when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2"));
-        HashMap<String, String> map = testTimes();
-        when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2"))).thenReturn(map);
+        List<SuiteTimeEntry> entries = testTimes();
+        when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2"))).thenReturn(entries);
 
         TlbFileResource first = TestUtil.tlbFileResource("com/foo", "First");
         TlbFileResource second = TestUtil.tlbFileResource("com/foo", "Second");
@@ -75,7 +77,7 @@ public class TimeBasedTestSplitterCriteriaTest {
     @Test
     public void shouldBombWhenNoTestTimeDataAvailable() {
         when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4"));
-        when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2", "job-3", "job-4"))).thenReturn(new HashMap<String, String>());
+        when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2", "job-3", "job-4"))).thenReturn(new ArrayList<SuiteTimeEntry>());
 
         TlbFileResource first = TestUtil.tlbFileResource("com/foo", "First");
         TlbFileResource second = TestUtil.tlbFileResource("com/foo", "Second");
@@ -114,8 +116,7 @@ public class TimeBasedTestSplitterCriteriaTest {
     @Test
     public void shouldSplitTestsBasedOnTimeForFourJobs() {
         when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4"));
-        HashMap<String, String> map = testTimes();
-        when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2", "job-3", "job-4"))).thenReturn(map);
+        when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2", "job-3", "job-4"))).thenReturn(testTimes());
 
         TlbFileResource first = TestUtil.tlbFileResource("com/foo", "First");
         TlbFileResource second = TestUtil.tlbFileResource("com/foo", "Second");
@@ -140,8 +141,7 @@ public class TimeBasedTestSplitterCriteriaTest {
     @Test
     public void shouldDistributeUnknownTestsBasedOnAverageTime() throws Exception{
         when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2"));
-        HashMap<String, String> map = testTimes();
-        when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2"))).thenReturn(map);
+        when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2"))).thenReturn(testTimes());
 
         TlbFileResource first = TestUtil.tlbFileResource("com/foo", "First");
         TlbFileResource second = TestUtil.tlbFileResource("com/foo", "Second");
@@ -179,8 +179,7 @@ public class TimeBasedTestSplitterCriteriaTest {
     @Test
     public void shouldIgnoreDeletedTests() throws Exception{
         when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2"));
-        HashMap<String, String> map = testTimes();
-        when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2"))).thenReturn(map);
+        when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2"))).thenReturn(testTimes());
 
         TlbFileResource first = TestUtil.tlbFileResource("com/foo", "First");
         TlbFileResource second = TestUtil.tlbFileResource("com/foo", "Second");
@@ -210,13 +209,13 @@ public class TimeBasedTestSplitterCriteriaTest {
         logFixture.assertHeard("assigned total of 2 files to [ job-2 ]");
     }
 
-    private HashMap<String, String> testTimes() {
-        HashMap<String, String> map = new HashMap<String, String>();
-        map.put("com.foo.First", "2");
-        map.put("com.foo.Second", "5");
-        map.put("com.bar.Third", "1");
-        map.put("foo.baz.Fourth", "4");
-        map.put("foo.bar.Fourth", "3");
-        return map;
+    private List<SuiteTimeEntry> testTimes() {
+        List<SuiteTimeEntry> entries = new ArrayList<SuiteTimeEntry>();
+        entries.add(new SuiteTimeEntry("com.foo.First", 2l));
+        entries.add(new SuiteTimeEntry("com.foo.Second", 5l));
+        entries.add(new SuiteTimeEntry("com.bar.Third", 1l));
+        entries.add(new SuiteTimeEntry("foo.baz.Fourth", 4l));
+        entries.add(new SuiteTimeEntry("foo.bar.Fourth", 3l));
+        return entries;
     }
 }

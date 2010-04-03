@@ -4,6 +4,7 @@ import com.github.tlb.TestUtil;
 
 import static com.github.tlb.TestUtil.initEnvironment;
 import com.github.tlb.ant.JunitFileResource;
+import com.github.tlb.domain.SuiteResultEntry;
 import com.github.tlb.service.TalkToCruise;
 import com.github.tlb.splitter.TalksToCruise;
 
@@ -48,7 +49,7 @@ public class FailedFirstOrdererTest {
         JunitFileResource bazClass = junitFileResource(baseDir, "foo/bar/Baz.class");
         JunitFileResource quuxClass = junitFileResource(baseDir, "foo/baz/Quux.class");
         JunitFileResource bangClass = junitFileResource(baseDir, "foo/baz/Bang.class");
-        List<String> failedTests = Arrays.asList("baz.bang.Foo.class", "foo.bar.Bang.class");
+        List<SuiteResultEntry> failedTests = Arrays.asList(new SuiteResultEntry("baz.bang.Foo.class", true), new SuiteResultEntry("foo.bar.Bang.class", true));
         when(toCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "foo", "bar"));
         when(toCruise.getLastRunFailedTests(Arrays.asList("job-1", "job-2", "job-3"))).thenReturn(failedTests);
         List<JunitFileResource> fileList = Arrays.asList(bazClass, quuxClass, bangClass);
@@ -62,7 +63,7 @@ public class FailedFirstOrdererTest {
         JunitFileResource quuxClass = junitFileResource(baseDir, "foo/baz/Quux.class");
         JunitFileResource failedFooClass = junitFileResource(baseDir, "baz/bang/Foo.class");
         JunitFileResource failedBangClass = junitFileResource(baseDir, "foo/bar/Bang.class");
-        List<String> failedTests = Arrays.asList("baz.bang.Foo", "foo.bar.Bang");
+        List<SuiteResultEntry> failedTests = Arrays.asList(new SuiteResultEntry("baz.bang.Foo", true), new SuiteResultEntry("foo.bar.Bang", true));
         when(toCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
         when(toCruise.getLastRunFailedTests(Arrays.asList("job-1", "job-2", "job-3"))).thenReturn(failedTests);
         List<JunitFileResource> fileList = Arrays.asList(bazClass, failedFooClass, quuxClass, failedBangClass);
