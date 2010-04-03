@@ -26,6 +26,8 @@
           <root url="jar://$MODULE_DIR$/local/commons-httpclient-3.1-src.zip!/commons-httpclient-3.1/src/contrib" />
           <root url="jar://$MODULE_DIR$/local/commons-httpclient-3.1-src.zip!/commons-httpclient-3.1/src/test" />
           <root url="jar://$MODULE_DIR$/local/commons-httpclient-3.1-src.zip!/commons-httpclient-3.1/src/java" />
+          <root url="file://$MODULE_DIR$/local/com.noelios.restlet" />
+          <root url="file://$MODULE_DIR$/local/org.restlet" />
         </SOURCES>
         <jarDirectory url="file://$MODULE_DIR$/lib" recursive="false" />
       </library>
