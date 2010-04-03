@@ -27,7 +27,7 @@ if ENV['load_balance'] == 'true'
           ant.filelist :dir => File.expand_path(File.join(File.dirname(__FILE__), "..")), :files => dependencies.join(",")
         end
         dependencies << tlb_classes
-        ant.typedef :name=>'load_balanced_fileset', :classname => 'com.thoughtworks.cruise.tlb.ant.LoadBalancedFileSet', :classpathref => 'tlb.class.path'
+        ant.typedef :name=>'load_balanced_fileset', :classname => 'com.github.tlb.ant.LoadBalancedFileSet', :classpathref => 'tlb.class.path'
         ant.taskdef :name=>'junit', :classname=>'org.apache.tools.ant.taskdefs.optional.junit.JUnitTask', :classpath=> taskdef.to_s
 
         ant.junit forking.merge(:clonevm=>options[:clonevm] || false, :dir=>task.send(:project).path_to) do
@@ -40,7 +40,7 @@ if ENV['load_balance'] == 'true'
           ant.formatter :type=>'xml'
           ant.batchtest :todir=>task.report_to.to_s, :failureproperty=>'failed' do
             ant.load_balanced_fileset(:dir => 'target/tlb/test/classes', :includes => "**/*Test.class")
-            ant.formatter :classname=> "com.thoughtworks.cruise.tlb.ant.JunitDataRecorder"
+            ant.formatter :classname=> "com.github.tlb.ant.JunitDataRecorder"
             ant.formatter :type=>'plain'
           end
         end
