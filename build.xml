@@ -91,7 +91,7 @@
     </target>
 
     <target name="test.count_balanced" depends="package, compile-tests">
-        <typedef name="load-balanced-fileset" classname="com.thoughtworks.cruise.tlb.ant.LoadBalancedFileSet"
+        <typedef name="load-balanced-fileset" classname="com.github.tlb.ant.LoadBalancedFileSet"
                  classpathref="dog.food.classpath"/>
         <junit failureproperty="test.failure" printsummary="yes" haltonfailure="true" haltonerror="true"
                showoutput="true" fork="true">
@@ -104,14 +104,14 @@
     </target>
 
     <target name="test.time_balanced" depends="package, compile-tests">
-        <typedef name="load-balanced-fileset" classname="com.thoughtworks.cruise.tlb.ant.LoadBalancedFileSet"
+        <typedef name="load-balanced-fileset" classname="com.github.tlb.ant.LoadBalancedFileSet"
                  classpathref="dog.food.classpath"/>
         <junit failureproperty="test.failure" printsummary="yes" haltonfailure="true" haltonerror="true"
                showoutput="true" fork="true">
             <classpath refid="test.classpath"/>
             <batchtest todir="target/reports">
                 <load-balanced-fileset dir="target/test-classes" includes="**/*Test.class"/>
-                <formatter classname="com.thoughtworks.cruise.tlb.ant.JunitDataRecorder"/>
+                <formatter classname="com.github.tlb.ant.JunitDataRecorder"/>
                 <formatter type="plain"/>
             </batchtest>
         </junit>
@@ -123,14 +123,14 @@
             These tests are meant to play dummy 'to be run' tests, that tlb is being used to balance.
             These do not test much themselfs.
         </description>
-        <typedef name="load-balanced-fileset" classname="com.thoughtworks.cruise.tlb.ant.LoadBalancedFileSet"
+        <typedef name="load-balanced-fileset" classname="com.github.tlb.ant.LoadBalancedFileSet"
                  classpathref="dog.food.classpath"/>
         <junit failureproperty="test.failure" printsummary="yes" haltonfailure="true" haltonerror="true"
                showoutput="true" fork="true">
             <classpath refid="integration-test.classpath"/>
             <batchtest todir="target/reports">
                 <load-balanced-fileset dir="target/integration-test-classes" includes="**/*Test.class"/>
-                <formatter classname="com.thoughtworks.cruise.tlb.ant.JunitDataRecorder"/>
+                <formatter classname="com.github.tlb.ant.JunitDataRecorder"/>
                 <formatter type="plain"/>
             </batchtest>
         </junit>

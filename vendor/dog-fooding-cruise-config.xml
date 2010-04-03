@@ -26,8 +26,8 @@
       </materials>
       <stage name="time_based">
         <environmentvariables>
-          <variable name="TLB_CRITERIA">com.thoughtworks.cruise.tlb.splitter.DefaultingTestSplitterCriteria</variable>
-          <variable name="CRITERIA_DEFAULTING_ORDER">com.thoughtworks.cruise.tlb.splitter.TimeBasedTestSplitterCriteria:com.thoughtworks.cruise.tlb.splitter.CountBasedTestSplitterCriteria</variable>
+          <variable name="TLB_CRITERIA">com.github.tlb.splitter.DefaultingTestSplitterCriteria</variable>
+          <variable name="CRITERIA_DEFAULTING_ORDER">com.github.tlb.splitter.TimeBasedTestSplitterCriteria:com.github.tlb.splitter.CountBasedTestSplitterCriteria</variable>
           <variable name="TLB_TMP_DIR">/tmp</variable>
         </environmentvariables> 
         <jobs>
@@ -56,8 +56,8 @@
       </materials>
       <stage name="time_based">
         <environmentvariables>
-          <variable name="TLB_CRITERIA">com.thoughtworks.cruise.tlb.splitter.DefaultingTestSplitterCriteria</variable>
-          <variable name="CRITERIA_DEFAULTING_ORDER">com.thoughtworks.cruise.tlb.splitter.TimeBasedTestSplitterCriteria:com.thoughtworks.cruise.tlb.splitter.CountBasedTestSplitterCriteria</variable>
+          <variable name="TLB_CRITERIA">com.github.tlb.splitter.DefaultingTestSplitterCriteria</variable>
+          <variable name="CRITERIA_DEFAULTING_ORDER">com.github.tlb.splitter.TimeBasedTestSplitterCriteria:com.github.tlb.splitter.CountBasedTestSplitterCriteria</variable>
           <variable name="load_balance">true</variable>
           <variable name="TLB_TMP_DIR">/tmp</variable>
         </environmentvariables> 
@@ -87,7 +87,7 @@
       </materials>
       <stage name="count">
         <environmentvariables>
-          <variable name="TLB_CRITERIA">com.thoughtworks.cruise.tlb.splitter.CountBasedTestSplitterCriteria</variable>
+          <variable name="TLB_CRITERIA">com.github.tlb.splitter.CountBasedTestSplitterCriteria</variable>
           <variable name="TLB_TMP_DIR">/tmp</variable>
         </environmentvariables> 
         <jobs>
