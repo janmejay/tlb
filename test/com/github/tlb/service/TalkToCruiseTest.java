@@ -1,4 +1,4 @@
-package com.github.tlb.service;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           package com.github.tlb.service;
 
 import com.github.tlb.TestUtil;
 import com.github.tlb.TlbConstants;
@@ -8,11 +8,10 @@ import static com.github.tlb.TlbConstants.*;
 
 import com.github.tlb.domain.SuiteResultEntry;
 import com.github.tlb.domain.SuiteTimeEntry;
-import com.github.tlb.service.http.DefaultHttpAction;
 import com.github.tlb.service.http.HttpAction;
+import com.github.tlb.storage.TlbEntryRepository;
 import com.github.tlb.utils.FileUtil;
 import com.github.tlb.utils.SystemEnvironment;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import static org.hamcrest.core.Is.is;
 import org.junit.After;
@@ -39,28 +38,6 @@ public class TalkToCruiseTest {
     @After
     public void tearDown() {
         logFixture.stopListening();
-    }
-
-    @Test
-    public void shouldLogWhenLoadingOrPersistingCachableData() throws Exception{
-        SystemEnvironment env = initEnvironment("http://test.host:8153/cruise");
-        FileUtil fileUtil = new FileUtil(env);
-
-        try {
-            FileUtils.forceDelete(fileUtil.getUniqueFile("foo"));
-        } catch (IOException e) {
-            //ignore, file may not be there!
-        }
-        TalkToCruise cruise = new TalkToCruise(env, mock(DefaultHttpAction.class));
-        logFixture.startListening();
-        cruise.persist("hello world\n", "foo");
-        logFixture.assertHeard(String.format("Wrote [ hello world\n ] to %s [ identified by: foo ]", fileUtil.getUniqueFile("foo")));
-        cruise.persist("hacking is fun\n", "foo");
-        logFixture.assertHeard(String.format("Wrote [ hacking is fun\n ] to %s [ identified by: foo ]", fileUtil.getUniqueFile("foo")));
-        cruise.persist("foo bar baz quux\n", "foo");
-        logFixture.assertHeard(String.format("Wrote [ foo bar baz quux\n ] to %s [ identified by: foo ]", fileUtil.getUniqueFile("foo")));
-        cruise.cache("foo");
-        logFixture.assertHeard(String.format("Cached 3 lines from %s [ identified by: foo ], the last of which was [ foo bar baz quux ]", fileUtil.getUniqueFile("foo")));
     }
 
     @Test
@@ -118,7 +95,7 @@ public class TalkToCruiseTest {
 
         TalkToCruise cruise = new TalkToCruise(environment, action);
         cruise.clearSuiteTimeCachingFile();
-        cruise.persist("1\n", cruise.testSubsetSizeFileLocator);
+        cruise.subsetSizeRepository.appendLine("1\n");
 
         logFixture.startListening();
         cruise.testClassTime("com.thoughtworks.tlb.TestSuite", 12);
@@ -141,15 +118,15 @@ public class TalkToCruiseTest {
         logFixture.assertHeard("Posting balanced subset size as 10 to cruise server");
         List<String> times = new ArrayList<String>();
         times.add("10");
-        assertThat(toCruise.cache(toCruise.testSubsetSizeFileLocator), is(times));
+        assertThat(toCruise.subsetSizeRepository.load(), is(times));
         toCruise.publishSubsetSize(20);
         logFixture.assertHeard("Posting balanced subset size as 20 to cruise server");
         times.add("20");
-        assertThat(toCruise.cache(toCruise.testSubsetSizeFileLocator), is(times));
+        assertThat(toCruise.subsetSizeRepository.load(), is(times));
         toCruise.publishSubsetSize(25);
         logFixture.assertHeard("Posting balanced subset size as 25 to cruise server");
         times.add("25");
-        assertThat(toCruise.cache(toCruise.testSubsetSizeFileLocator), is(times));
+        assertThat(toCruise.subsetSizeRepository.load(), is(times));
         verify(action).put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "10\n");
         verify(action).put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "20\n");
         verify(action).put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "25\n");
@@ -169,15 +146,15 @@ public class TalkToCruiseTest {
 
         TalkToCruise cruise = new TalkToCruise(env, action);
         cruise.clearSuiteTimeCachingFile();
-        cruise.persist("5\n", cruise.testSubsetSizeFileLocator);
+        cruise.subsetSizeRepository.appendLine("5\n");
         cruise.testClassTime("com.thoughtworks.tlb.TestSuite", 12);
-        assertCacheState(env, 1, "com.thoughtworks.tlb.TestSuite: 12", cruise.jobLocator);
+        assertCacheState(env, 1, "com.thoughtworks.tlb.TestSuite: 12", cruise.testTimesRepository);
         cruise.testClassTime("com.thoughtworks.tlb.TestTimeBased", 15);
-        assertCacheState(env, 2, "com.thoughtworks.tlb.TestTimeBased: 15", cruise.jobLocator);
+        assertCacheState(env, 2, "com.thoughtworks.tlb.TestTimeBased: 15", cruise.testTimesRepository);
         cruise.testClassTime("com.thoughtworks.tlb.TestCountBased", 10);
-        assertCacheState(env, 3, "com.thoughtworks.tlb.TestCountBased: 10", cruise.jobLocator);
+        assertCacheState(env, 3, "com.thoughtworks.tlb.TestCountBased: 10", cruise.testTimesRepository);
         cruise.testClassTime("com.thoughtworks.tlb.TestCriteriaSelection", 30);
-        assertCacheState(env, 4, "com.thoughtworks.tlb.TestCriteriaSelection: 30", cruise.jobLocator);
+        assertCacheState(env, 4, "com.thoughtworks.tlb.TestCriteriaSelection: 30", cruise.testTimesRepository);
 
         when(action.put(url, data)).thenReturn("File tlb/test_time.properties was appended successfully");
 
@@ -200,24 +177,24 @@ public class TalkToCruiseTest {
 
         TalkToCruise cruise = new TalkToCruise(env, action);
         cruise.clearSuiteTimeCachingFile();
-        cruise.persist("3\n\10\n6\n", cruise.testSubsetSizeFileLocator);
+        cruise.subsetSizeRepository.appendLine("3\n\10\n6\n");
         cruise.testClassFailure("com.thoughtworks.tlb.PassingSuite", false);
-        assertCacheState(env, 1, "com.thoughtworks.tlb.PassingSuite: false", cruise.failedTestsListFileLocator);
+        assertCacheState(env, 1, "com.thoughtworks.tlb.PassingSuite: false", cruise.failedTestsRepository);
         cruise.testClassFailure("com.thoughtworks.tlb.FailedSuiteOne", true);
-        assertCacheState(env, 2, "com.thoughtworks.tlb.FailedSuiteOne: true", cruise.failedTestsListFileLocator);
+        assertCacheState(env, 2, "com.thoughtworks.tlb.FailedSuiteOne: true", cruise.failedTestsRepository);
         cruise.testClassFailure("com.thoughtworks.tlb.FailedSuiteTwo", true);
-        assertCacheState(env, 3, "com.thoughtworks.tlb.FailedSuiteTwo: true", cruise.failedTestsListFileLocator);
+        assertCacheState(env, 3, "com.thoughtworks.tlb.FailedSuiteTwo: true", cruise.failedTestsRepository);
         cruise.testClassFailure("com.thoughtworks.tlb.PassingSuiteTwo", false);
-        assertCacheState(env, 4, "com.thoughtworks.tlb.PassingSuiteTwo: false", cruise.failedTestsListFileLocator);
+        assertCacheState(env, 4, "com.thoughtworks.tlb.PassingSuiteTwo: false", cruise.failedTestsRepository);
         cruise.testClassFailure("com.thoughtworks.tlb.FailedSuiteThree", true);
-        assertCacheState(env, 5, "com.thoughtworks.tlb.FailedSuiteThree: true", cruise.failedTestsListFileLocator);
+        assertCacheState(env, 5, "com.thoughtworks.tlb.FailedSuiteThree: true", cruise.failedTestsRepository);
 
         when(action.put(url, data)).thenReturn("File tlb/failed_tests was appended successfully");
 
         cruise.testClassFailure("com.thoughtworks.tlb.PassingSuiteThree", false);
 
-        assertThat(fileUtil.getUniqueFile(cruise.failedTestsListFileLocator).exists(), is(true));
-        assertThat(fileUtil.getUniqueFile(cruise.testSubsetSizeFileLocator).exists(), is(true));
+        assertThat(cruise.failedTestsRepository.getFile().exists(), is(true));
+        assertThat(cruise.subsetSizeRepository.getFile().exists(), is(true));
         //should not clear files as test time post(which happens after this) needs it
 
         verify(action).put(url, data);
@@ -235,11 +212,11 @@ public class TalkToCruiseTest {
 
         TalkToCruise cruise = new TalkToCruise(env, action);
         cruise.clearSuiteTimeCachingFile();
-        cruise.persist("5\n10\n3\n", cruise.testSubsetSizeFileLocator);
+        cruise.subsetSizeRepository.appendLine("5\n10\n3\n");
         cruise.testClassTime("com.thoughtworks.tlb.TestSuite", 12);
-        assertCacheState(env, 1, "com.thoughtworks.tlb.TestSuite: 12", cruise.jobLocator);
+        assertCacheState(env, 1, "com.thoughtworks.tlb.TestSuite: 12", cruise.testTimesRepository);
         cruise.testClassTime("com.thoughtworks.tlb.TestCriteriaSelection", 30);
-        assertCacheState(env, 2, "com.thoughtworks.tlb.TestCriteriaSelection: 30", cruise.jobLocator);
+        assertCacheState(env, 2, "com.thoughtworks.tlb.TestCriteriaSelection: 30", cruise.testTimesRepository);
 
         when(action.put(url, data)).thenReturn("File tlb/test_time.properties was appended successfully");
 
@@ -250,8 +227,8 @@ public class TalkToCruiseTest {
         verify(action).put(url, data);
     }
 
-    private void assertCacheState(SystemEnvironment env, int lineCount, String lastLine, String locator) throws IOException {
-        List<String> cache = cacheFileContents(env, locator);
+    private void assertCacheState(SystemEnvironment env, int lineCount, String lastLine, TlbEntryRepository repository) throws IOException {
+        List<String> cache = repository.load();
         assertThat(cache.size(), is(lineCount));
         if (! cache.isEmpty()) {
             assertThat(cache.get(lineCount - 1), is(lastLine));

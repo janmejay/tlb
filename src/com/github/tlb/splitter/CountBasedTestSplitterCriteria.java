@@ -30,7 +30,7 @@ public class CountBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriter
      * where each of (2/7) is basically the rate at which we carry over the balance before we account for it.
      *
      * @param files
-     * @return filtered list
+     * @return filtered load
      */
     protected List<TlbFileResource> subset(List<TlbFileResource> files) {
         int index = jobs.indexOf(jobName());
