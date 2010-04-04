@@ -2,7 +2,7 @@ package com.github.tlb.splitter;
 
 import com.github.tlb.TlbFileResource;
 import com.github.tlb.domain.SuiteTimeEntry;
-import com.github.tlb.service.TalkToCruise;
+import com.github.tlb.service.TalkToService;
 import com.github.tlb.utils.FileUtil;
 import com.github.tlb.utils.SystemEnvironment;
 
@@ -12,14 +12,14 @@ import java.util.logging.Logger;
 /**
  * @understands criteria for splitting tests based on time taken
  */
-public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteria implements TalksToCruise {
+public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteria implements TalksToService {
     private final FileUtil fileUtil;
     private static final Logger logger = Logger.getLogger(TimeBasedTestSplitterCriteria.class.getName());
     private static final String NO_HISTORICAL_DATA = "no historical test time data, aborting attempt to balance based on time";
 
-    public TimeBasedTestSplitterCriteria(TalkToCruise talkToCruise, SystemEnvironment env) {
+    public TimeBasedTestSplitterCriteria(TalkToService talkToService, SystemEnvironment env) {
         this(env);
-        talksToCruise(talkToCruise);
+        talksToService(talkToService);
     }
 
     public TimeBasedTestSplitterCriteria(SystemEnvironment env) {
@@ -57,7 +57,7 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
     }
 
     private List<TestFile> testFiles(List<String> jobs, List<TlbFileResource> fileResources) {
-        List<SuiteTimeEntry> suiteTimeEntries = talkToCruise.getLastRunTestTimes(jobs);
+        List<SuiteTimeEntry> suiteTimeEntries = talkToService.getLastRunTestTimes(jobs);
         logger.info(String.format("historical test time data has entries for %s suites", suiteTimeEntries.size()));
         if (suiteTimeEntries.isEmpty()) {
             logger.warning(NO_HISTORICAL_DATA);

@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 /**
  * @understands requesting and posting information to/from cruise
  */
-public class TalkToCruise {
+public class TalkToCruise implements TalkToService {
     private static final Logger logger = Logger.getLogger(TalkToCruise.class.getName());
 
     private final SystemEnvironment environment;
@@ -36,7 +36,6 @@ public class TalkToCruise {
     private Integer subsetSize;
     final String jobLocator;
     final String stageLocator;
-    private final FileUtil fileUtil;
     public static final String FAILED_TESTS_FILE = "tlb/failed_tests";
 
     private static final String INT = "\\d+";
@@ -53,7 +52,7 @@ public class TalkToCruise {
         this.httpAction = httpAction;
         subsetSize = null;
         jobLocator = String.format("%s/%s/%s/%s/%s", p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_LABEL), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER), p(CRUISE_JOB_NAME));
-        fileUtil = new FileUtil(environment);
+        FileUtil fileUtil = new FileUtil(environment);
         testTimesRepository = new TlbEntryRepository(fileUtil.tmpDir(), DigestUtils.md5Hex(jobLocator));
         subsetSizeRepository = new TlbEntryRepository(fileUtil.tmpDir(), DigestUtils.md5Hex(String.format("%s/subset_size", jobLocator)));
         failedTestsRepository = new TlbEntryRepository(fileUtil.tmpDir(), DigestUtils.md5Hex(String.format("%s/failed_tests", jobLocator)));

@@ -2,6 +2,8 @@ package com.github.tlb.splitter;
 
 import com.github.tlb.TestUtil;
 import com.github.tlb.TlbFileResource;
+import com.github.tlb.service.TalkToCruise;
+import com.github.tlb.service.TalkToService;
 import org.junit.Test;
 import org.junit.Before;
 import static org.junit.Assert.assertThat;
@@ -9,7 +11,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
 import static org.hamcrest.core.Is.is;
 import com.github.tlb.ant.JunitFileResource;
-import com.github.tlb.service.TalkToCruise;
 import com.github.tlb.utils.SystemEnvironment;
 
 import java.util.*;
@@ -18,18 +19,18 @@ import java.io.File;
 import static junit.framework.Assert.fail;
 
 public class CountBasedTestSplitterCriteriaTest {
-    private TalkToCruise talkToCruise;
+    private TalkToService talkToService;
     private TestUtil.LogFixture logFixture;
 
     @Before
     public void setUp() throws Exception {
-        talkToCruise = mock(TalkToCruise.class);
+        talkToService = mock(TalkToCruise.class);
         logFixture = new TestUtil.LogFixture();
     }
 
     @Test
     public void shouldConsumeAllTestsWhenNoJobsToBalanceWith() {
-        when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1"));
+        when(talkToService.pearJobs()).thenReturn(Arrays.asList("job-1"));
 
         SystemEnvironment env = TestUtil.initEnvironment("job-1");
 
@@ -38,13 +39,13 @@ public class CountBasedTestSplitterCriteriaTest {
         TlbFileResource third = TestUtil.junitFileResource("third");
         List<TlbFileResource> resources = Arrays.asList(first, second, third);
 
-        CountBasedTestSplitterCriteria criteria = new CountBasedTestSplitterCriteria(talkToCruise, env);
+        CountBasedTestSplitterCriteria criteria = new CountBasedTestSplitterCriteria(talkToService, env);
         assertThat(criteria.filter(resources), is(Arrays.asList(first, second, third)));
     }
 
     @Test
     public void shouldSplitTestsBasedOnSplitFactorForTheFirstJob() {
-        when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2"));
+        when(talkToService.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2"));
 
         SystemEnvironment env = TestUtil.initEnvironment("job-1");
 
@@ -52,7 +53,7 @@ public class CountBasedTestSplitterCriteriaTest {
         TlbFileResource second = TestUtil.junitFileResource("second");
         List<TlbFileResource> resources = Arrays.asList(first, second, TestUtil.junitFileResource("third"), TestUtil.junitFileResource("fourth"), TestUtil.junitFileResource("fifth"));
 
-        CountBasedTestSplitterCriteria criteria = new CountBasedTestSplitterCriteria(talkToCruise, env);
+        CountBasedTestSplitterCriteria criteria = new CountBasedTestSplitterCriteria(talkToService, env);
         logFixture.startListening();
         assertThat(criteria.filter(resources), is(Arrays.asList(first, second)));
         logFixture.assertHeard("got total of 5 files to balance");
@@ -63,7 +64,7 @@ public class CountBasedTestSplitterCriteriaTest {
 
     @Test
     public void shouldSplitTestsBasedOnSplitFactorForTheSecondJob() {
-        when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2"));
+        when(talkToService.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2"));
 
         SystemEnvironment env = TestUtil.initEnvironment("job-2");
 
@@ -72,7 +73,7 @@ public class CountBasedTestSplitterCriteriaTest {
         TlbFileResource fifth = TestUtil.junitFileResource("fifth");
         List<TlbFileResource> resources = Arrays.asList(TestUtil.junitFileResource("first"), TestUtil.junitFileResource("second"), third, fourth, fifth);
 
-        CountBasedTestSplitterCriteria criteria = new CountBasedTestSplitterCriteria(talkToCruise, env);
+        CountBasedTestSplitterCriteria criteria = new CountBasedTestSplitterCriteria(talkToService, env);
         logFixture.startListening();
         assertThat(criteria.filter(resources), is(Arrays.asList(third, fourth, fifth)));
         logFixture.assertHeard("got total of 5 files to balance");
@@ -83,7 +84,7 @@ public class CountBasedTestSplitterCriteriaTest {
 
     @Test
     public void shouldSplitTestsJobWithUUID() {
-        when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-abcdef12-1234-3456-7890-abcdef123456", "job-e2345678-1234-3456-7890-abcdef123456"));
+        when(talkToService.pearJobs()).thenReturn(Arrays.asList("job-abcdef12-1234-3456-7890-abcdef123456", "job-e2345678-1234-3456-7890-abcdef123456"));
 
         SystemEnvironment env = TestUtil.initEnvironment("job-e2345678-1234-3456-7890-abcdef123456");
 
@@ -92,13 +93,13 @@ public class CountBasedTestSplitterCriteriaTest {
         TlbFileResource fifth = TestUtil.junitFileResource("fifth");
         List<TlbFileResource> resources = Arrays.asList(TestUtil.junitFileResource("first"), TestUtil.junitFileResource("second"), third, fourth, fifth);
 
-        CountBasedTestSplitterCriteria criteria = new CountBasedTestSplitterCriteria(talkToCruise, env);
+        CountBasedTestSplitterCriteria criteria = new CountBasedTestSplitterCriteria(talkToService, env);
         assertThat(criteria.filter(resources), is(Arrays.asList(third, fourth, fifth)));
     }
 
     @Test
     public void shouldSplitTestsBalanced() {
-        when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
+        when(talkToService.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
 
         ArrayList<TlbFileResource> resources = new ArrayList<TlbFileResource>();
 
@@ -122,7 +123,7 @@ public class CountBasedTestSplitterCriteriaTest {
 
     @Test
     public void shouldSplitTestsWhenTheSplitsAreMoreThanTests() {
-        when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
+        when(talkToService.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
 
         ArrayList<TlbFileResource> resources = new ArrayList<TlbFileResource>();
 
@@ -137,7 +138,7 @@ public class CountBasedTestSplitterCriteriaTest {
 
     @Test
     public void shouldSplitTestsWhenTheSplitsIsEqualToNumberOfTests() {
-        when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
+        when(talkToService.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
 
         ArrayList<TlbFileResource> resources = new ArrayList<TlbFileResource>();
 
@@ -152,7 +153,7 @@ public class CountBasedTestSplitterCriteriaTest {
 
     @Test//to assertain it really works as expected
     public void shouldSplitTestsBalancedFor37testsAcross7Jobs() {
-        when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4", "job-5", "job-6", "job-7"));
+        when(talkToService.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4", "job-5", "job-6", "job-7"));
 
         ArrayList<TlbFileResource> resources = new ArrayList<TlbFileResource>();
 
@@ -177,7 +178,7 @@ public class CountBasedTestSplitterCriteriaTest {
 
     @Test//to assertain it really works as expected
     public void shouldSplitTestsBalancedFor41testsAcross7Jobs() {
-        when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4", "job-5", "job-6", "job-7"));
+        when(talkToService.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4", "job-5", "job-6", "job-7"));
 
         ArrayList<TlbFileResource> resources = new ArrayList<TlbFileResource>();
 
@@ -202,7 +203,7 @@ public class CountBasedTestSplitterCriteriaTest {
 
     @Test//to assertain it really works as expected
     public void shouldSplitTestsBalancedFor36testsAcross6Jobs() {
-        when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4", "job-5", "job-6"));
+        when(talkToService.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4", "job-5", "job-6"));
 
         ArrayList<TlbFileResource> resources = new ArrayList<TlbFileResource>();
 
@@ -225,7 +226,7 @@ public class CountBasedTestSplitterCriteriaTest {
 
 
     private CountBasedTestSplitterCriteria criteria(String jobName) {
-        return new CountBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment(jobName));
+        return new CountBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment(jobName));
     }
 
 }

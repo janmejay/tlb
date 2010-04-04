@@ -14,7 +14,7 @@ import com.github.tlb.orderer.TestOrderer;
 import com.github.tlb.orderer.FailedFirstOrderer;
 import com.github.tlb.factory.TlbFactory;
 import com.github.tlb.splitter.*;
-import com.github.tlb.service.TalkToCruise;
+import com.github.tlb.service.TalkToService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -96,7 +96,7 @@ public class TlbFactoryTest {
         return new SystemEnvironment(map);
     }
 
-    private static class MockCriteria extends JobFamilyAwareSplitterCriteria implements TalksToCruise {
+    private static class MockCriteria extends JobFamilyAwareSplitterCriteria implements TalksToService {
         private boolean calledFilter = false;
         private boolean calledTalksToCruise = false;
 
@@ -109,7 +109,7 @@ public class TlbFactoryTest {
             return null;
         }
 
-        public void talksToCruise(TalkToCruise cruise) {
+        public void talksToService(TalkToService service) {
             this.calledTalksToCruise = true;
         }
     }

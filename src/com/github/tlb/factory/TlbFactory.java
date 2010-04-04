@@ -1,10 +1,11 @@
 package com.github.tlb.factory;
 
 import com.github.tlb.service.TalkToCruise;
+import com.github.tlb.service.TalkToService;
 import com.github.tlb.service.http.DefaultHttpAction;
+import com.github.tlb.splitter.TalksToService;
 import com.github.tlb.utils.SystemEnvironment;
 import com.github.tlb.splitter.TestSplitterCriteria;
-import com.github.tlb.splitter.TalksToCruise;
 import com.github.tlb.splitter.JobFamilyAwareSplitterCriteria;
 import com.github.tlb.orderer.TestOrderer;
 
@@ -45,9 +46,9 @@ public class TlbFactory<T> {
     <T> T getInstance(Class<? extends T> actualKlass, SystemEnvironment environment) {
         try {
             T criteria = actualKlass.getConstructor(SystemEnvironment.class).newInstance(environment);
-            if (TalksToCruise.class.isInstance(criteria)) {
-                TalkToCruise cruise = new TalkToCruise(environment, new DefaultHttpAction(environment));
-                ((TalksToCruise)criteria).talksToCruise(cruise);
+            if (TalksToService.class.isInstance(criteria)) {
+                TalkToService service = new TalkToCruise(environment, new DefaultHttpAction(environment));
+                ((TalksToService)criteria).talksToService(service);
             }
             return criteria;
         } catch (InvocationTargetException e) {

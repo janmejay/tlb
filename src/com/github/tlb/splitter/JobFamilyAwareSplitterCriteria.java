@@ -6,13 +6,13 @@ import com.github.tlb.TlbFileResource;
 import java.util.List;
 import java.util.logging.Logger;
 
-import com.github.tlb.service.TalkToCruise;
+import com.github.tlb.service.TalkToService;
 import com.github.tlb.utils.SystemEnvironment;
 
 /**
  * @understands the criteria for splitting a given test suite across jobs from the same family
  */
-public abstract class JobFamilyAwareSplitterCriteria extends TestSplitterCriteria implements TalksToCruise {
+public abstract class JobFamilyAwareSplitterCriteria extends TestSplitterCriteria implements TalksToService {
     public static TestSplitterCriteria MATCH_ALL_FILE_SET = new JobFamilyAwareSplitterCriteria(null) {
         public List<TlbFileResource> filter(List<TlbFileResource> fileResources) {
             return fileResources;
@@ -22,7 +22,7 @@ public abstract class JobFamilyAwareSplitterCriteria extends TestSplitterCriteri
             throw new RuntimeException("Should never reach here");
         }
     };
-    protected TalkToCruise talkToCruise;
+    protected TalkToService talkToService;
     protected List<String> jobs;
 
     private static final Logger logger = Logger.getLogger(JobFamilyAwareSplitterCriteria.class.getName());
@@ -42,14 +42,14 @@ public abstract class JobFamilyAwareSplitterCriteria extends TestSplitterCriteri
 
         List<TlbFileResource> subset = subset(fileResources);
         logger.info(String.format("assigned total of %s files to [ %s ]", subset.size(), env.getProperty(TlbConstants.CRUISE_JOB_NAME)));
-        talkToCruise.publishSubsetSize(subset.size());
+        talkToService.publishSubsetSize(subset.size());
         return subset;
     }
 
     protected abstract List<TlbFileResource> subset(List<TlbFileResource> fileResources);
 
-    public void talksToCruise(TalkToCruise cruise) {
-       this.talkToCruise = cruise;
+    public void talksToService(TalkToService service) {
+       this.talkToService = service;
     }
 
     protected boolean isLast(List<String> jobs, int index) {
@@ -65,6 +65,6 @@ public abstract class JobFamilyAwareSplitterCriteria extends TestSplitterCriteri
     }
 
     protected List<String> pearJobs() {
-        return talkToCruise.pearJobs();
+        return talkToService.pearJobs();
     }
 }

@@ -1,7 +1,7 @@
 package com.github.tlb.splitter;
 
 import com.github.tlb.TlbFileResource;
-import com.github.tlb.service.TalkToCruise;
+import com.github.tlb.service.TalkToService;
 import com.github.tlb.utils.SystemEnvironment;
 
 import java.util.List;
@@ -17,9 +17,9 @@ public class CountBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriter
         super(env);
     }
 
-    CountBasedTestSplitterCriteria(TalkToCruise talkToCruise, SystemEnvironment env) {
+    CountBasedTestSplitterCriteria(TalkToService talkToService, SystemEnvironment env) {
         this(env);
-        talksToCruise(talkToCruise);
+        talksToService(talkToService);
     }
 
     /**

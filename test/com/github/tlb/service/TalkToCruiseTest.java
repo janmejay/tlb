@@ -250,8 +250,8 @@ public class TalkToCruiseTest {
         SystemEnvironment environment = initEnvironment("http://test.host:8153/cruise");
         HttpAction action = mock(HttpAction.class);
         when(action.put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "10\n")).thenReturn("File tlb/subset_size was appended successfully");
-        TalkToCruise toCruise = new TalkToCruise(environment, action);
-        toCruise.publishSubsetSize(10);
+        TalkToService toService = new TalkToCruise(environment, action);
+        toService.publishSubsetSize(10);
         verify(action).put("http://test.host:8153/cruise/files/pipeline/label-2/stage/1/rspec/tlb/subset_size", "10\n");
     }
 
@@ -264,8 +264,8 @@ public class TalkToCruiseTest {
         stubJobDetails(action);
         when(action.get("http://localhost:8153/cruise/files/pipeline/1/stage/1/firefox-1/tlb/failed_tests")).thenReturn(TestUtil.fileContents("resources/failed_tests_1"));
         when(action.get("http://localhost:8153/cruise/files/pipeline/1/stage/1/firefox-2/tlb/failed_tests")).thenReturn(TestUtil.fileContents("resources/failed_tests_2"));
-        TalkToCruise cruise = new TalkToCruise(initEnvironment("http://localhost:8153/cruise"), action);
-        List<SuiteResultEntry> failedTestEntries = cruise.getLastRunFailedTests(Arrays.asList("firefox-1", "firefox-2"));
+        TalkToService service = new TalkToCruise(initEnvironment("http://localhost:8153/cruise"), action);
+        List<SuiteResultEntry> failedTestEntries = service.getLastRunFailedTests(Arrays.asList("firefox-1", "firefox-2"));
         List<String> failedTests = failedTestNames(failedTestEntries);
         Collections.sort(failedTests);
         assertThat(failedTests, is(Arrays.asList("com.thoughtworks.cruise.AnotherFailedTest", "com.thoughtworks.cruise.FailedTest", "com.thoughtworks.cruise.YetAnotherFailedTest")));
@@ -289,8 +289,8 @@ public class TalkToCruiseTest {
         stubJobDetails(action);
         when(action.get("http://localhost:8153/cruise/files/pipeline/1/stage/1/firefox-1/tlb/test_time.properties")).thenReturn(fileContents("resources/test_time_1.properties"));
         when(action.get("http://localhost:8153/cruise/files/pipeline/1/stage/1/firefox-2/tlb/test_time.properties")).thenReturn(fileContents("resources/test_time_2.properties"));
-        TalkToCruise cruise = new TalkToCruise(initEnvironment("http://localhost:8153/cruise"), action);
-        List<SuiteTimeEntry> runTimes = cruise.getLastRunTestTimes(Arrays.asList("firefox-1", "firefox-2"));
+        TalkToService service = new TalkToCruise(initEnvironment("http://localhost:8153/cruise"), action);
+        List<SuiteTimeEntry> runTimes = service.getLastRunTestTimes(Arrays.asList("firefox-1", "firefox-2"));
         List<SuiteTimeEntry> expected = new ArrayList<SuiteTimeEntry>();
         expected.add(new SuiteTimeEntry("com.thoughtworks.cruise.one.One", 10l));
         expected.add(new SuiteTimeEntry("com.thoughtworks.cruise.two.Two", 20l));
@@ -315,8 +315,8 @@ public class TalkToCruiseTest {
         Map<String, String> envMap = initEnvMap("http://localhost:8153/cruise");
         envMap.put(CRUISE_PIPELINE_NAME, "old_pipeline");
         envMap.put(CRUISE_STAGE_NAME, "old_stage");
-        TalkToCruise cruise = new TalkToCruise(new SystemEnvironment(envMap), action);
-        List<SuiteTimeEntry> runTimes = cruise.getLastRunTestTimes(Arrays.asList("firefox-1", "firefox-2"));
+        TalkToService service = new TalkToCruise(new SystemEnvironment(envMap), action);
+        List<SuiteTimeEntry> runTimes = service.getLastRunTestTimes(Arrays.asList("firefox-1", "firefox-2"));
         List<SuiteTimeEntry> expected = new ArrayList<SuiteTimeEntry>();
         expected.add(new SuiteTimeEntry("com.thoughtworks.cruise.one.One", 10l));
         expected.add(new SuiteTimeEntry("com.thoughtworks.cruise.two.Two", 20l));

@@ -6,7 +6,7 @@ import static com.github.tlb.TestUtil.initEnvironment;
 import com.github.tlb.ant.JunitFileResource;
 import com.github.tlb.domain.SuiteResultEntry;
 import com.github.tlb.service.TalkToCruise;
-import com.github.tlb.splitter.TalksToCruise;
+import com.github.tlb.splitter.TalksToService;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertThat;
@@ -19,7 +19,6 @@ import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.Is.is;
 import org.apache.tools.ant.Project;
 import org.mockito.internal.verification.Times;
-import org.mockito.internal.verification.api.VerificationMode;
 
 import java.io.File;
 import java.util.List;
@@ -39,12 +38,12 @@ public class FailedFirstOrdererTest {
         project = new Project();
         baseDir = TestUtil.createTempFolder().getAbsolutePath();
         project.setBasedir(baseDir);
-        orderer.talksToCruise(toCruise);
+        orderer.talksToService(toCruise);
     }
 
     @Test
     public void shouldImplementTalksToCruise() throws Exception{
-        assertTrue("Failed first orderer must be talk to cruise aware", TalksToCruise.class.isAssignableFrom(FailedFirstOrderer.class));
+        assertTrue("Failed first orderer must be talk to cruise aware", TalksToService.class.isAssignableFrom(FailedFirstOrderer.class));
     }
 
     @Test
