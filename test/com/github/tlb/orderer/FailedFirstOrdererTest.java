@@ -13,10 +13,13 @@ import static org.junit.Assert.assertThat;
 import org.junit.Test;
 import org.junit.Before;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.Is.is;
 import org.apache.tools.ant.Project;
+import org.mockito.internal.verification.Times;
+import org.mockito.internal.verification.api.VerificationMode;
 
 import java.io.File;
 import java.util.List;
@@ -50,11 +53,13 @@ public class FailedFirstOrdererTest {
         JunitFileResource quuxClass = junitFileResource(baseDir, "foo/baz/Quux.class");
         JunitFileResource bangClass = junitFileResource(baseDir, "foo/baz/Bang.class");
         List<SuiteResultEntry> failedTests = Arrays.asList(new SuiteResultEntry("baz.bang.Foo.class", true), new SuiteResultEntry("foo.bar.Bang.class", true));
-        when(toCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "foo", "bar"));
+        when(toCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
         when(toCruise.getLastRunFailedTests(Arrays.asList("job-1", "job-2", "job-3"))).thenReturn(failedTests);
         List<JunitFileResource> fileList = Arrays.asList(bazClass, quuxClass, bangClass);
         Collections.sort(fileList, orderer);
         assertThat(fileList, is(Arrays.asList(bazClass, quuxClass, bangClass)));
+        verify(toCruise, new Times(1)).pearJobs();
+        verify(toCruise, new Times(1)).getLastRunFailedTests(Arrays.asList("job-1", "job-2", "job-3"));
     }
 
     @Test
@@ -74,6 +79,8 @@ public class FailedFirstOrdererTest {
 
         assertThat(fileList.get(2), anyOf(is(bazClass), is(quuxClass)));
         assertThat(fileList.get(3), anyOf(is(bazClass), is(quuxClass)));
+        verify(toCruise, new Times(1)).pearJobs();
+        verify(toCruise, new Times(1)).getLastRunFailedTests(Arrays.asList("job-1", "job-2", "job-3"));
     }
 
     private JunitFileResource junitFileResource(String baseDir, String classRelPath) {
