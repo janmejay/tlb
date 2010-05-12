@@ -47,16 +47,17 @@ The final list of file resources is what is fed into the test framework.
 As of now, *TLB* supports running JUnit tests using Ant and Buildr(which uses underlying ant infrastructure). We are in the process of adding support for load balancing [Twist™](http://www.thoughtworks-studios.com/agile-test-automation "ThoughtWorks Studios - Twist") again running on ant/buildr. Supporting other build tools testing frameworks is a matter of implementing the end user interface which delegate to the Splitter and Orderer.
 
 # Contributors:
-## Core Team:
+### Core Team:
   * Pavan K Sudarshan [http://github.com/itspanzi](http://github.com/itspanzi "Github Page")
   * Janmejay Singh [http://codehunk.wordpress.com](http://codehunk.wordpress.com "Blog")
-## Other Contributors:
+
+### Other Contributors:
   * Chris Turner [http://github.com/BestFriendChris](http://github.com/BestFriendChris "Github Page")
 
 # History:
   *TLB* started in Jan 2010 as an attempt to enhance another similar project called TestLoadBalancer(hosted on code.google.com and github.com). However due to some other issues inheriting the codebase for reuse/enhancement was not possible, besides the direction planned for the new codebase was not aligned with the structure of TestLoadBalancer codebase, so we decided to build *TLB* from scratch. The old TestLoadBalancer originally implemented the idea of load balancing tests based on count, and inspired the creation of *TLB*. The project is not developed or maintained anymore and is not hosted publicly. 
 
-## People behind the TestLoadBalancer(the old project)
+### People behind the TestLoadBalancer(the old project)
   * Li Yanhui [http://whimet.blogspot.com](http://whimet.blogspot.com "Blog")
   * Hu Kai [http://iamhukai.com](http://iamhukai.com "Blog")
   * Derek Yang [http://dyang.github.com/](http://dyang.github.com/ "Github Page")
