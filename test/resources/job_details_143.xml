@@ -37,11 +37,11 @@
 
     </properties>
     <agent uuid="eb71c53f-ed56-4ab6-ad9e-2ccbc4f79e43"/>
-    <artifacts baseUrl="http://localhost:8153/cruise/files/pipeline/1/stage/1/rails" pathFromArtifactRoot="pipelines/pipeline/1/stage/1/rails">
+    <artifacts baseUri="http://localhost:8153/cruise/files/pipeline/1/stage/1/rails" pathFromArtifactRoot="pipelines/pipeline/1/stage/1/rails">
 
-            <artifact path="cruise-output/log.xml" type="file"/>
+            <artifact href="http://localhost:8153/cruise/files/pipeline/1/stage/1/rails/cruise-output/log.xml" path="cruise-output/log.xml" type="file"/>
 
-            <artifact path="reports" type="unit"/>
+            <artifact href="http://localhost:8153/cruise/files/pipeline/1/stage/1/rails/reports" path="reports" type="unit"/>
 
     </artifacts>
 
