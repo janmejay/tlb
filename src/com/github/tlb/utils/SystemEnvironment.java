@@ -20,4 +20,9 @@ public class SystemEnvironment {
     public String getProperty(String key) {
         return this.variables.get(key);
     }
+
+    public String getProperty(String key, String defaultValue) {
+        String value = getProperty(key);
+        return value == null ? defaultValue : value;
+    }
 }

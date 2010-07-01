@@ -19,6 +19,7 @@ public interface TlbConstants {
     final String CRITERIA_DEFAULTING_ORDER = "CRITERIA_DEFAULTING_ORDER";
     final String TLB_TMP_DIR = "TLB_TMP_DIR";
     final String TLB_ORDERER = "TLB_ORDERER";
+    final String TLB_PORT = "TLB_PORT";
 
     public interface Server {
         final String REPO_FACTORY = "repo_factory";
