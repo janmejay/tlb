@@ -6,6 +6,7 @@ import com.github.tlb.TlbConstants;
 import static com.github.tlb.TestUtil.fileContents;
 import static com.github.tlb.TlbConstants.*;
 
+import com.github.tlb.domain.Entry;
 import com.github.tlb.domain.SuiteResultEntry;
 import com.github.tlb.domain.SuiteTimeEntry;
 import com.github.tlb.service.http.HttpAction;

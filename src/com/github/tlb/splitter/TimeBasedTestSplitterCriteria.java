@@ -1,6 +1,7 @@
 package com.github.tlb.splitter;
 
 import com.github.tlb.TlbFileResource;
+import com.github.tlb.domain.Entry;
 import com.github.tlb.domain.SuiteTimeEntry;
 import com.github.tlb.service.TalkToService;
 import com.github.tlb.utils.FileUtil;

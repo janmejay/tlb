@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 /**
  * @understands result of executing a test suite
  */
-public class SuiteResultEntry {
+public class SuiteResultEntry implements Entry {
 
     private static final Pattern RESULT_PATTERN = Pattern.compile("(.*?):\\s*(true|false)");
 

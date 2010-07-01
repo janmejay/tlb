@@ -1,5 +1,6 @@
 package com.github.tlb.service;
 
+import com.github.tlb.domain.Entry;
 import com.github.tlb.domain.SuiteResultEntry;
 import com.github.tlb.domain.SuiteTimeEntry;
 

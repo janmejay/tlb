@@ -3,14 +3,13 @@ package com.github.tlb.domain;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * @understands time talken to execute a test suite
  */
-public class SuiteTimeEntry {
+public class SuiteTimeEntry implements Entry {
     private String name;
     private long time;
     public static final Pattern SUITE_TIME_STRING = Pattern.compile("(.*?):\\s*(\\d+)");
@@ -34,7 +33,7 @@ public class SuiteTimeEntry {
 
     public static String dump(List<SuiteTimeEntry> entries) {
         StringBuffer buffer = new StringBuffer();
-        for (SuiteTimeEntry entry : entries) {
+        for (Entry entry : entries) {
             buffer.append(entry.dump());
         }
         return buffer.toString();

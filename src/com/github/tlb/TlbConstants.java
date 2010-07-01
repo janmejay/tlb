@@ -19,4 +19,10 @@ public interface TlbConstants {
     final String CRITERIA_DEFAULTING_ORDER = "CRITERIA_DEFAULTING_ORDER";
     final String TLB_TMP_DIR = "TLB_TMP_DIR";
     final String TLB_ORDERER = "TLB_ORDERER";
+
+    public interface Server {
+        final String REPO_FACTORY = "repo_factory";
+        final String FAMILY_NAME = "family_name";
+        final String SUBSET_SIZE = "subset_size";
+    }
 }
