@@ -12,9 +12,11 @@ import java.util.List;
 public interface EntryRepo<I,O> {
     Collection<O> list();
 
-    void add(I entry);
+    void update(I entry);
 
     void diskDump(ObjectOutputStream objectOutputStream) throws IOException;
 
     void load(ObjectInputStream inStream) throws IOException, ClassNotFoundException;
+
+    void add(String entry);
 }

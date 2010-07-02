@@ -47,9 +47,20 @@ public abstract class TlbResource extends Resource {
     @Override
     public void storeRepresentation(Representation entity) throws ResourceException {
         try {
+            repo.update(entity.getText());
+        } catch (Exception e) {
+            logger.log(Level.WARNING, String.format("update of representation failed for %s", entity), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void acceptRepresentation(Representation entity) throws ResourceException {
+        try {
             repo.add(entity.getText());
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Bad data");
+        } catch (Exception e) {
+            logger.log(Level.WARNING, String.format("addition of representation failed for %s", entity), e);
+            throw new RuntimeException(e);
         }
     }
 }

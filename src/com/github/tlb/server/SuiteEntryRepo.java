@@ -27,9 +27,13 @@ public abstract class SuiteEntryRepo<T extends SuiteLevelEntry> implements Entry
         return suiteData.values();
     }
 
-    public void add(String record) {
+    public void update(String record) {
         SuiteLevelEntry entry = getEntry(record);
         suiteData.put(entry.getName(), entry);
+    }
+
+    public final void add(String entry) {
+        throw new UnsupportedOperationException("add not allowed on repository");
     }
 
     public void diskDump(ObjectOutputStream outStream) throws IOException {

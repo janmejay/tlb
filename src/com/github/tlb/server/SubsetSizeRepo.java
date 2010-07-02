@@ -20,8 +20,8 @@ public class SubsetSizeRepo implements EntryRepo<String, Integer> {
         return entries;
     }
 
-    public void add(String entry) {
-        entries.add(Integer.parseInt(entry));
+    public void update(String entry) {
+        throw new UnsupportedOperationException("update not allowed on repository");
     }
 
     public void diskDump(ObjectOutputStream outStream) throws IOException {
@@ -30,5 +30,9 @@ public class SubsetSizeRepo implements EntryRepo<String, Integer> {
 
     public void load(ObjectInputStream inStream) throws IOException, ClassNotFoundException {
         entries = (ArrayList<Integer>) inStream.readObject();
+    }
+
+    public void add(String entry) {
+        entries.add(Integer.parseInt(entry));
     }
 }

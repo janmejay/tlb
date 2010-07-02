@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 
 import static junit.framework.Assert.fail;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.matchers.JUnitMatchers.hasItem;
@@ -65,17 +66,58 @@ public class TlbResourceTest {
     }
 
     @Test
-    public void shouldRenderAllSubsetSizesForGivenJobName() throws ResourceException, IOException {
+    public void shouldRenderAllRecordsForGivenJobName() throws ResourceException, IOException {
         when(repo.list()).thenReturn(Arrays.asList(10, 12, 15));
         Representation actualRepresentation = tlbResource.represent(new Variant(MediaType.TEXT_PLAIN));
         assertThat(actualRepresentation.getText(), is("10\n12\n15\n"));
     }
 
     @Test
-    public void shouldAddNewSubsets() throws ResourceException {
+    public void shouldAddRecords() throws ResourceException {
+        StringRepresentation representation = new StringRepresentation("14");
+        tlbResource.acceptRepresentation(representation);
+        verify(repo).add("14");
+    }
+    
+    @Test
+    public void shouldPropagateExceptionIfAddFails() throws ResourceException, IOException {
+        Representation representation = mock(Representation.class);
+        IOException exception = new IOException("test exception");
+        when(representation.getText()).thenThrow(exception);
+        logFixture.startListening();
+        try {
+            tlbResource.acceptRepresentation(representation);
+            fail("should have propagated exception");
+        } catch (Exception e) {
+            assertThat((IOException) e.getCause(), sameInstance(exception));
+        }
+        logFixture.assertHeardException(exception);
+        logFixture.assertHeard("addition of representation failed for ");
+        logFixture.stopListening();
+    }
+
+    @Test
+    public void shouldPropagateExceptionIfUpdateFails() throws ResourceException, IOException {
+        Representation representation = mock(Representation.class);
+        IOException exception = new IOException("test exception");
+        when(representation.getText()).thenThrow(exception);
+        logFixture.startListening();
+        try {
+            tlbResource.storeRepresentation(representation);
+            fail("should have propagated exception");
+        } catch (Exception e) {
+            assertThat((IOException) e.getCause(), sameInstance(exception));
+        }
+        logFixture.assertHeardException(exception);
+        logFixture.assertHeard("update of representation failed for ");
+        logFixture.stopListening();
+    }
+
+    @Test
+    public void shouldUpdateRecords() throws ResourceException {
         StringRepresentation representation = new StringRepresentation("14");
         tlbResource.storeRepresentation(representation);
-        verify(repo).add("14");
+        verify(repo).update("14");
     }
 
     @Test

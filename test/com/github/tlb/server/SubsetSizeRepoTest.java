@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static junit.framework.Assert.fail;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
@@ -17,6 +18,16 @@ public class SubsetSizeRepoTest {
     @Before
     public void setUp() throws Exception {
         subsetSizeRepo = new SubsetSizeRepo();
+    }
+    
+    @Test
+    public void shouldNotAllowUpdate() {
+        try {
+            subsetSizeRepo.update("10");
+            fail("update should not have been allowed");
+        } catch (UnsupportedOperationException e) {
+            assertThat(e.getMessage(), is("update not allowed on repository"));
+        }
     }
 
     @Test

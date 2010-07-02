@@ -1,7 +1,6 @@
 package com.github.tlb.server;
 
 import com.github.tlb.domain.SuiteLevelEntry;
-import com.github.tlb.domain.SuiteTimeEntry;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -9,6 +8,7 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static junit.framework.Assert.fail;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
@@ -67,9 +67,19 @@ public class SuiteEntryRepoTest {
     }
 
     @Test
-    public void shouldRecordSuiteTimeWhenAdded() {
-        testCaseRepo.add("shouldBar#Bar");
-        testCaseRepo.add("shouldFoo#Foo");
+    public void shouldNotAllowAdditionOfEntries() {
+        try {
+            testCaseRepo.add("shouldBar#Bar");
+            fail("add should not have been allowed for suite repo");
+        } catch (UnsupportedOperationException e) {
+            assertThat(e.getMessage(), is("add not allowed on repository"));
+        }
+    }
+
+    @Test
+    public void shouldRecordSuiteRecordWhenUpdated() {
+        testCaseRepo.update("shouldBar#Bar");
+        testCaseRepo.update("shouldFoo#Foo");
         List<SuiteLevelEntry> entryList = sortedList();
         assertThat(entryList.size(), is(2));
         assertThat((TestCaseEntry) entryList.get(0), is(new TestCaseEntry("shouldBar", "Bar")));
@@ -78,9 +88,9 @@ public class SuiteEntryRepoTest {
 
     @Test
     public void shouldOverwriteExistingEntryIfAddedAgain() {
-        testCaseRepo.add("shouldBar#Bar");
-        testCaseRepo.add("shouldFoo#Foo");
-        testCaseRepo.add("shouldBar#Foo");
+        testCaseRepo.update("shouldBar#Bar");
+        testCaseRepo.update("shouldFoo#Foo");
+        testCaseRepo.update("shouldBar#Foo");
         List<SuiteLevelEntry> entryList = sortedList();
         assertThat(entryList.size(), is(2));
         assertThat((TestCaseEntry) entryList.get(0), is(new TestCaseEntry("shouldBar", "Foo")));
@@ -89,8 +99,8 @@ public class SuiteEntryRepoTest {
 
     @Test
     public void shouldDumpDataOnGivenOutputStream() throws IOException, ClassNotFoundException {
-        testCaseRepo.add("shouldBar#Bar");
-        testCaseRepo.add("shouldFoo#Foo");
+        testCaseRepo.update("shouldBar#Bar");
+        testCaseRepo.update("shouldFoo#Foo");
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         testCaseRepo.diskDump(new ObjectOutputStream(outStream));
         ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream(outStream.toByteArray()));
