@@ -41,13 +41,20 @@ public class EntryRepoFactoryTest {
     public void shouldReturnSuiteTimeRepo() throws ClassNotFoundException, IOException {
         assertThat(factory.createSuiteTimeRepo("dev"), is(not(nullValue())));
     }
+
+    @Test
+    public void shouldReturnSuiteResultRepo() throws ClassNotFoundException, IOException {
+        assertThat(factory.createSuiteResultRepo("dev"), is(not(nullValue())));
+    }
     
     @Test
     public void shouldNotOverrideSubsetRepoWithSuiteTimeRepo() throws ClassNotFoundException, IOException {
         SubsetSizeRepo subsetRepo = factory.createSubsetRepo("dev");
         SuiteTimeRepo suiteTimeRepo = factory.createSuiteTimeRepo("dev");
+        SuiteResultRepo suiteResultRepo = factory.createSuiteResultRepo("dev");
         assertThat(factory.createSubsetRepo("dev"), sameInstance(subsetRepo));
         assertThat(factory.createSuiteTimeRepo("dev"), sameInstance(suiteTimeRepo));
+        assertThat(factory.createSuiteResultRepo("dev"), sameInstance(suiteResultRepo));
     }
 
     @Test
@@ -59,13 +66,16 @@ public class EntryRepoFactoryTest {
     public void shouldCallDiskDumpForEachRepoAtExit() throws InterruptedException, IOException {
         SubsetSizeRepo repoFoo = mock(SubsetSizeRepo.class);
         SuiteTimeRepo repoBar = mock(SuiteTimeRepo.class);
+        SuiteResultRepo repoBaz = mock(SuiteResultRepo.class);
         factory.getRepos().put("foo", repoFoo);
         factory.getRepos().put("bar", repoBar);
+        factory.getRepos().put("baz", repoBaz);
         Thread exitHook = factory.exitHook();
         exitHook.start();
         exitHook.join();
         verify(repoFoo).diskDump(any(ObjectOutputStream.class));
         verify(repoBar).diskDump(any(ObjectOutputStream.class));
+        verify(repoBaz).diskDump(any(ObjectOutputStream.class));
     }
     
     @Test

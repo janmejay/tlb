@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * @understands loading and saving of entry data
+ * @understands storage and retrival of size of subset of total suites run by job
  */
 public class SubsetSizeRepo implements EntryRepo<String, Integer> {
     private ArrayList<Integer> entries;

@@ -69,7 +69,7 @@ public class SuiteTimeEntryTest {
         try {
             SuiteTimeEntry.parseSingleEntry("com.thoughtworks.foo.FooBarTest= 45");
             fail("should have bombed as entry string is invalid");
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             assertThat(e.getMessage(), is("failed to parse 'com.thoughtworks.foo.FooBarTest= 45' as SuiteTimeEntry"));
         }
     }

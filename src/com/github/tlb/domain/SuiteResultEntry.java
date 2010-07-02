@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 /**
  * @understands result of executing a test suite
  */
-public class SuiteResultEntry implements Entry {
+public class SuiteResultEntry implements SuiteLevelEntry {
 
     private static final Pattern RESULT_PATTERN = Pattern.compile("(.*?):\\s*(true|false)");
 
@@ -31,10 +31,20 @@ public class SuiteResultEntry implements Entry {
     public static List<SuiteResultEntry> parse(List<String> buffer) {
         ArrayList<SuiteResultEntry> entries = new ArrayList<SuiteResultEntry>();
         for (String resultLine : buffer) {
-            Matcher matcher = RESULT_PATTERN.matcher(resultLine);
-            if(matcher.matches()) entries.add(new SuiteResultEntry(matcher.group(1), Boolean.parseBoolean(matcher.group(2))));
+            entries.add(parseSingleEntry(resultLine));
         }
         return entries;
+    }
+
+    public static SuiteResultEntry parseSingleEntry(String resultLine) {
+        Matcher matcher = RESULT_PATTERN.matcher(resultLine);
+        SuiteResultEntry entry = null;
+        if(matcher.matches()) {
+            entry = new SuiteResultEntry(matcher.group(1), Boolean.parseBoolean(matcher.group(2)));
+        } else {
+            throw new IllegalArgumentException(String.format("failed to parse '%s' as %s", resultLine, SuiteResultEntry.class.getSimpleName()));
+        }
+        return entry;
     }
 
     public static String dumpFailures(List<SuiteResultEntry> list) {
@@ -57,6 +67,31 @@ public class SuiteResultEntry implements Entry {
     }
 
     public String dump() {
-        return String.format("%s: %s\n", name, failed);
+        return toString() + "\n";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SuiteResultEntry that = (SuiteResultEntry) o;
+
+        if (failed != that.failed) return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name != null ? name.hashCode() : 0;
+        result = 31 * result + (failed ? 1 : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s: %s", name, failed);
     }
 }

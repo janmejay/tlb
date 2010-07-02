@@ -13,6 +13,7 @@ public class EntryRepoFactory implements Runnable {
     public static final String DELIMITER = "|";
     public static final String SUBSET_SIZE = "subset_size";
     public static final String SUITE_TIME = "suite_time";
+    public static final String SUITE_RESULT = "suite_result";
     private static final Logger logger = Logger.getLogger(EntryRepoFactory.class.getName());
 
     private Map<String, EntryRepo> repos;
@@ -25,6 +26,15 @@ public class EntryRepoFactory implements Runnable {
     public EntryRepoFactory(File tlbStoreDir) {
         this.tlbStoreDir = tlbStoreDir.getAbsolutePath();
         repos = new ConcurrentHashMap<String, EntryRepo>();
+    }
+
+    public SuiteResultRepo createSuiteResultRepo(String namespace) throws ClassNotFoundException, IOException {
+        return (SuiteResultRepo) findOrCreate(namespace, SUITE_RESULT, new Creator<EntryRepo>() {
+            public EntryRepo create() {
+                return new SuiteResultRepo();
+            }
+        });
+
     }
 
     public SuiteTimeRepo createSuiteTimeRepo(String namespace) throws ClassNotFoundException, IOException {

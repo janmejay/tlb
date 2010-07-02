@@ -1,5 +1,6 @@
 package com.github.tlb.server;
 
+import com.github.tlb.domain.SuiteLevelEntry;
 import com.github.tlb.domain.SuiteTimeEntry;
 
 import java.io.IOException;
@@ -10,29 +11,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @understands time that each suite took to run
+ * @understands storage and retrival of time that each suite took to run
  */
-public class SuiteTimeRepo implements EntryRepo<String, SuiteTimeEntry> {
-    private Map<String, SuiteTimeEntry> suiteTimes;
+public class SuiteTimeRepo extends SuiteEntryRepo<SuiteTimeEntry> {
 
-    public SuiteTimeRepo() {
-        suiteTimes = new ConcurrentHashMap<String, SuiteTimeEntry>();
-    }
-
-    public Collection<SuiteTimeEntry> list() {
-        return suiteTimes.values();
-    }
-
-    public void add(String entry) {
-        SuiteTimeEntry suiteTime = SuiteTimeEntry.parseSingleEntry(entry);
-        suiteTimes.put(suiteTime.getName(), suiteTime);
-    }
-
-    public void diskDump(ObjectOutputStream outStream) throws IOException {
-        outStream.writeObject(suiteTimes);
-    }
-
-    public void load(ObjectInputStream inStream) throws IOException, ClassNotFoundException {
-        suiteTimes = (Map<String, SuiteTimeEntry>) inStream.readObject();
+    @Override
+    protected SuiteTimeEntry getEntry(String record) {
+        return SuiteTimeEntry.parseSingleEntry(record);
     }
 }

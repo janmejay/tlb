@@ -12,7 +12,6 @@ import java.io.IOException;
  * @understands run time of suite reported by job
  */
 public class SuiteTimeResource extends TlbResource {
-
     public SuiteTimeResource(Context context, Request request, Response response) {
         super(context, request, response);
     }

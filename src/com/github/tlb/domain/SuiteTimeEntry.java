@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 /**
  * @understands time talken to execute a test suite
  */
-public class SuiteTimeEntry implements Entry, Serializable {
+public class SuiteTimeEntry implements SuiteLevelEntry {
     private String name;
     private long time;
     public static final Pattern SUITE_TIME_STRING = Pattern.compile("(.*?):\\s*(\\d+)");
@@ -58,7 +58,7 @@ public class SuiteTimeEntry implements Entry, Serializable {
         if (matcher.matches()) {
             entry = new SuiteTimeEntry(matcher.group(1), Integer.parseInt(matcher.group(2)));
         } else {
-            throw new RuntimeException(String.format("failed to parse '%s' as %s", entryString, SuiteTimeEntry.class.getSimpleName()));
+            throw new IllegalArgumentException(String.format("failed to parse '%s' as %s", entryString, SuiteTimeEntry.class.getSimpleName()));
         }
         return entry;
     }
