@@ -4,19 +4,19 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * @understands loading and saving of entry data
  */
-public class SubsetEntryRepo implements EntryRepo<String, Integer> {
+public class SubsetSizeRepo implements EntryRepo<String, Integer> {
     private ArrayList<Integer> entries;
 
-    public SubsetEntryRepo() {
+    public SubsetSizeRepo() {
         entries = new ArrayList<Integer>();
     }
 
-    public List<Integer> list() {
+    public Collection<Integer> list() {
         return entries;
     }
 

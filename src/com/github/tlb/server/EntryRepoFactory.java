@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 public class EntryRepoFactory implements Runnable {
     public static final String DELIMITER = "|";
     public static final String SUBSET_SIZE = "subset_size";
+    public static final String SUITE_TIME = "suite_time";
     private static final Logger logger = Logger.getLogger(EntryRepoFactory.class.getName());
 
     private Map<String, EntryRepo> repos;
@@ -26,14 +27,20 @@ public class EntryRepoFactory implements Runnable {
         repos = new ConcurrentHashMap<String, EntryRepo>();
     }
 
-    public SubsetEntryRepo createSubsetRepo(String namespace) throws IOException, ClassNotFoundException {
-        SubsetEntryRepo repo;
-        repo = (SubsetEntryRepo) findOrCreate(namespace, SUBSET_SIZE, new Creator<EntryRepo>() {
+    public SuiteTimeRepo createSuiteTimeRepo(String namespace) throws ClassNotFoundException, IOException {
+        return (SuiteTimeRepo) findOrCreate(namespace, SUITE_TIME, new Creator<EntryRepo>() {
             public EntryRepo create() {
-                return new SubsetEntryRepo();
+                return new SuiteTimeRepo();
             }
         });
-        return repo;
+    }
+
+    public SubsetSizeRepo createSubsetRepo(String namespace) throws IOException, ClassNotFoundException {
+        return (SubsetSizeRepo) findOrCreate(namespace, SUBSET_SIZE, new Creator<EntryRepo>() {
+            public EntryRepo create() {
+                return new SubsetSizeRepo();
+            }
+        });
     }
 
     private EntryRepo findOrCreate(String namespace, String type, Creator<? extends EntryRepo> creator) throws IOException, ClassNotFoundException {

@@ -16,22 +16,24 @@ import java.util.logging.Logger;
 /**
  * @understands listing and modification of tlb resource
  */
-public class TlbResource extends Resource {
-    private static final Logger logger = Logger.getLogger(EntryRepoFactory.class.getName());
+public abstract class TlbResource extends Resource {
+    private static final Logger logger = Logger.getLogger(TlbResource.class.getName());
     protected EntryRepo repo;
 
     public TlbResource(Context context, Request request, Response response) {
         super(context, request, response);
         EntryRepoFactory repoFactory = (EntryRepoFactory) context.getAttributes().get(TlbConstants.Server.REPO_FACTORY);
         String key = (String) request.getAttributes().get(TlbConstants.Server.REQUEST_NAMESPACE);
+        getVariants().add(new Variant(MediaType.TEXT_PLAIN));
         try {
-            repo = repoFactory.createSubsetRepo(key);
+            repo = getRepo(repoFactory, key);
         } catch (Exception e) {
             logger.log(Level.WARNING, String.format("Failed to get repo for '%s'", key), e);
             throw new RuntimeException(e);
         }
-        getVariants().add(new Variant(MediaType.TEXT_PLAIN));
     }
+
+    protected abstract EntryRepo getRepo(EntryRepoFactory repoFactory, String key) throws IOException, ClassNotFoundException;
 
     @Override
     public Representation represent(Variant variant) throws ResourceException {

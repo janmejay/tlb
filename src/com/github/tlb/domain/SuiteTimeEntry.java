@@ -1,5 +1,6 @@
 package com.github.tlb.domain;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.regex.Pattern;
 /**
  * @understands time talken to execute a test suite
  */
-public class SuiteTimeEntry implements Entry {
+public class SuiteTimeEntry implements Entry, Serializable {
     private String name;
     private long time;
     public static final Pattern SUITE_TIME_STRING = Pattern.compile("(.*?):\\s*(\\d+)");
@@ -40,16 +41,26 @@ public class SuiteTimeEntry implements Entry {
     }
 
     public String dump() {
-        return String.format("%s: %s\n", name, time);
+        return toString() + "\n";
     }
 
     public static List<SuiteTimeEntry> parse(List<String> listOfStrings) {
         List<SuiteTimeEntry> parsed = new ArrayList<SuiteTimeEntry>();
         for (String entryString : listOfStrings) {
-            Matcher matcher = SUITE_TIME_STRING.matcher(entryString);
-            if (matcher.matches()) parsed.add(new SuiteTimeEntry(matcher.group(1), Integer.parseInt(matcher.group(2))));
+            if (entryString.trim().length() > 0) parsed.add(parseSingleEntry(entryString));
         }
         return parsed;
+    }
+
+    public static SuiteTimeEntry parseSingleEntry(String entryString) {
+        Matcher matcher = SUITE_TIME_STRING.matcher(entryString);
+        SuiteTimeEntry entry = null;
+        if (matcher.matches()) {
+            entry = new SuiteTimeEntry(matcher.group(1), Integer.parseInt(matcher.group(2)));
+        } else {
+            throw new RuntimeException(String.format("failed to parse '%s' as %s", entryString, SuiteTimeEntry.class.getSimpleName()));
+        }
+        return entry;
     }
 
     @Override
@@ -70,5 +81,10 @@ public class SuiteTimeEntry implements Entry {
         int result = name != null ? name.hashCode() : 0;
         result = 31 * result + (int) (time ^ (time >>> 32));
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s: %s", name, time);
     }
 }

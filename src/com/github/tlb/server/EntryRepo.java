@@ -3,13 +3,14 @@ package com.github.tlb.server;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Collection;
 import java.util.List;
 
 /**
  * @understands
  */
 public interface EntryRepo<I,O> {
-    List<O> list();
+    Collection<O> list();
 
     void add(I entry);
 

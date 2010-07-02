@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
@@ -33,8 +33,21 @@ public class EntryRepoFactoryTest {
     }
 
     @Test
-    public void shouldReturnEntryRepo() throws ClassNotFoundException, IOException {
+    public void shouldReturnSubsetSizeRepo() throws ClassNotFoundException, IOException {
         assertThat(factory.createSubsetRepo("dev"), is(not(nullValue())));
+    }
+    
+    @Test
+    public void shouldReturnSuiteTimeRepo() throws ClassNotFoundException, IOException {
+        assertThat(factory.createSuiteTimeRepo("dev"), is(not(nullValue())));
+    }
+    
+    @Test
+    public void shouldNotOverrideSubsetRepoWithSuiteTimeRepo() throws ClassNotFoundException, IOException {
+        SubsetSizeRepo subsetRepo = factory.createSubsetRepo("dev");
+        SuiteTimeRepo suiteTimeRepo = factory.createSuiteTimeRepo("dev");
+        assertThat(factory.createSubsetRepo("dev"), sameInstance(subsetRepo));
+        assertThat(factory.createSuiteTimeRepo("dev"), sameInstance(suiteTimeRepo));
     }
 
     @Test
@@ -44,8 +57,8 @@ public class EntryRepoFactoryTest {
 
     @Test
     public void shouldCallDiskDumpForEachRepoAtExit() throws InterruptedException, IOException {
-        SubsetEntryRepo repoFoo = mock(SubsetEntryRepo.class);
-        SubsetEntryRepo repoBar = mock(SubsetEntryRepo.class);
+        SubsetSizeRepo repoFoo = mock(SubsetSizeRepo.class);
+        SuiteTimeRepo repoBar = mock(SuiteTimeRepo.class);
         factory.getRepos().put("foo", repoFoo);
         factory.getRepos().put("bar", repoBar);
         Thread exitHook = factory.exitHook();
@@ -57,7 +70,7 @@ public class EntryRepoFactoryTest {
     
     @Test
     public void shouldBeAbleToLoadFromDumpedFile() throws ClassNotFoundException, IOException, InterruptedException {
-        SubsetEntryRepo repo = factory.createSubsetRepo("foo");
+        SubsetSizeRepo repo = factory.createSubsetRepo("foo");
         repo.add("50");
         repo.add("100");
         repo.add("200");
@@ -65,14 +78,14 @@ public class EntryRepoFactoryTest {
         exitHook.start();
         exitHook.join();
         EntryRepoFactory otherFactoryInstance = new EntryRepoFactory(baseDir);
-        SubsetEntryRepo otherRepo = otherFactoryInstance.createSubsetRepo("foo");
-        assertThat(otherRepo.list(), is(Arrays.asList(50, 100, 200)));
+        SubsetSizeRepo otherRepo = otherFactoryInstance.createSubsetRepo("foo");
+        assertThat(otherRepo.list(), is((Collection<Integer>) Arrays.asList(50, 100, 200)));
     }
     
     @Test
     public void shouldLogExceptionsButContinueDumpingRepositories() throws InterruptedException, IOException {
-        SubsetEntryRepo repoFoo = mock(SubsetEntryRepo.class);
-        SubsetEntryRepo repoBar = mock(SubsetEntryRepo.class);
+        SubsetSizeRepo repoFoo = mock(SubsetSizeRepo.class);
+        SubsetSizeRepo repoBar = mock(SubsetSizeRepo.class);
         factory.getRepos().put("foo|subset_size", repoFoo);
         factory.getRepos().put("bar|subset_size", repoBar);
         doThrow(new IOException("test exception")).when(repoFoo).diskDump(any(ObjectOutputStream.class));
@@ -106,13 +119,13 @@ public class EntryRepoFactoryTest {
         ObjectOutputStream outStream = new ObjectOutputStream(new FileOutputStream(file));
         outStream.writeObject(new ArrayList<Integer>(Arrays.asList(1, 2, 3)));
         outStream.close();
-        SubsetEntryRepo repo = factory.createSubsetRepo("foo");
-        assertThat(repo.list(), is(Arrays.asList(1, 2, 3)));
+        SubsetSizeRepo repo = factory.createSubsetRepo("foo");
+        assertThat(repo.list(), is((Collection<Integer>) Arrays.asList(1, 2, 3)));
     }
     
     @Test
     public void shouldNotLoadDiskDumpWhenUsingARepoThatIsAlreadyCreated() throws ClassNotFoundException, IOException {
-        SubsetEntryRepo fooRepo = factory.createSubsetRepo("foo");
+        SubsetSizeRepo fooRepo = factory.createSubsetRepo("foo");
         File file = new File(baseDir, EntryRepoFactory.name("foo", EntryRepoFactory.SUBSET_SIZE));
         ObjectOutputStream outStream = new ObjectOutputStream(new FileOutputStream(file));
         outStream.writeObject(new ArrayList<Integer>(Arrays.asList(1, 2, 3)));

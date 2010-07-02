@@ -3,7 +3,6 @@ package com.github.tlb.server;
 import com.github.tlb.TestUtil;
 import com.github.tlb.TlbConstants;
 import com.github.tlb.utils.SystemEnvironment;
-import org.hamcrest.core.IsSame;
 import org.junit.Before;
 import org.junit.Test;
 import org.restlet.Component;
@@ -17,6 +16,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
 import static junit.framework.Assert.fail;
@@ -110,7 +110,7 @@ public class MainTest {
         ObjectOutputStream outStream = new ObjectOutputStream(new FileOutputStream(file));
         outStream.writeObject(new ArrayList<Integer>(Arrays.asList(1, 2, 3)));
         outStream.close();
-        SubsetEntryRepo repo = factory.createSubsetRepo("foo");
-        assertThat(repo.list(), is(Arrays.asList(1, 2, 3)));
+        SubsetSizeRepo repo = factory.createSubsetRepo("foo");
+        assertThat((List<Integer>) repo.list(), is(Arrays.asList(1, 2, 3)));
     }
 }

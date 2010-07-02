@@ -2,6 +2,7 @@ package com.github.tlb.server;
 
 import com.github.tlb.TlbConstants;
 import com.github.tlb.server.resources.SubsetSizeResource;
+import com.github.tlb.server.resources.SuiteTimeResource;
 import org.restlet.Application;
 import org.restlet.Context;
 import org.restlet.Restlet;
@@ -20,6 +21,7 @@ public class TlbApplication extends Application {
     public Restlet createRoot() {
         Router router = new Router(getContext());
         router.attach("/{" + TlbConstants.Server.REQUEST_NAMESPACE + "}/subset_size", SubsetSizeResource.class);
+        router.attach("/{" + TlbConstants.Server.REQUEST_NAMESPACE + "}/suite_time", SuiteTimeResource.class);
         return router;
     }
 }

@@ -1,6 +1,5 @@
 package com.github.tlb.server;
 
-import com.github.tlb.domain.SubsetSizeEntry;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -12,19 +11,19 @@ import java.util.List;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
-public class SubsetEntryRepoTest {
-    private SubsetEntryRepo subsetSizeRepo;
+public class SubsetSizeRepoTest {
+    private SubsetSizeRepo subsetSizeRepo;
 
     @Before
     public void setUp() throws Exception {
-        subsetSizeRepo = new SubsetEntryRepo();
+        subsetSizeRepo = new SubsetSizeRepo();
     }
 
     @Test
     public void shouldListAddedEntries() {
         addToRepo();
 
-        List<Integer> entries = subsetSizeRepo.list();
+        List<Integer> entries = (List<Integer>) subsetSizeRepo.list();
 
         assertListContents(entries);
     }
@@ -59,6 +58,6 @@ public class SubsetEntryRepoTest {
         new ObjectOutputStream(outStream).writeObject(new ArrayList<Integer>(Arrays.asList(10, 12, 7)));
         ObjectInputStream inStream = new ObjectInputStream(new ByteArrayInputStream(outStream.toByteArray()));
         subsetSizeRepo.load(inStream);
-        assertListContents(subsetSizeRepo.list());
+        assertListContents((List<Integer>) subsetSizeRepo.list());
     }
 }

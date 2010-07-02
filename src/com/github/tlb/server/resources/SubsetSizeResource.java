@@ -11,18 +11,26 @@ import org.restlet.data.Response;
 import org.restlet.resource.*;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @understands subset sizes reported by a job
  */
 public class SubsetSizeResource extends TlbResource {
+    private static final Logger logger = Logger.getLogger(SubsetSizeResource.class.getName());
 
     public SubsetSizeResource(Context context, Request request, Response response) {
         super(context, request, response);
     }
 
     @Override
-    public boolean allowPut() {
+    protected EntryRepo getRepo(EntryRepoFactory repoFactory, String key) throws IOException, ClassNotFoundException {
+        return repoFactory.createSubsetRepo(key);
+    }
+
+    @Override
+    public boolean allowPost() {
         return true;
     }
 }

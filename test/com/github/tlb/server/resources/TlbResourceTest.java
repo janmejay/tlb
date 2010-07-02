@@ -2,8 +2,9 @@ package com.github.tlb.server.resources;
 
 import com.github.tlb.TestUtil;
 import com.github.tlb.TlbConstants;
+import com.github.tlb.server.EntryRepo;
 import com.github.tlb.server.EntryRepoFactory;
-import com.github.tlb.server.SubsetEntryRepo;
+import com.github.tlb.server.SubsetSizeRepo;
 import org.junit.Before;
 import org.junit.Test;
 import org.restlet.Context;
@@ -34,21 +35,32 @@ public class TlbResourceTest {
     private EntryRepoFactory repoFactory;
     private Request request;
     private HashMap<String,Object> attributeMap;
-    private SubsetEntryRepo repo;
+    private SubsetSizeRepo repo;
     private TestUtil.LogFixture logFixture;
+
+    static class TestTlbResource extends TlbResource {
+        public TestTlbResource(Context context, Request request, Response response) {
+            super(context, request, response);
+        }
+
+        @Override
+        protected EntryRepo getRepo(EntryRepoFactory repoFactory, String key) throws IOException, ClassNotFoundException {
+            return repoFactory.createSubsetRepo(key);
+        }
+    }
 
     @Before
     public void setUp() throws ClassNotFoundException, IOException {
         context = new Context();
         repoFactory = mock(EntryRepoFactory.class);
-        repo = mock(SubsetEntryRepo.class);
+        repo = mock(SubsetSizeRepo.class);
         context.setAttributes(Collections.singletonMap(TlbConstants.Server.REPO_FACTORY, (Object) repoFactory));
         request = mock(Request.class);
         attributeMap = new HashMap<String, Object>();
         attributeMap.put(TlbConstants.Server.REQUEST_NAMESPACE, "identifier");
         when(request.getAttributes()).thenReturn(attributeMap);
         when(repoFactory.createSubsetRepo("identifier")).thenReturn(repo);
-        tlbResource = new TlbResource(context, request, mock(Response.class));
+        tlbResource = new TestTlbResource(context, request, mock(Response.class));
         logFixture = new TestUtil.LogFixture();
     }
 
@@ -78,7 +90,7 @@ public class TlbResourceTest {
         context.setAttributes(Collections.singletonMap(TlbConstants.Server.REPO_FACTORY, (Object) repoFactory));
         logFixture.startListening();
         try {
-            tlbResource = new TlbResource(context, request, mock(Response.class));
+            tlbResource = new TestTlbResource(context, request, mock(Response.class));
             fail("should have bubbled up exception");
         } catch (Exception e) {
             assertThat(e.getMessage(), is("java.io.IOException: test exception"));
