@@ -1,5 +1,6 @@
-package com.github.tlb.server;
+package com.github.tlb.server.repo;
 
+import com.github.tlb.server.repo.SubsetSizeRepo;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -1,6 +1,7 @@
-package com.github.tlb.server;
+package com.github.tlb.server.repo;
 
 import com.github.tlb.domain.SuiteTimeEntry;
+import com.github.tlb.server.repo.SuiteTimeRepo;
 import org.junit.Before;
 import org.junit.Test;
 

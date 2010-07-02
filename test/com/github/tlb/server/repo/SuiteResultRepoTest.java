@@ -1,6 +1,7 @@
-package com.github.tlb.server;
+package com.github.tlb.server.repo;
 
 import com.github.tlb.domain.SuiteResultEntry;
+import com.github.tlb.server.repo.SuiteResultRepo;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -1,8 +1,7 @@
 package com.github.tlb.server.resources;
 
-import com.github.tlb.server.EntryRepo;
+import com.github.tlb.server.repo.EntryRepo;
 import com.github.tlb.server.EntryRepoFactory;
-import com.github.tlb.server.SuiteResultRepo;
 import org.restlet.Context;
 import org.restlet.data.Request;
 import org.restlet.data.Response;

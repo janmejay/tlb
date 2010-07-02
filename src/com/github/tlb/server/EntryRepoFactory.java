@@ -1,5 +1,10 @@
 package com.github.tlb.server;
 
+import com.github.tlb.server.repo.EntryRepo;
+import com.github.tlb.server.repo.SubsetSizeRepo;
+import com.github.tlb.server.repo.SuiteResultRepo;
+import com.github.tlb.server.repo.SuiteTimeRepo;
+
 import java.io.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

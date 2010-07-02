@@ -1,9 +1,9 @@
 package com.github.tlb.server.resources;
 
 import com.github.tlb.TlbConstants;
-import com.github.tlb.server.EntryRepo;
+import com.github.tlb.server.repo.EntryRepo;
 import com.github.tlb.server.EntryRepoFactory;
-import com.github.tlb.server.SuiteResultRepo;
+import com.github.tlb.server.repo.SuiteResultRepo;
 import org.junit.Before;
 import org.junit.Test;
 import org.restlet.Context;

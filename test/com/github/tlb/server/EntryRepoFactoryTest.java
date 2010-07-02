@@ -1,6 +1,9 @@
 package com.github.tlb.server;
 
 import com.github.tlb.TestUtil;
+import com.github.tlb.server.repo.SubsetSizeRepo;
+import com.github.tlb.server.repo.SuiteResultRepo;
+import com.github.tlb.server.repo.SuiteTimeRepo;
 import org.junit.Before;
 import org.junit.Test;
 

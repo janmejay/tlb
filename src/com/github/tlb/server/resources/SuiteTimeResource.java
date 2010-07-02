@@ -1,6 +1,6 @@
 package com.github.tlb.server.resources;
 
-import com.github.tlb.server.EntryRepo;
+import com.github.tlb.server.repo.EntryRepo;
 import com.github.tlb.server.EntryRepoFactory;
 import org.restlet.Context;
 import org.restlet.data.Request;

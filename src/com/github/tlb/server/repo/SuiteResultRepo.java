@@ -1,4 +1,4 @@
-package com.github.tlb.server;
+package com.github.tlb.server.repo;
 
 import com.github.tlb.domain.SuiteResultEntry;
 

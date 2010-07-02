@@ -1,4 +1,4 @@
-package com.github.tlb.server;
+package com.github.tlb.server.repo;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
