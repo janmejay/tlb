@@ -1,6 +1,7 @@
 package com.github.tlb.server;
 
-import com.github.tlb.server.resources.ProcessSubsetSize;
+import com.github.tlb.TlbConstants;
+import com.github.tlb.server.resources.SubsetSizeResource;
 import org.restlet.Application;
 import org.restlet.Context;
 import org.restlet.Restlet;
@@ -18,7 +19,7 @@ public class TlbApplication extends Application {
     @Override
     public Restlet createRoot() {
         Router router = new Router(getContext());
-        router.attach("/{family}/subset_size", ProcessSubsetSize.class);
+        router.attach("/{" + TlbConstants.Server.REQUEST_NAMESPACE + "}/subset_size", SubsetSizeResource.class);
         return router;
     }
 }

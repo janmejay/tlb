@@ -6,6 +6,7 @@ import org.restlet.Component;
 import org.restlet.Context;
 import org.restlet.data.Protocol;
 
+import java.io.File;
 import java.util.HashMap;
 
 /**
@@ -14,6 +15,7 @@ import java.util.HashMap;
 public class Main {
     public static final String DATA = "data";
     private final SystemEnvironment env;
+    public static final String TLB_STORE_DIR = "tlb_store";
 
     Component init() {
         Component component = new Component();
@@ -24,10 +26,17 @@ public class Main {
 
     Context appContext() {
         HashMap<String, Object> appMap = new HashMap<String, Object>();
-        appMap.put(TlbConstants.Server.REPO_FACTORY, new EntryRepoFactory());
+        EntryRepoFactory repoFactory = repoFactory();
+        repoFactory.registerExitHook();
+        appMap.put(TlbConstants.Server.REPO_FACTORY, repoFactory);
         Context applicationContext = new Context();
         applicationContext.setAttributes(appMap);
         return applicationContext;
+    }
+
+    EntryRepoFactory repoFactory() {
+        File storeDir = new File(TLB_STORE_DIR);
+        return new EntryRepoFactory(storeDir);
     }
 
     Main(SystemEnvironment env) {

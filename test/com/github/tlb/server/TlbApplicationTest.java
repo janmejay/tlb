@@ -1,7 +1,5 @@
 package com.github.tlb.server;
 
-import com.github.tlb.domain.SubsetSizeEntry;
-import com.github.tlb.server.resources.ProcessSubsetSize;
 import org.junit.Before;
 import org.junit.Test;
 import org.restlet.*;
@@ -26,9 +24,9 @@ public class TlbApplicationTest {
     @Test
     public void shouldGenerateRouteForSubsetSize() {
         HashMap<String, Restlet> routeMaping = getRoutePatternsAndResources();
-        assertThat(routeMaping.keySet(), hasItem("/{family}/subset_size"));
-        Restlet restlet = routeMaping.get("/{family}/subset_size");
-        assertThat(((Finder)restlet).getTargetClass().getName(), is(ProcessSubsetSize.class.getName()));
+        assertThat(routeMaping.keySet(), hasItem("/{namespace}/subset_size"));
+        Restlet restlet = routeMaping.get("/{namespace}/subset_size");
+        assertThat(((Finder)restlet).getTargetClass().getName(), is(com.github.tlb.server.resources.SubsetSizeResource.class.getName()));
     }
 
     private HashMap<String, Restlet> getRoutePatternsAndResources() {

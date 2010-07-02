@@ -1,19 +1,19 @@
 package com.github.tlb.server;
 
-import com.github.tlb.domain.SubsetSizeEntry;
-
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.List;
 
 /**
- * @understands loading and saving of entry data
+ * @understands
  */
-public class EntryRepo<T> {
+public interface EntryRepo<I,O> {
+    List<O> list();
 
-    public List<T> list() {
-        return null;
-    }
+    void add(I entry);
 
-    public void add(T entry) {
-        
-    }
+    void diskDump(ObjectOutputStream objectOutputStream) throws IOException;
+
+    void load(ObjectInputStream inStream) throws IOException, ClassNotFoundException;
 }

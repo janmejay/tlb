@@ -1,12 +1,12 @@
 package com.github.tlb;
 
-import com.github.tlb.TlbConstants;
-import com.github.tlb.TlbFileResource;
 import com.github.tlb.ant.JunitFileResource;
 import com.github.tlb.utils.FileUtil;
 import com.github.tlb.utils.SystemEnvironment;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.Project;
+
+import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
@@ -53,6 +53,16 @@ public class TestUtil {
         return file;
     }
 
+    public static File mkdirInPwd(String dirName) {
+        return mkdirIn(".", dirName);
+    }
+
+    public static File mkdirIn(String parent, String dirName) {
+        File file = new File(parent, dirName);
+        file.mkdirs();
+        return file;
+    }
+
     public static class LogFixture {
         private ArrayList<Logger> loggersRegisteredTo;
         private TestUtil.LogFixture.TestHandler handler;
@@ -64,6 +74,26 @@ public class TestUtil {
         public void clearHistory() {
             handler.clearHistory();
         }
+
+        public void assertHeardException(Exception expected) {
+            boolean matched = false;
+            for (Throwable actual : handler.execeptions) {
+                matched = match(actual, expected);
+                if (matched) break;
+            }
+            assertTrue(String.format("didn't find exception %s in heard throwables", expected), matched);
+        }
+
+        private boolean match(Throwable actual, Throwable expected) {
+            if (actual == null) {
+                return expected == null;
+            }
+            if (expected.getClass().equals(actual.getClass())) {
+                return actual.getMessage().equals(expected.getMessage()) && match(actual.getCause(), expected.getCause());
+            }
+            return false;
+        }
+
 
         public void assertHeard(String partOfMessage, int expectedOccurances) {
             int actualOccurances = totalOccurances(partOfMessage);
@@ -87,13 +117,19 @@ public class TestUtil {
 
         class TestHandler extends Handler {
             private ArrayList<String> messages;
+            private ArrayList<Throwable> execeptions;
 
             TestHandler() {
                 messages = new ArrayList<String>();
+                execeptions = new ArrayList<Throwable>();
             }
 
             public void publish(LogRecord record) {
                 messages.add(record.getMessage());
+                Throwable throwable = record.getThrown();
+                if (throwable != null) {
+                    execeptions.add(throwable);
+                }
             }
 
             public void flush() {

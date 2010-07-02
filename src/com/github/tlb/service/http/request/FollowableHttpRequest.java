@@ -34,6 +34,7 @@ public abstract class FollowableHttpRequest {
 
     public String executeRequest(String url) {
         final HttpMethodBase method = createMethod(url);
+        
         String baseMessage = String.format("http request to %s with %s", url, method.getClass().getSimpleName());
         logger.info("attempting " + baseMessage);
         try {

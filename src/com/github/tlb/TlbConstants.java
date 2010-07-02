@@ -23,7 +23,7 @@ public interface TlbConstants {
 
     public interface Server {
         final String REPO_FACTORY = "repo_factory";
-        final String FAMILY_NAME = "family_name";
+        final String REQUEST_NAMESPACE = "namespace";
         final String SUBSET_SIZE = "subset_size";
     }
 }
