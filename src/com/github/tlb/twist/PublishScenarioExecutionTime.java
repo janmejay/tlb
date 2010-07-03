@@ -31,7 +31,7 @@ public class PublishScenarioExecutionTime extends Task {
     }
 
     public PublishScenarioExecutionTime(SystemEnvironment systemEnvironment) {
-        this(new TalkToCruise(systemEnvironment, new DefaultHttpAction(systemEnvironment)));
+        this(new TalkToCruise(systemEnvironment));
     }
 
     public void setReportsDir(String reportsDir) {

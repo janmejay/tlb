@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 /**
- * @understands talking http protocol using http client
+ * @understands talking http
  */
 public class DefaultHttpAction implements HttpAction {
     private final HttpClient client;
@@ -31,31 +31,6 @@ public class DefaultHttpAction implements HttpAction {
         this.client = client;
         this.url = url;
         ssl = url.getScheme().equals("https");
-    }
-
-    public DefaultHttpAction(SystemEnvironment environment) {
-        this(createHttpClient(environment), createUri(environment));
-    }
-
-    private static URI createUri(SystemEnvironment environment) {
-        try {
-            return new URI(environment.getProperty(TlbConstants.CRUISE_SERVER_URL), true);
-        } catch (URIException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static HttpClient createHttpClient(SystemEnvironment environment) {
-        HttpClientParams params = new HttpClientParams();
-
-        if (environment.getProperty(USERNAME) != null) {
-            params.setAuthenticationPreemptive(true);
-            HttpClient client = new HttpClient(params);
-            client.getState().setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(environment.getProperty(USERNAME), environment.getProperty(PASSWORD)));
-            return client;
-        } else {
-            return new HttpClient(params);
-        }
     }
 
     /**

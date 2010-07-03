@@ -30,7 +30,7 @@ public class JunitDataRecorder implements JUnitResultFormatter {
     }
 
     private JunitDataRecorder(SystemEnvironment systemEnvironment) {
-        this(new TalkToCruise(systemEnvironment, new DefaultHttpAction(systemEnvironment)));
+        this(new TalkToCruise(systemEnvironment));
     }
 
     public void startTestSuite(JUnitTest jUnitTest) throws BuildException {}

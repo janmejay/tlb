@@ -8,11 +8,18 @@ import com.github.tlb.domain.Entry;
 import com.github.tlb.domain.SuiteResultEntry;
 import com.github.tlb.domain.SuiteTimeEntry;
 import com.github.tlb.service.http.HttpAction;
+import com.github.tlb.service.http.DefaultHttpAction;
 import com.github.tlb.storage.TlbEntryRepository;
 import com.github.tlb.utils.FileUtil;
 import com.github.tlb.utils.SystemEnvironment;
 import com.github.tlb.utils.XmlUtil;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.URI;
+import org.apache.commons.httpclient.URIException;
+import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.params.HttpClientParams;
 import org.dom4j.Attribute;
 import org.dom4j.Element;
 
@@ -47,6 +54,34 @@ public class TalkToCruise implements TalkToService {
     final TlbEntryRepository subsetSizeRepository;
     final TlbEntryRepository testTimesRepository;
     final TlbEntryRepository failedTestsRepository;
+
+    public TalkToCruise(SystemEnvironment environment) {
+        this(environment, createHttpAction(environment));
+    }
+
+    private static HttpClient createHttpClient(SystemEnvironment environment) {
+        HttpClientParams params = new HttpClientParams();
+        if (environment.getProperty(USERNAME) != null) {
+            params.setAuthenticationPreemptive(true);
+            HttpClient client = new HttpClient(params);
+            client.getState().setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(environment.getProperty(USERNAME), environment.getProperty(PASSWORD)));
+            return client;
+        } else {
+            return new HttpClient(params);
+        }
+    }
+
+    private static URI createUri(SystemEnvironment environment) {
+        try {
+            return new URI(environment.getProperty(TlbConstants.CRUISE_SERVER_URL), true);
+        } catch (URIException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static HttpAction createHttpAction(SystemEnvironment environment) {
+        return new DefaultHttpAction(createHttpClient(environment), createUri(environment));
+    }
 
     public TalkToCruise(SystemEnvironment environment, HttpAction httpAction) {
         this.environment = environment;

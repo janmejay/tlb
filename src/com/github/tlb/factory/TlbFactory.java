@@ -47,7 +47,7 @@ public class TlbFactory<T> {
         try {
             T criteria = actualKlass.getConstructor(SystemEnvironment.class).newInstance(environment);
             if (TalksToService.class.isInstance(criteria)) {
-                TalkToService service = new TalkToCruise(environment, new DefaultHttpAction(environment));
+                TalkToService service = new TalkToCruise(environment);
                 ((TalksToService)criteria).talksToService(service);
             }
             return criteria;
