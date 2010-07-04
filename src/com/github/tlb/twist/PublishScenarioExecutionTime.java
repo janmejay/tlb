@@ -1,5 +1,6 @@
 package com.github.tlb.twist;
 
+import com.github.tlb.factory.TlbFactory;
 import com.github.tlb.service.TalkToService;
 import com.github.tlb.service.TalkToCruise;
 import com.github.tlb.service.http.DefaultHttpAction;
@@ -31,7 +32,7 @@ public class PublishScenarioExecutionTime extends Task {
     }
 
     public PublishScenarioExecutionTime(SystemEnvironment systemEnvironment) {
-        this(new TalkToCruise(systemEnvironment));
+        this(TlbFactory.getTalkToService(systemEnvironment));
     }
 
     public void setReportsDir(String reportsDir) {

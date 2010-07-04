@@ -1,5 +1,6 @@
 package com.github.tlb.ant;
 
+import com.github.tlb.factory.TlbFactory;
 import com.github.tlb.service.TalkToCruise;
 import com.github.tlb.service.TalkToService;
 import com.github.tlb.service.http.DefaultHttpAction;
@@ -30,7 +31,7 @@ public class JunitDataRecorder implements JUnitResultFormatter {
     }
 
     private JunitDataRecorder(SystemEnvironment systemEnvironment) {
-        this(new TalkToCruise(systemEnvironment));
+        this(TlbFactory.getTalkToService(systemEnvironment));
     }
 
     public void startTestSuite(JUnitTest jUnitTest) throws BuildException {}

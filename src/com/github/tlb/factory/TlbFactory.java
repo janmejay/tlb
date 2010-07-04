@@ -1,9 +1,7 @@
 package com.github.tlb.factory;
 
 import com.github.tlb.TlbConstants;
-import com.github.tlb.service.TalkToCruise;
 import com.github.tlb.service.TalkToService;
-import com.github.tlb.service.http.DefaultHttpAction;
 import com.github.tlb.splitter.TalksToService;
 import com.github.tlb.utils.SystemEnvironment;
 import com.github.tlb.splitter.TestSplitterCriteria;
@@ -46,7 +44,7 @@ public class TlbFactory<T> {
         try {
             T criteria = actualKlass.getConstructor(SystemEnvironment.class).newInstance(environment);
             if (TalksToService.class.isInstance(criteria)) {
-                TalkToService service = getTalkToService(environment.getProperty(TlbConstants.TALK_TO_SERVICE), environment);
+                TalkToService service = getTalkToService(environment);
                 ((TalksToService)criteria).talksToService(service);
             }
             return criteria;
@@ -73,9 +71,9 @@ public class TlbFactory<T> {
         return testOrderer.getInstance(ordererName, environment);
     }
 
-    static TalkToService getTalkToService(String talkToServiceName, SystemEnvironment environment) {
+    public static TalkToService getTalkToService(SystemEnvironment environment) {
         if (talkToServiceFactory == null)
             talkToServiceFactory = new TlbFactory<TalkToService>(TalkToService.class, null);
-        return talkToServiceFactory.getInstance(talkToServiceName, environment);
+        return talkToServiceFactory.getInstance(environment.getProperty(TlbConstants.TALK_TO_SERVICE), environment);
     }
 }

@@ -106,7 +106,8 @@ public class TlbFactoryTest {
     public void shouldReturnTalkToTlbServer() {
         final Map<String, String> map = new HashMap<String, String>();
         map.put(TlbConstants.TlbServer.URL, "http://localhost:7019");
-        TalkToService talkToService = TlbFactory.getTalkToService("com.github.tlb.service.TalkToTlbServer", new SystemEnvironment(map));
+        map.put(TlbConstants.TALK_TO_SERVICE, "com.github.tlb.service.TalkToTlbServer");
+        TalkToService talkToService = TlbFactory.getTalkToService(new SystemEnvironment(map));
         assertThat(talkToService, is(TalkToTlbServer.class));
     }
     
@@ -114,7 +115,8 @@ public class TlbFactoryTest {
     public void shouldReturnTalkToCruise() {
         final Map<String, String> map = new HashMap<String, String>();
         map.put(TlbConstants.Cruise.CRUISE_SERVER_URL, "http://localhost:8153/cruise");
-        TalkToService talkToService = TlbFactory.getTalkToService("com.github.tlb.service.TalkToCruise", new SystemEnvironment(map));
+        map.put(TlbConstants.TALK_TO_SERVICE, "com.github.tlb.service.TalkToCruise");
+        TalkToService talkToService = TlbFactory.getTalkToService(new SystemEnvironment(map));
         assertThat(talkToService, is(TalkToCruise.class));
     }
 
