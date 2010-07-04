@@ -7,7 +7,6 @@ import com.github.tlb.TestUtil;
 import com.github.tlb.TlbFileResource;
 import com.github.tlb.splitter.CountBasedTestSplitterCriteria;
 import com.github.tlb.splitter.JobFamilyAwareSplitterCriteria;
-import com.github.tlb.factory.TlbFactory;
 import com.github.tlb.utils.FileUtil;
 import com.github.tlb.utils.SystemEnvironment;
 import org.apache.tools.ant.Project;
@@ -109,7 +108,7 @@ public class LoadBalancedFileSetTest {
 
     @Test
     public void shouldUseSystemPropertyToInstantiateCriteria() {
-        fileSet = new LoadBalancedFileSet(initEnvironment(TlbFactory.COUNT));
+        fileSet = new LoadBalancedFileSet(initEnvironment("com.github.tlb.splitter.CountBasedTestSplitterCriteria"));
         fileSet.setDir(projectDir);
         assertThat(fileSet.getSplitterCriteria(), instanceOf(CountBasedTestSplitterCriteria.class));
     }

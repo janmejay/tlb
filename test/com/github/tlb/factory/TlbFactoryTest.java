@@ -19,6 +19,7 @@ import com.github.tlb.service.TalkToService;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TlbFactoryTest {
 
@@ -67,7 +68,7 @@ public class TlbFactoryTest {
 
     @Test
     public void shouldReturnCountBasedCriteria() {
-        TestSplitterCriteria criteria = TlbFactory.getCriteria(TlbFactory.COUNT, env("com.github.tlb.service.TalkToCruise"));
+        TestSplitterCriteria criteria = TlbFactory.getCriteria("com.github.tlb.splitter.CountBasedTestSplitterCriteria", env("com.github.tlb.service.TalkToCruise"));
         assertThat(criteria, instanceOf(CountBasedTestSplitterCriteria.class));
     }
     
@@ -91,14 +92,30 @@ public class TlbFactoryTest {
 
     @Test
     public void shouldReturnTimeBasedCriteria() {
-        TestSplitterCriteria criteria = TlbFactory.getCriteria(TlbFactory.TIME, env("com.github.tlb.service.TalkToCruise"));
+        TestSplitterCriteria criteria = TlbFactory.getCriteria("com.github.tlb.splitter.TimeBasedTestSplitterCriteria", env("com.github.tlb.service.TalkToCruise"));
         assertThat(criteria, instanceOf(TimeBasedTestSplitterCriteria.class));
     }
 
     @Test
     public void shouldReturnFailedFirstOrderer() {
-        TestOrderer failedTestsFirstOrderer = TlbFactory.getOrderer(TlbFactory.FAILED_FIRST, env("com.github.tlb.service.TalkToCruise"));
+        TestOrderer failedTestsFirstOrderer = TlbFactory.getOrderer("com.github.tlb.orderer.FailedFirstOrderer", env("com.github.tlb.service.TalkToCruise"));
         assertThat(failedTestsFirstOrderer, instanceOf(FailedFirstOrderer.class));
+    }
+
+    @Test
+    public void shouldReturnTalkToTlbServer() {
+        final Map<String, String> map = new HashMap<String, String>();
+        map.put(TlbConstants.TlbServer.URL, "http://localhost:7019");
+        TalkToService talkToService = TlbFactory.getTalkToService("com.github.tlb.service.TalkToTlbServer", new SystemEnvironment(map));
+        assertThat(talkToService, is(TalkToTlbServer.class));
+    }
+    
+    @Test
+    public void shouldReturnTalkToCruise() {
+        final Map<String, String> map = new HashMap<String, String>();
+        map.put(TlbConstants.Cruise.CRUISE_SERVER_URL, "http://localhost:8153/cruise");
+        TalkToService talkToService = TlbFactory.getTalkToService("com.github.tlb.service.TalkToCruise", new SystemEnvironment(map));
+        assertThat(talkToService, is(TalkToCruise.class));
     }
 
     private SystemEnvironment env(String talkToService) {

@@ -16,9 +16,6 @@ import java.lang.reflect.InvocationTargetException;
  * @understands creating a criteria based on the class
  */
 public class TlbFactory<T> {
-    public static final String COUNT = "com.github.tlb.splitter.CountBasedTestSplitterCriteria";
-    public static final String TIME = "com.github.tlb.splitter.TimeBasedTestSplitterCriteria";
-    public static final String FAILED_FIRST = "com.github.tlb.orderer.FailedFirstOrderer";
     private Class<T> klass;
     private T defaultValue;
     private static TlbFactory<TestSplitterCriteria> criteriaFactory;
@@ -76,7 +73,7 @@ public class TlbFactory<T> {
         return testOrderer.getInstance(ordererName, environment);
     }
 
-    public static TalkToService getTalkToService(String talkToServiceName, SystemEnvironment environment) {
+    static TalkToService getTalkToService(String talkToServiceName, SystemEnvironment environment) {
         if (talkToServiceFactory == null)
             talkToServiceFactory = new TlbFactory<TalkToService>(TalkToService.class, null);
         return talkToServiceFactory.getInstance(talkToServiceName, environment);
