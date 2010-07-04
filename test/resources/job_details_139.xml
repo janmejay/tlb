@@ -37,18 +37,18 @@
 
     </properties>
     <agent uuid="3d4c5f9e-0d65-40ec-8bbf-92cf93e839d3"/>
-    <artifacts baseUrl="http://localhost:8153/cruise/files/pipeline/1/stage/1/smoke" pathFromArtifactRoot="pipelines/pipeline/1/stage/1/smoke">
+    <artifacts baseUri="http://localhost:8153/cruise/files/pipeline/1/stage/1/smoke" pathFromArtifactRoot="pipelines/pipeline/1/stage/1/smoke">
 
-            <artifact path="cruise-output/log.xml" type="file"/>
+            <artifact href="http://localhost:8153/cruise/files/pipeline/1/stage/1/smoke/cruise-output/log.xml" path="cruise-output/log.xml" type="file"/>
 
-            <artifact path="twistreports/twist" type="file"/>
+            <artifact href="http://localhost:8153/cruise/files/pipeline/1/stage/1/smoke/twistreports/twist" path="twistreports/twist" type="file"/>
 
-            <artifact path="agent/logs/*.log" type="file"/>
+            <artifact href="http://localhost:8153/cruise/files/pipeline/1/stage/1/smoke/agent/logs/*.log" path="agent/logs/*.log" type="file"/>
 
 
-            <artifact path="server/logs/*.log" type="file"/>
+            <artifact href="http://localhost:8153/cruise/files/pipeline/1/stage/1/smoke/server/logs/*.log" path="server/logs/*.log" type="file"/>
 
-            <artifact path="server/config/config" type="file"/>
+            <artifact href="http://localhost:8153/cruise/files/pipeline/1/stage/1/smoke/server/config/config" path="server/config/config" type="file"/>
 
     </artifacts>
     <resources>

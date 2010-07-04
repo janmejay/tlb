@@ -199,9 +199,6 @@
   <component name="ProjectDetails">
     <option name="projectName" value="TestLoadBalancer" />
   </component>
-  <component name="ProjectDictionaryState">
-    <dictionary name="janmejay" />
-  </component>
   <component name="ProjectKey">
     <option name="state" value="project:///home/janmejay/projects/tlb/TestLoadBalancer.ipr" />
   </component>

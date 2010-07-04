@@ -195,7 +195,7 @@ public class TalkToCruise implements TalkToService {
             Element jobDom = rootFor(jobLink.getValue());
             String jobName = jobDom.attribute("name").getValue().trim();
             if (jobNames.contains(jobName)) {
-                String atrifactBaseUrl = jobDom.selectSingleNode("//artifacts/@baseUrl").getText();
+                String atrifactBaseUrl = jobDom.selectSingleNode("//artifacts/@baseUri").getText();
                 tlbAtrifactUrls.add(String.format("%s/%s", atrifactBaseUrl, urlSuffix));
             }
         }
