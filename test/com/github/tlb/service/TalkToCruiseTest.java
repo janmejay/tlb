@@ -6,7 +6,6 @@ import com.github.tlb.TlbConstants;
 import static com.github.tlb.TestUtil.fileContents;
 import static com.github.tlb.TlbConstants.*;
 
-import com.github.tlb.domain.Entry;
 import com.github.tlb.domain.SuiteResultEntry;
 import com.github.tlb.domain.SuiteTimeEntry;
 import com.github.tlb.service.http.HttpAction;
@@ -48,7 +47,7 @@ public class TalkToCruiseTest {
     }
     
     @Test
-    public void shouldReturnSortedListOfPearJobs() throws Exception{
+    public void shouldUnderstandPartitionsForPearJobsIdentifiedByNumber() throws Exception{
         Map<String, String> envMap = initEnvMap("http://test.host:8153/cruise");
         envMap.put(TlbConstants.CRUISE_JOB_NAME, "firefox-2");
         SystemEnvironment environment = new SystemEnvironment(envMap);
@@ -60,10 +59,12 @@ public class TalkToCruiseTest {
         cruise = new TalkToCruise(environment, action);
         assertThat(cruise.getJobs(), is(Arrays.asList("firefox-3", "rails", "firefox-1", "smoke", "firefox-2")));
         assertThat(cruise.pearJobs(), is(Arrays.asList("firefox-1", "firefox-2", "firefox-3")));
+        assertThat(cruise.totalPartitions(), is(3));
+        assertThat(cruise.partitionNumber(), is(2));
     }
 
     @Test
-    public void shouldReturnSortedListOfPearJobsIdentifiedOnUUID() throws Exception{
+    public void shouldUnderstandPartitionsForPearJobsIdentifiedOnUUID() throws Exception{
         Map<String, String> envMap = initEnvMap("http://test.host:8153/cruise");
         envMap.put(TlbConstants.CRUISE_JOB_NAME, "firefox-bbcdef12-1234-1234-1234-abcdef123456");
         SystemEnvironment environment = new SystemEnvironment(envMap);
@@ -79,6 +80,8 @@ public class TalkToCruiseTest {
         cruise = new TalkToCruise(environment, action);
         assertThat(cruise.getJobs(), is(Arrays.asList("firefox-cbcdef12-1234-1234-1234-abcdef123456", "rails", "firefox-abcdef12-1234-1234-1234-abcdef123456", "smoke", "firefox-bbcdef12-1234-1234-1234-abcdef123456")));
         assertThat(cruise.pearJobs(), is(Arrays.asList("firefox-abcdef12-1234-1234-1234-abcdef123456", "firefox-bbcdef12-1234-1234-1234-abcdef123456", "firefox-cbcdef12-1234-1234-1234-abcdef123456")));
+        assertThat(cruise.totalPartitions(), is(3));
+        assertThat(cruise.partitionNumber(), is(2));
     }
 
     @Test
@@ -265,7 +268,7 @@ public class TalkToCruiseTest {
         stubJobDetails(action);
         when(action.get("http://localhost:8153/cruise/files/pipeline/1/stage/1/firefox-1/tlb/failed_tests")).thenReturn(TestUtil.fileContents("resources/failed_tests_1"));
         when(action.get("http://localhost:8153/cruise/files/pipeline/1/stage/1/firefox-2/tlb/failed_tests")).thenReturn(TestUtil.fileContents("resources/failed_tests_2"));
-        TalkToService service = new TalkToCruise(initEnvironment("http://localhost:8153/cruise"), action);
+        TalkToCruise service = new TalkToCruise(initEnvironment("http://localhost:8153/cruise"), action);
         List<SuiteResultEntry> failedTestEntries = service.getLastRunFailedTests(Arrays.asList("firefox-1", "firefox-2"));
         List<String> failedTests = failedTestNames(failedTestEntries);
         Collections.sort(failedTests);
@@ -290,7 +293,7 @@ public class TalkToCruiseTest {
         stubJobDetails(action);
         when(action.get("http://localhost:8153/cruise/files/pipeline/1/stage/1/firefox-1/tlb/test_time.properties")).thenReturn(fileContents("resources/test_time_1.properties"));
         when(action.get("http://localhost:8153/cruise/files/pipeline/1/stage/1/firefox-2/tlb/test_time.properties")).thenReturn(fileContents("resources/test_time_2.properties"));
-        TalkToService service = new TalkToCruise(initEnvironment("http://localhost:8153/cruise"), action);
+        TalkToCruise service = new TalkToCruise(initEnvironment("http://localhost:8153/cruise"), action);
         List<SuiteTimeEntry> runTimes = service.getLastRunTestTimes(Arrays.asList("firefox-1", "firefox-2"));
         List<SuiteTimeEntry> expected = new ArrayList<SuiteTimeEntry>();
         expected.add(new SuiteTimeEntry("com.thoughtworks.cruise.one.One", 10l));
@@ -316,7 +319,7 @@ public class TalkToCruiseTest {
         Map<String, String> envMap = initEnvMap("http://localhost:8153/cruise");
         envMap.put(CRUISE_PIPELINE_NAME, "old_pipeline");
         envMap.put(CRUISE_STAGE_NAME, "old_stage");
-        TalkToService service = new TalkToCruise(new SystemEnvironment(envMap), action);
+        TalkToCruise service = new TalkToCruise(new SystemEnvironment(envMap), action);
         List<SuiteTimeEntry> runTimes = service.getLastRunTestTimes(Arrays.asList("firefox-1", "firefox-2"));
         List<SuiteTimeEntry> expected = new ArrayList<SuiteTimeEntry>();
         expected.add(new SuiteTimeEntry("com.thoughtworks.cruise.one.One", 10l));

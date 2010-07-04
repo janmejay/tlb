@@ -52,13 +52,11 @@ public class FailedFirstOrdererTest {
         JunitFileResource quuxClass = junitFileResource(baseDir, "foo/baz/Quux.class");
         JunitFileResource bangClass = junitFileResource(baseDir, "foo/baz/Bang.class");
         List<SuiteResultEntry> failedTests = Arrays.asList(new SuiteResultEntry("baz.bang.Foo.class", true), new SuiteResultEntry("foo.bar.Bang.class", true));
-        when(toCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
-        when(toCruise.getLastRunFailedTests(Arrays.asList("job-1", "job-2", "job-3"))).thenReturn(failedTests);
+        when(toCruise.getLastRunFailedTests()).thenReturn(failedTests);
         List<JunitFileResource> fileList = Arrays.asList(bazClass, quuxClass, bangClass);
         Collections.sort(fileList, orderer);
         assertThat(fileList, is(Arrays.asList(bazClass, quuxClass, bangClass)));
-        verify(toCruise, new Times(1)).pearJobs();
-        verify(toCruise, new Times(1)).getLastRunFailedTests(Arrays.asList("job-1", "job-2", "job-3"));
+        verify(toCruise, new Times(1)).getLastRunFailedTests();
     }
 
     @Test
@@ -68,8 +66,7 @@ public class FailedFirstOrdererTest {
         JunitFileResource failedFooClass = junitFileResource(baseDir, "baz/bang/Foo.class");
         JunitFileResource failedBangClass = junitFileResource(baseDir, "foo/bar/Bang.class");
         List<SuiteResultEntry> failedTests = Arrays.asList(new SuiteResultEntry("baz.bang.Foo", true), new SuiteResultEntry("foo.bar.Bang", true));
-        when(toCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
-        when(toCruise.getLastRunFailedTests(Arrays.asList("job-1", "job-2", "job-3"))).thenReturn(failedTests);
+        when(toCruise.getLastRunFailedTests()).thenReturn(failedTests);
         List<JunitFileResource> fileList = Arrays.asList(bazClass, failedFooClass, quuxClass, failedBangClass);
         Collections.sort(fileList, orderer);
 
@@ -78,8 +75,7 @@ public class FailedFirstOrdererTest {
 
         assertThat(fileList.get(2), anyOf(is(bazClass), is(quuxClass)));
         assertThat(fileList.get(3), anyOf(is(bazClass), is(quuxClass)));
-        verify(toCruise, new Times(1)).pearJobs();
-        verify(toCruise, new Times(1)).getLastRunFailedTests(Arrays.asList("job-1", "job-2", "job-3"));
+        verify(toCruise, new Times(1)).getLastRunFailedTests();
     }
 
     private JunitFileResource junitFileResource(String baseDir, String classRelPath) {

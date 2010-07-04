@@ -1,7 +1,6 @@
 package com.github.tlb.splitter;
 
 import com.github.tlb.TlbFileResource;
-import com.github.tlb.domain.Entry;
 import com.github.tlb.domain.SuiteTimeEntry;
 import com.github.tlb.service.TalkToService;
 import com.github.tlb.utils.FileUtil;
@@ -29,19 +28,19 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
     }
 
     protected List<TlbFileResource> subset(List<TlbFileResource> fileResources) {
-        List<TestFile> testFiles = testFiles(jobs, fileResources);
-        Bucket thisBucket = buckets(jobs, testFiles);
+        List<TestFile> testFiles = testFiles(fileResources);
+        Bucket thisBucket = buckets(testFiles);
 
         return resourcesFrom(thisBucket);
     }
 
-    private Bucket buckets(List<String> jobs, List<TestFile> testFiles) {
+    private Bucket buckets(List<TestFile> testFiles) {
         Bucket thisBucket = null;
         List<Bucket> buckets = new ArrayList<Bucket>();
-
-        for (String job : jobs) {
-            Bucket bucket = new Bucket(job);
-            if (job.equals(jobName())) thisBucket = bucket;
+        int thisPartition = talkToService.partitionNumber();
+        for(int i = 1; i <= totalPartitions; i++) {
+            Bucket bucket = new Bucket(i);
+            if (i == thisPartition) thisBucket = bucket;
             buckets.add(bucket);
         }
 
@@ -57,8 +56,8 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
         }
     }
 
-    private List<TestFile> testFiles(List<String> jobs, List<TlbFileResource> fileResources) {
-        List<SuiteTimeEntry> suiteTimeEntries = talkToService.getLastRunTestTimes(jobs);
+    private List<TestFile> testFiles(List<TlbFileResource> fileResources) {
+        List<SuiteTimeEntry> suiteTimeEntries = talkToService.getLastRunTestTimes();
         logger.info(String.format("historical test time data has entries for %s suites", suiteTimeEntries.size()));
         if (suiteTimeEntries.isEmpty()) {
             logger.warning(NO_HISTORICAL_DATA);
@@ -106,12 +105,12 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
 
     private class Bucket implements Comparable<Bucket> {
 
-        String name;
+        int partition;
         Double time = 0.0;
         List<TlbFileResource> files = new ArrayList<TlbFileResource>();
 
-        public Bucket(String name) {
-            this.name = name;
+        public Bucket(int partition) {
+            this.partition = partition;
         }
 
         public int compareTo(Bucket o) {

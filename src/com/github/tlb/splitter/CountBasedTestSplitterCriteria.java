@@ -33,15 +33,15 @@ public class CountBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriter
      * @return filtered load
      */
     protected List<TlbFileResource> subset(List<TlbFileResource> files) {
-        int index = jobs.indexOf(jobName());
-        int splitRatio = files.size() / jobs.size();
-        int reminder = files.size() % jobs.size();
+        int index = talkToService.partitionNumber() - 1;
+        int splitRatio = files.size() / totalPartitions;
+        int reminder = files.size() % totalPartitions;
         logger.info(String.format("count balancing to approximately %s files per job with %s extra file to bucket", splitRatio, reminder));
 
-        double balance = (double) (reminder * (index + 1)) / jobs.size();
-        double lastBalance = (double) (reminder * index) / jobs.size();
+        double balance = (double) (reminder * (index + 1)) / totalPartitions;
+        double lastBalance = (double) (reminder * index) / totalPartitions;
         int startIndex = isFirst(index) ? 0 : index * splitRatio + (int) Math.floor(Math.abs(lastBalance));
-        int endIndex = isLast(jobs, index) ? files.size() : (index + 1) * splitRatio + (int) Math.floor(balance);
+        int endIndex = isLast(totalPartitions, index) ? files.size() : (index + 1) * splitRatio + (int) Math.floor(balance);
 
         return files.subList(startIndex, endIndex);
     }

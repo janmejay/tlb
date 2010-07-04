@@ -14,13 +14,15 @@ public interface TalkToService {
 
     void testClassFailure(String className, boolean hasFailed);
 
-    List<SuiteTimeEntry> getLastRunTestTimes(List<String> jobNames);
+    List<SuiteTimeEntry> getLastRunTestTimes();
+
+    List<SuiteResultEntry> getLastRunFailedTests();
 
     void publishSubsetSize(int size);
 
     void clearSuiteTimeCachingFile();
 
-    List<SuiteResultEntry> getLastRunFailedTests(List<String> jobNames);
+    int partitionNumber();
 
-    List<String> pearJobs();
+    int totalPartitions();
 }

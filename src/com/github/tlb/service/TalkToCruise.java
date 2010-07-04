@@ -4,7 +4,6 @@ import com.github.tlb.TlbConstants;
 
 import static com.github.tlb.TlbConstants.*;
 
-import com.github.tlb.domain.Entry;
 import com.github.tlb.domain.SuiteResultEntry;
 import com.github.tlb.domain.SuiteTimeEntry;
 import com.github.tlb.service.http.HttpAction;
@@ -163,8 +162,12 @@ public class TalkToCruise implements TalkToService {
         return subsetSize;
     }
 
-    public List<SuiteTimeEntry> getLastRunTestTimes(List<String> jobNames) {
-        return SuiteTimeEntry.parse(tlbArtifactPayloadLines(lastRunArtifactUrls(jobNames, TEST_TIME_FILE)));
+    public List<SuiteTimeEntry> getLastRunTestTimes() {
+        return getLastRunTestTimes(pearJobs());
+    }
+
+    List<SuiteTimeEntry> getLastRunTestTimes(List<String> pearJobs) {
+        return SuiteTimeEntry.parse(tlbArtifactPayloadLines(lastRunArtifactUrls(pearJobs, TEST_TIME_FILE)));
     }
 
     private List<String> lastRunArtifactUrls(List<String> jobNames, String urlSuffix) {
@@ -239,8 +242,12 @@ public class TalkToCruise implements TalkToService {
         }
     }
 
-    public List<SuiteResultEntry> getLastRunFailedTests(List<String> jobNames) {
+    List<SuiteResultEntry> getLastRunFailedTests(List<String> jobNames) {
         return SuiteResultEntry.parseFailures(tlbArtifactPayloadLines(lastRunArtifactUrls(jobNames, FAILED_TESTS_FILE)));
+    }
+
+    public List<SuiteResultEntry> getLastRunFailedTests() {
+        return getLastRunFailedTests(pearJobs());
     }
 
     protected String jobName() {
@@ -278,5 +285,13 @@ public class TalkToCruise implements TalkToService {
         List<String> jobs = jobsInTheSameFamily(getJobs());
         Collections.sort(jobs);
         return jobs;
+    }
+
+    public int partitionNumber() {
+        return pearJobs().indexOf(jobName()) + 1; //partition number is one based
+    }
+
+    public int totalPartitions() {
+        return pearJobs().size();
     }
 }

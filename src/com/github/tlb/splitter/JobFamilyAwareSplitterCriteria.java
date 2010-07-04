@@ -23,9 +23,9 @@ public abstract class JobFamilyAwareSplitterCriteria extends TestSplitterCriteri
         }
     };
     protected TalkToService talkToService;
-    protected List<String> jobs;
 
     private static final Logger logger = Logger.getLogger(JobFamilyAwareSplitterCriteria.class.getName());
+    protected int totalPartitions;
 
     public JobFamilyAwareSplitterCriteria(SystemEnvironment env) {
         super(env);
@@ -34,9 +34,9 @@ public abstract class JobFamilyAwareSplitterCriteria extends TestSplitterCriteri
     public List<TlbFileResource> filter(List<TlbFileResource> fileResources) {
         logger.info(String.format("got total of %s files to balance", fileResources.size()));
 
-        jobs = pearJobs();
-        logger.info(String.format("total jobs to distribute load [ %s ]", jobs.size()));
-        if (jobs.size() <= 1) {
+        totalPartitions = talkToService.totalPartitions();
+        logger.info(String.format("total jobs to distribute load [ %s ]", totalPartitions));
+        if (totalPartitions <= 1) {
             return fileResources;
         }
 
@@ -52,8 +52,8 @@ public abstract class JobFamilyAwareSplitterCriteria extends TestSplitterCriteri
        this.talkToService = service;
     }
 
-    protected boolean isLast(List<String> jobs, int index) {
-        return (index + 1) == jobs.size();
+    protected boolean isLast(int totalPartitions, int index) {
+        return (index + 1) == totalPartitions;
     }
 
     protected boolean isFirst(int index) {
@@ -64,7 +64,4 @@ public abstract class JobFamilyAwareSplitterCriteria extends TestSplitterCriteri
         return env.getProperty(TlbConstants.CRUISE_JOB_NAME);
     }
 
-    protected List<String> pearJobs() {
-        return talkToService.pearJobs();
-    }
 }

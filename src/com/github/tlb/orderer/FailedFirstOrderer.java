@@ -26,7 +26,7 @@ public class FailedFirstOrderer extends TestOrderer implements TalksToService {
     public int compare(TlbFileResource o1, TlbFileResource o2) {
         if (failedTestFiles == null) {
             failedTestFiles = new ArrayList<String>();
-            for (SuiteResultEntry failedSuiteEntry : toService.getLastRunFailedTests(toService.pearJobs())) {
+            for (SuiteResultEntry failedSuiteEntry : toService.getLastRunFailedTests()) {
                 failedTestFiles.add(fileUtil.classFileRelativePath(failedSuiteEntry.getName()));
             }
         }
