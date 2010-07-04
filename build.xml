@@ -1,8 +1,11 @@
 <project name="tlb" basedir="." default="all">
+    <path id="dependencies">
+        <fileset dir="lib" includes="*.jar"/>
+    </path>
 
     <path id="src.classpath">
+        <path refid="dependencies"/>
         <pathelement path="target/classes"/>
-        <fileset dir="lib" includes="*.jar"/>
     </path>
 
     <path id="test.classpath">
@@ -70,11 +73,15 @@
     </target>
 
     <target name="package.jar" depends="init, compile, -load.short.rev">
-        <jar destfile="target/tlb-g${short_rev}.jar">
+        <property name="tlb_jar" value="target/tlb-g${short_rev}.jar"/>
+        <jar destfile="${tlb_jar}">
             <fileset dir="target/classes"/>
             <fileset dir="src">
                 <include name="commons-logging.properties"/>
             </fileset>
+            <manifest>
+                <attribute name="Main-Class" value="com.github.tlb.server.Main"/>
+            </manifest>
         </jar>
     </target>
 
@@ -134,6 +141,13 @@
                 <formatter type="plain"/>
             </batchtest>
         </junit>
+    </target>
+
+    <target name="server" depends="package.jar">
+        <java fork="true" classname="com.github.tlb.server.Main">
+            <classpath path="${tlb_jar}"/>
+            <classpath refid="dependencies"/>
+        </java>
     </target>
 
     <target name="all" depends="clean, test, package"/>
