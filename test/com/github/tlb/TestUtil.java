@@ -12,6 +12,7 @@ import static org.junit.Assert.assertThat;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.Socket;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.logging.Handler;
@@ -20,6 +21,9 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 public class TestUtil {
+    private static final int MIN_ANONYMOUS_PORT = 1024;
+    private static final int MAX_PORT_NUMBER = 65536;
+
     public static List<TlbFileResource> tlbFileResources(int ... numbers) {
         ArrayList<TlbFileResource> resources = new ArrayList<TlbFileResource>();
         for (int number : numbers) {
@@ -61,6 +65,23 @@ public class TestUtil {
         File file = new File(parent, dirName);
         file.mkdirs();
         return file;
+    }
+
+    public static String findFreePort() {
+        Random random = new Random(System.currentTimeMillis());
+        for(int i = 0; i < 10; i++) {
+            System.err.println("Attempting to find a free port...");
+            int port = MIN_ANONYMOUS_PORT + random.nextInt(MAX_PORT_NUMBER - MIN_ANONYMOUS_PORT);
+            System.err.println("Checking port number = " + port);
+            try {
+                new Socket("localhost", port);
+                System.err.println("Busy on port number = " + port);
+            } catch (IOException e) {
+                System.err.println("Using port = " + port);
+                return String.valueOf(port);
+            }
+        }
+        throw new IllegalStateException("Failed to find a free port");
     }
 
     public static class LogFixture {
@@ -176,8 +197,8 @@ public class TestUtil {
 
     public static SystemEnvironment initEnvironment(String jobName) {
         Map<String, String> map = new HashMap<String, String>();
-        map.put(TlbConstants.CRUISE_JOB_NAME, jobName);
-        map.put(TlbConstants.CRUISE_STAGE_NAME, "stage-1");
+        map.put(TlbConstants.Cruise.CRUISE_JOB_NAME, jobName);
+        map.put(TlbConstants.Cruise.CRUISE_STAGE_NAME, "stage-1");
         return new SystemEnvironment(map);
     }
 

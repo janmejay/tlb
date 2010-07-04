@@ -15,11 +15,10 @@ import java.util.HashMap;
 public class Main {
     public static final String DATA = "data";
     private final SystemEnvironment env;
-    public static final String TLB_STORE_DIR = "tlb_store";
 
-    Component init() {
+    public Component init() {
         Component component = new Component();
-        component.getServers().add(Protocol.HTTP, Integer.parseInt(env.getProperty(TlbConstants.TLB_PORT, "7019")));
+        component.getServers().add(Protocol.HTTP, Integer.parseInt(env.getProperty(TlbConstants.Server.TLB_PORT, "7019")));
         component.getDefaultHost().attach(new TlbApplication(appContext()));
         return component;
     }
@@ -35,11 +34,11 @@ public class Main {
     }
 
     EntryRepoFactory repoFactory() {
-        File storeDir = new File(TLB_STORE_DIR);
+        File storeDir = new File(env.getProperty(TlbConstants.Server.TLB_STORE_DIR, TlbConstants.Server.TLB_STORE_DIR));
         return new EntryRepoFactory(storeDir);
     }
 
-    Main(SystemEnvironment env) {
+    public Main(SystemEnvironment env) {
         this.env = env;
     }
 

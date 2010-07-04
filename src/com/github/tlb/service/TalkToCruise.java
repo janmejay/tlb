@@ -72,7 +72,7 @@ public class TalkToCruise implements TalkToService {
 
     private static URI createUri(SystemEnvironment environment) {
         try {
-            return new URI(environment.getProperty(TlbConstants.CRUISE_SERVER_URL), true);
+            return new URI(environment.getProperty(TlbConstants.Cruise.CRUISE_SERVER_URL), true);
         } catch (URIException e) {
             throw new RuntimeException(e);
         }
@@ -86,12 +86,12 @@ public class TalkToCruise implements TalkToService {
         this.environment = environment;
         this.httpAction = httpAction;
         subsetSize = null;
-        jobLocator = String.format("%s/%s/%s/%s/%s", p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_LABEL), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER), p(CRUISE_JOB_NAME));
+        jobLocator = String.format("%s/%s/%s/%s/%s", p(Cruise.CRUISE_PIPELINE_NAME), p(Cruise.CRUISE_PIPELINE_LABEL), p(Cruise.CRUISE_STAGE_NAME), p(Cruise.CRUISE_STAGE_COUNTER), p(Cruise.CRUISE_JOB_NAME));
         FileUtil fileUtil = new FileUtil(environment);
         testTimesRepository = new TlbEntryRepository(fileUtil.tmpDir(), DigestUtils.md5Hex(jobLocator));
         subsetSizeRepository = new TlbEntryRepository(fileUtil.tmpDir(), DigestUtils.md5Hex(String.format("%s/subset_size", jobLocator)));
         failedTestsRepository = new TlbEntryRepository(fileUtil.tmpDir(), DigestUtils.md5Hex(String.format("%s/failed_tests", jobLocator)));
-        stageLocator = String.format("%s/%s/%s/%s", p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_COUNTER), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER));
+        stageLocator = String.format("%s/%s/%s/%s", p(Cruise.CRUISE_PIPELINE_NAME), p(Cruise.CRUISE_PIPELINE_COUNTER), p(Cruise.CRUISE_STAGE_NAME), p(Cruise.CRUISE_STAGE_COUNTER));
     }
 
     public List<String> getJobs() {
@@ -115,7 +115,7 @@ public class TalkToCruise implements TalkToService {
     }
 
     private Object cruiseUrl() {
-        String url = p(CRUISE_SERVER_URL);
+        String url = p(Cruise.CRUISE_SERVER_URL);
         if (url.endsWith("/")) {
             url = url.substring(0, url.length() - 1);
         }
@@ -220,8 +220,8 @@ public class TalkToCruise implements TalkToService {
         if (!matcher.matches()) {
             return false;
         }
-        boolean samePipeline = environment.getProperty(CRUISE_PIPELINE_NAME).equals(matcher.group(1));
-        boolean sameStage = environment.getProperty(CRUISE_STAGE_NAME).equals(matcher.group(2));
+        boolean samePipeline = environment.getProperty(Cruise.CRUISE_PIPELINE_NAME).equals(matcher.group(1));
+        boolean sameStage = environment.getProperty(Cruise.CRUISE_STAGE_NAME).equals(matcher.group(2));
         return samePipeline && sameStage;
     }
 
@@ -251,7 +251,7 @@ public class TalkToCruise implements TalkToService {
     }
 
     protected String jobName() {
-        return environment.getProperty(TlbConstants.CRUISE_JOB_NAME);
+        return environment.getProperty(Cruise.CRUISE_JOB_NAME);
     }
 
     private String jobBaseName() {

@@ -35,7 +35,7 @@ public class JobFamilyAwareSplitterCriteriaTest {
     @Test
     public void testFilterShouldPublishNumberOfSuitesSelectedForRunning() {
         HashMap<String, String> envMap = new HashMap<String, String>();
-        envMap.put(TlbConstants.CRUISE_JOB_NAME, "build-1");
+        envMap.put(TlbConstants.Cruise.CRUISE_JOB_NAME, "build-1");
         TalkToCruise toCruise = mock(TalkToCruise.class);
         when(toCruise.totalPartitions()).thenReturn(3);
 

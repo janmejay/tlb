@@ -102,6 +102,26 @@ public class DefaultHttpAction implements HttpAction {
         }
     }
 
+    class FollowableRawPostRequest extends FollowableHttpRequest {
+        private String data;
+
+        protected FollowableRawPostRequest(DefaultHttpAction action, String data) {
+            super(action);
+            this.data = data;
+        }
+
+        public HttpMethodBase createMethod(String url) {
+            PostMethod method = new PostMethod(url);
+            try {
+                method.setRequestEntity(new StringRequestEntity(data, "text/plain", "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException(e);
+            }
+            return method;
+        }
+    }
+    
+
     public String get(String url) {
         FollowableGetRequest request = new FollowableGetRequest(this);
         return request.executeRequest(url);
@@ -109,6 +129,11 @@ public class DefaultHttpAction implements HttpAction {
 
     public String post(String url, Map<String,String> data) {
         FollowablePostRequest request = new FollowablePostRequest(this, data);
+        return request.executeRequest(url);
+    }
+
+    public String post(String url, String data) {
+        FollowableRawPostRequest request = new FollowableRawPostRequest(this, data);
         return request.executeRequest(url);
     }
 

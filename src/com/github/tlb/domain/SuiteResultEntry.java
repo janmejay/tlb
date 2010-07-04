@@ -1,6 +1,7 @@
 package com.github.tlb.domain;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,7 +32,7 @@ public class SuiteResultEntry implements SuiteLevelEntry {
     public static List<SuiteResultEntry> parse(List<String> buffer) {
         ArrayList<SuiteResultEntry> entries = new ArrayList<SuiteResultEntry>();
         for (String resultLine : buffer) {
-            entries.add(parseSingleEntry(resultLine));
+            if (resultLine.trim().length() > 0) entries.add(parseSingleEntry(resultLine));
         }
         return entries;
     }
@@ -93,5 +94,9 @@ public class SuiteResultEntry implements SuiteLevelEntry {
     @Override
     public String toString() {
         return String.format("%s: %s", name, failed);
+    }
+
+    public static List<SuiteResultEntry> parse(String buffer) {
+        return parse(Arrays.asList(buffer.split("\n")));
     }
 }

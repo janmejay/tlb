@@ -47,7 +47,7 @@ public class MainTest {
 
     @Test
     public void shouldInitializeTlbToRunOnConfiguredPort() {
-        systemEnv.put(TlbConstants.TLB_PORT, "1234");
+        systemEnv.put(TlbConstants.Server.TLB_PORT, "1234");
         Component component = main.init();
         ServerList servers = component.getServers();
         assertThat(servers.size(), is(1));
@@ -113,5 +113,18 @@ public class MainTest {
         outStream.close();
         SubsetSizeRepo repo = factory.createSubsetRepo("foo");
         assertThat((List<Integer>) repo.list(), is(Arrays.asList(1, 2, 3)));
+    }
+
+    @Test
+    public void shouldHonorDiskStorageRootOverride() throws IOException, ClassNotFoundException {
+        String tmpDir = TestUtil.createTempFolder().getAbsolutePath();
+        systemEnv.put(TlbConstants.Server.TLB_STORE_DIR, tmpDir);
+        EntryRepoFactory factory = main.repoFactory();
+        File file = new File(tmpDir, EntryRepoFactory.name("quux", EntryRepoFactory.SUBSET_SIZE));
+        ObjectOutputStream outStream = new ObjectOutputStream(new FileOutputStream(file));
+        outStream.writeObject(new ArrayList<Integer>(Arrays.asList(3, 2, 1)));
+        outStream.close();
+        SubsetSizeRepo repo = factory.createSubsetRepo("quux");
+        assertThat((List<Integer>) repo.list(), is(Arrays.asList(3, 2, 1)));
     }
 }

@@ -32,6 +32,23 @@ public class SuiteResultEntryTest {
     }
 
     @Test
+    public void shouldParseToEmptySetOfEntriesForAnEmptyString() {
+        assertThat(SuiteResultEntry.parse("").size(), is(0));
+        assertThat(SuiteResultEntry.parse("\n").size(), is(0));
+    }
+
+    @Test
+    public void shouldParseFromStringWithTrailingNewLine() {
+        String testResultsString = "com.thoughtworks.foo.FooBarTest: true\ncom.thoughtworks.quux.QuuxTest: false\n";
+        List<SuiteResultEntry> entries = SuiteResultEntry.parse(testResultsString);
+        assertThat(entries.get(0).getName(), is("com.thoughtworks.foo.FooBarTest"));
+        assertThat(entries.get(0).hasFailed(), is(true));
+        assertThat(entries.get(1).getName(), is("com.thoughtworks.quux.QuuxTest"));
+        assertThat(entries.get(1).hasFailed(), is(false));
+        assertThat(entries.size(), is(2));
+    }
+
+    @Test
     public void shouldParseFailuresFromString() {
         String testResultsString = "com.thoughtworks.foo.FooBarTest\ncom.thoughtworks.quux.QuuxTest";
         List<SuiteResultEntry> entries = SuiteResultEntry.parseFailures(testResultsString);

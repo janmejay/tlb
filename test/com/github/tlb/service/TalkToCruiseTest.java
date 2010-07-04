@@ -1,7 +1,6 @@
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            package com.github.tlb.service;
 
 import com.github.tlb.TestUtil;
-import com.github.tlb.TlbConstants;
 
 import static com.github.tlb.TestUtil.fileContents;
 import static com.github.tlb.TlbConstants.*;
@@ -49,7 +48,7 @@ public class TalkToCruiseTest {
     @Test
     public void shouldUnderstandPartitionsForPearJobsIdentifiedByNumber() throws Exception{
         Map<String, String> envMap = initEnvMap("http://test.host:8153/cruise");
-        envMap.put(TlbConstants.CRUISE_JOB_NAME, "firefox-2");
+        envMap.put(Cruise.CRUISE_JOB_NAME, "firefox-2");
         SystemEnvironment environment = new SystemEnvironment(envMap);
         HttpAction action = mock(HttpAction.class);
 
@@ -66,7 +65,7 @@ public class TalkToCruiseTest {
     @Test
     public void shouldUnderstandPartitionsForPearJobsIdentifiedOnUUID() throws Exception{
         Map<String, String> envMap = initEnvMap("http://test.host:8153/cruise");
-        envMap.put(TlbConstants.CRUISE_JOB_NAME, "firefox-bbcdef12-1234-1234-1234-abcdef123456");
+        envMap.put(Cruise.CRUISE_JOB_NAME, "firefox-bbcdef12-1234-1234-1234-abcdef123456");
         SystemEnvironment environment = new SystemEnvironment(envMap);
         HttpAction action = mock(HttpAction.class);
 
@@ -317,8 +316,8 @@ public class TalkToCruiseTest {
         when(action.get("http://localhost:8153/cruise/files/pipeline/1/stage/1/firefox-1/tlb/test_time.properties")).thenReturn(fileContents("resources/test_time_1.properties"));
         when(action.get("http://localhost:8153/cruise/files/pipeline/1/stage/1/firefox-2/tlb/test_time.properties")).thenReturn(fileContents("resources/test_time_2_with_new_lines.properties"));
         Map<String, String> envMap = initEnvMap("http://localhost:8153/cruise");
-        envMap.put(CRUISE_PIPELINE_NAME, "old_pipeline");
-        envMap.put(CRUISE_STAGE_NAME, "old_stage");
+        envMap.put(Cruise.CRUISE_PIPELINE_NAME, "old_pipeline");
+        envMap.put(Cruise.CRUISE_STAGE_NAME, "old_stage");
         TalkToCruise service = new TalkToCruise(new SystemEnvironment(envMap), action);
         List<SuiteTimeEntry> runTimes = service.getLastRunTestTimes(Arrays.asList("firefox-1", "firefox-2"));
         List<SuiteTimeEntry> expected = new ArrayList<SuiteTimeEntry>();
@@ -336,14 +335,14 @@ public class TalkToCruiseTest {
 
     private Map<String, String> initEnvMap(String url) {
         Map<String, String> map = new HashMap<String, String>();
-        map.put(CRUISE_STAGE_NAME, "stage");
-        map.put(TlbConstants.CRUISE_SERVER_URL, url);
-        map.put(TlbConstants.CRUISE_PIPELINE_NAME, "pipeline");
-        map.put(TlbConstants.CRUISE_PIPELINE_LABEL, "label-2");
-        map.put(TlbConstants.CRUISE_JOB_NAME, "rspec");
-        map.put(CRUISE_STAGE_NAME, "stage");
-        map.put(CRUISE_STAGE_COUNTER, "1");
-        map.put(CRUISE_PIPELINE_COUNTER, "2");
+        map.put(Cruise.CRUISE_STAGE_NAME, "stage");
+        map.put(Cruise.CRUISE_SERVER_URL, url);
+        map.put(Cruise.CRUISE_PIPELINE_NAME, "pipeline");
+        map.put(Cruise.CRUISE_PIPELINE_LABEL, "label-2");
+        map.put(Cruise.CRUISE_JOB_NAME, "rspec");
+        map.put(Cruise.CRUISE_STAGE_NAME, "stage");
+        map.put(Cruise.CRUISE_STAGE_COUNTER, "1");
+        map.put(Cruise.CRUISE_PIPELINE_COUNTER, "2");
         map.put(TLB_TMP_DIR, System.getProperty("java.io.tmpdir"));
         return map;
     }
