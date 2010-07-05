@@ -13,6 +13,7 @@ import org.restlet.data.Request;
 import org.restlet.data.Response;
 import org.restlet.resource.Representation;
 import org.restlet.resource.ResourceException;
+import org.restlet.resource.StringRepresentation;
 import org.restlet.resource.Variant;
 
 import java.io.IOException;
@@ -23,6 +24,7 @@ import java.util.HashMap;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -72,4 +74,13 @@ public class VersionedSuiteTimeResourceTest {
         verify(repo).list("foo");
     }
 
+    @Test
+    public void shouldNotSupportParsingOfEntryAsAddingToVersionedRepoIsNotPermitted() throws ResourceException, IOException {
+        try {
+            suiteTimeResource.parseEntry(new StringRepresentation("foo.bar.Baz: 120"));
+            fail("should not have parsed entry, as mutation of versioned data is not allowed");
+        } catch (Exception e) {
+            assertThat(e, is(UnsupportedOperationException.class));
+        }
+    }
 }

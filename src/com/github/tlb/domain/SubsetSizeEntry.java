@@ -13,8 +13,12 @@ public class SubsetSizeEntry implements Entry {
         this.size = size;
     }
 
+    public int getSize() {
+        return size;
+    }
+
     public String dump() {
-        return String.valueOf(size);
+        return String.valueOf(size) + "\n";
     }
 
     @Override
@@ -36,9 +40,13 @@ public class SubsetSizeEntry implements Entry {
 
     public static List<SubsetSizeEntry> parse(String text) {
         ArrayList<SubsetSizeEntry> entries = new ArrayList<SubsetSizeEntry>();
-        for (String entry : text.split("\n")) {
-            entries.add(new SubsetSizeEntry(Integer.parseInt(entry)));
+        for (String entryString : text.split("\n")) {
+            if (! entryString.trim().isEmpty()) entries.add(parseSingleEntry(entryString));
         }
         return entries;
+    }
+
+    public static SubsetSizeEntry parseSingleEntry(String entryString) {
+        return new SubsetSizeEntry(Integer.parseInt(entryString));
     }
 }

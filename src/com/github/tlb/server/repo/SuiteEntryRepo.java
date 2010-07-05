@@ -12,12 +12,10 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @understands persistence and retrieval of suite based data
  */
-public abstract class SuiteEntryRepo<T extends SuiteLevelEntry> implements EntryRepo<String, T> {
+public abstract class SuiteEntryRepo<T extends SuiteLevelEntry> implements EntryRepo<T> {
     protected Map<String, T> suiteData;
     protected String namespace;
     protected EntryRepoFactory factory;
-
-    protected abstract T getEntry(String record);
 
     public SuiteEntryRepo() {
         super();
@@ -28,12 +26,11 @@ public abstract class SuiteEntryRepo<T extends SuiteLevelEntry> implements Entry
         return suiteData.values();
     }
 
-    public void update(String record) {
-        T entry = getEntry(record);
-        suiteData.put(entry.getName(), entry);
+    public void update(T record) {
+        suiteData.put(record.getName(), record);
     }
 
-    public final void add(String entry) {
+    public final void add(T entry) {
         throw new UnsupportedOperationException("add not allowed on repository");
     }
 

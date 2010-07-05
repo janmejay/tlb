@@ -1,6 +1,8 @@
 package com.github.tlb.server.resources;
 
 import com.github.tlb.TlbConstants;
+import com.github.tlb.domain.Entry;
+import com.github.tlb.domain.SubsetSizeEntry;
 import com.github.tlb.server.repo.EntryRepo;
 import com.github.tlb.server.repo.EntryRepoFactory;
 import com.github.tlb.server.repo.SubsetSizeRepo;
@@ -9,6 +11,7 @@ import org.junit.Test;
 import org.restlet.Context;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
+import org.restlet.resource.StringRepresentation;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -54,5 +57,11 @@ public class SubsetSizeResourceTest {
         when(repoFactory.createSubsetRepo("namespace", EntryRepoFactory.LATEST_VERSION)).thenReturn(expectedRepo);
         EntryRepo repo = subsetSizeResource.getRepo(repoFactory, "namespace");
         assertThat((SubsetSizeRepo) repo, sameInstance(expectedRepo));
+    }
+
+    @Test
+    public void shouldParseResultEntry() throws IOException {
+        SubsetSizeEntry entry = (SubsetSizeEntry) subsetSizeResource.parseEntry(new StringRepresentation("115"));
+        assertThat(entry, is(new SubsetSizeEntry(115)));
     }
 }

@@ -5,6 +5,6 @@ import java.io.Serializable;
 /**
  * @understands entry that represents suite level data
  */
-public interface SuiteLevelEntry extends Entry, Serializable {
+public interface SuiteLevelEntry extends Entry {
     public String getName();
 }

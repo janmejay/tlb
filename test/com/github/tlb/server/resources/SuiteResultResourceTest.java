@@ -1,6 +1,8 @@
 package com.github.tlb.server.resources;
 
 import com.github.tlb.TlbConstants;
+import com.github.tlb.domain.SuiteResultEntry;
+import com.github.tlb.domain.SuiteTimeEntry;
 import com.github.tlb.server.repo.EntryRepo;
 import com.github.tlb.server.repo.EntryRepoFactory;
 import com.github.tlb.server.repo.SuiteResultRepo;
@@ -9,6 +11,7 @@ import org.junit.Test;
 import org.restlet.Context;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
+import org.restlet.resource.StringRepresentation;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -52,5 +55,11 @@ public class SuiteResultResourceTest {
         when(repoFactory.createSuiteResultRepo("namespace", EntryRepoFactory.LATEST_VERSION)).thenReturn(expectedRepo);
         EntryRepo repo = suiteResultResource.getRepo(repoFactory, "namespace");
         assertThat((SuiteResultRepo)repo, sameInstance(expectedRepo));
+    }
+
+    @Test
+    public void shouldParseSuitTimeEntry() throws IOException {
+        final SuiteResultEntry entry = (SuiteResultEntry) suiteResultResource.parseEntry(new StringRepresentation("foo.bar.Baz: true"));
+        assertThat(entry, is(new SuiteResultEntry("foo.bar.Baz", true)));
     }
 }

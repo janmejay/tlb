@@ -1,6 +1,7 @@
 package com.github.tlb.server.resources;
 
 import com.github.tlb.TlbConstants;
+import com.github.tlb.domain.Entry;
 import com.github.tlb.server.repo.EntryRepo;
 import com.github.tlb.server.repo.EntryRepoFactory;
 import org.restlet.Context;
@@ -43,7 +44,7 @@ public abstract class TlbResource extends Resource {
         return (String) reqAttrs.get(requestNamespace);
     }
 
-    protected Collection getListing() throws IOException, ClassNotFoundException {
+    protected Collection<Entry> getListing() throws IOException, ClassNotFoundException {
         return repo.list();
     }
 
@@ -52,14 +53,14 @@ public abstract class TlbResource extends Resource {
     @Override
     public Representation represent(Variant variant) throws ResourceException {
         StringBuilder builder = new StringBuilder();
-        final Collection listing;
+        final Collection<Entry> listing;
         try {
             listing = getListing();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        for (Object entry : listing) {
-            builder.append(entry).append("\n");
+        for (Entry entry : listing) {
+            builder.append(entry.dump());
         }
         return new StringRepresentation(builder.toString(), MediaType.TEXT_PLAIN);
     }
@@ -67,17 +68,19 @@ public abstract class TlbResource extends Resource {
     @Override
     public void storeRepresentation(Representation entity) throws ResourceException {
         try {
-            repo.update(entity.getText());
+            repo.update(parseEntry(entity));
         } catch (Exception e) {
             logger.log(Level.WARNING, String.format("update of representation failed for %s", entity), e);
             throw new RuntimeException(e);
         }
     }
 
+    protected abstract Entry parseEntry(Representation entity) throws IOException;
+
     @Override
     public void acceptRepresentation(Representation entity) throws ResourceException {
         try {
-            repo.add(entity.getText());
+            repo.add(parseEntry(entity));
         } catch (Exception e) {
             logger.log(Level.WARNING, String.format("addition of representation failed for %s", entity), e);
             throw new RuntimeException(e);

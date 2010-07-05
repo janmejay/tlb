@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static com.github.tlb.TestUtil.sortedList;
+import static com.github.tlb.domain.SuiteTimeEntry.parseSingleEntry;
 import static com.github.tlb.server.repo.EntryRepoFactory.LATEST_VERSION;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -29,18 +30,12 @@ public class SuiteTimeRepoTest {
     }
 
     @Test
-    public void shouldReturnSuiteTimeEntryForGivenRecord() {
-        assertThat(repo.getEntry("foo.bar.Baz: 102"), is(new SuiteTimeEntry("foo.bar.Baz", 102l)));
-        assertThat(repo.getEntry("bar.baz.Quux: 15"), is(new SuiteTimeEntry("bar.baz.Quux", 15l)));
-    }
-
-    @Test
     public void shouldKeepVersionFrozenAcrossDumpAndReload() throws InterruptedException, ClassNotFoundException, IOException {
-        repo.update("foo.bar.Foo: 12");
-        repo.update("foo.bar.Bar: 134");
+        repo.update(parseSingleEntry("foo.bar.Foo: 12"));
+        repo.update(parseSingleEntry("foo.bar.Bar: 134"));
         sortedList(repo.list("foo"));
-        repo.update("foo.bar.Baz: 15");
-        repo.update("foo.bar.Bar: 18");
+        repo.update(parseSingleEntry("foo.bar.Baz: 15"));
+        repo.update(parseSingleEntry("foo.bar.Bar: 18"));
         final Thread exitHook = factory.exitHook();
         exitHook.start();
         exitHook.join();

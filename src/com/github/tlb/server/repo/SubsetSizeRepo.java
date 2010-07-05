@@ -1,30 +1,33 @@
 package com.github.tlb.server.repo;
 
+import com.github.tlb.domain.SubsetSizeEntry;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @understands storage and retrival of size of subset of total suites run by job
  */
-public class SubsetSizeRepo implements EntryRepo<String, Integer> {
-    private ArrayList<Integer> entries;
+public class SubsetSizeRepo implements EntryRepo<SubsetSizeEntry> {
+    private List<SubsetSizeEntry> entries;
 
     public SubsetSizeRepo() {
-        entries = new ArrayList<Integer>();
+        entries = new ArrayList<SubsetSizeEntry>();
     }
 
-    public Collection<Integer> list() {
+    public Collection<SubsetSizeEntry> list() {
         return entries;
     }
 
-    public Collection<Integer> list(String version) throws IOException, ClassNotFoundException {
+    public Collection<SubsetSizeEntry> list(String version) throws IOException, ClassNotFoundException {
         throw new UnsupportedOperationException("versioning not allowed");
     }
 
-    public void update(String entry) {
+    public void update(SubsetSizeEntry entry) {
         throw new UnsupportedOperationException("update not allowed on repository");
     }
 
@@ -33,11 +36,11 @@ public class SubsetSizeRepo implements EntryRepo<String, Integer> {
     }
 
     public void load(ObjectInputStream inStream) throws IOException, ClassNotFoundException {
-        entries = (ArrayList<Integer>) inStream.readObject();
+        entries = (ArrayList<SubsetSizeEntry>) inStream.readObject();
     }
 
-    public void add(String entry) {
-        entries.add(Integer.parseInt(entry));
+    public void add(SubsetSizeEntry entry) {
+        entries.add(entry);
     }
 
     public void setFactory(EntryRepoFactory factory) {

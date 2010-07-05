@@ -10,11 +10,6 @@ import java.io.IOException;
 public class SuiteTimeRepo extends VersioningEntryRepo<SuiteTimeEntry> {
 
     @Override
-    protected SuiteTimeEntry getEntry(String record) {
-        return SuiteTimeEntry.parseSingleEntry(record);
-    }
-
-    @Override
     public SuiteTimeRepo getSubRepo(String versionIdentifier) throws IOException, ClassNotFoundException {
         return factory.createSuiteTimeRepo(namespace, versionIdentifier);
     }

@@ -27,6 +27,11 @@ public class TestCaseRepo extends VersioningEntryRepo<TestCaseRepo.TestCaseEntry
             return testName + "#" + suiteName;
         }
 
+        public static TestCaseEntry parseSingleEntry(String singleEntry) {
+            String[] nameAndHost = singleEntry.split("#");
+            return new TestCaseEntry(nameAndHost[0], nameAndHost[1]);
+        }
+
         @Override
         public String toString() {
             return dump();
@@ -51,12 +56,6 @@ public class TestCaseRepo extends VersioningEntryRepo<TestCaseRepo.TestCaseEntry
             result = 31 * result + (suiteName != null ? suiteName.hashCode() : 0);
             return result;
         }
-    }
-
-    @Override
-    public TestCaseEntry getEntry(String record) {
-        String[] nameAndHost = record.split("#");
-        return new TestCaseEntry(nameAndHost[0], nameAndHost[1]);
     }
 
     @Override

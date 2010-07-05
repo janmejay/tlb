@@ -1,6 +1,8 @@
 package com.github.tlb.server.resources;
 
 import com.github.tlb.TlbConstants;
+import com.github.tlb.domain.Entry;
+import com.github.tlb.domain.SuiteTimeEntry;
 import com.github.tlb.server.repo.EntryRepo;
 import com.github.tlb.server.repo.EntryRepoFactory;
 import com.github.tlb.server.repo.SuiteTimeRepo;
@@ -9,6 +11,7 @@ import org.junit.Test;
 import org.restlet.Context;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
+import org.restlet.resource.StringRepresentation;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -43,6 +46,12 @@ public class SuiteTimeResourceTest {
     @Test
     public void shouldNotAllowPutRequests() {
         assertThat(suiteTimeResource.allowPut(), is(true));
+    }
+
+    @Test
+    public void shouldParseSuitTimeEntry() throws IOException {
+        final SuiteTimeEntry entry = (SuiteTimeEntry) suiteTimeResource.parseEntry(new StringRepresentation("foo.bar.Baz: 135"));
+        assertThat(entry, is(new SuiteTimeEntry("foo.bar.Baz", 135)));
     }
     
     @Test

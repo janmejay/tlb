@@ -17,12 +17,6 @@ public class SuiteResultRepoTest {
     }
 
     @Test
-    public void shouldReturnSuiteTimeEntryForGivenRecord() {
-        assertThat(repo.getEntry("foo.bar.Baz: false"), is(new SuiteResultEntry("foo.bar.Baz", false)));
-        assertThat(repo.getEntry("bar.baz.Quux: true"), is(new SuiteResultEntry("bar.baz.Quux", true)));
-    }
-    
-    @Test
     public void shouldNotAllowVersioning() {
         try {
             repo.list("foo");

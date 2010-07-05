@@ -11,6 +11,7 @@ import java.util.List;
 
 import static com.github.tlb.TestUtil.sortedList;
 import static com.github.tlb.server.repo.EntryRepoFactory.LATEST_VERSION;
+import static com.github.tlb.server.repo.TestCaseRepo.TestCaseEntry.parseSingleEntry;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.Assert.assertThat;
@@ -26,8 +27,8 @@ public class VersioningEntryRepoTest {
         tmpDir = TestUtil.createTempFolder();
         factory = new EntryRepoFactory(tmpDir);
         repo = createRepo(factory);
-        repo.update("shouldBar#Bar");
-        repo.update("shouldBaz#Baz");
+        repo.update(parseSingleEntry("shouldBar#Bar"));
+        repo.update(parseSingleEntry("shouldBaz#Baz"));
     }
 
     @Test
@@ -41,8 +42,8 @@ public class VersioningEntryRepoTest {
     @Test
     public void shouldFreezeAVersionOnceCreated() throws ClassNotFoundException, IOException {
         sortedList(repo.list("foo"));
-        repo.update("shouldFoo#Foo");
-        repo.update("shouldBaz#Quux");
+        repo.update(parseSingleEntry("shouldFoo#Foo"));
+        repo.update(parseSingleEntry("shouldBaz#Quux"));
         final List<SuiteLevelEntry> frozenCollection = sortedList(repo.list("foo"));
         assertThat(frozenCollection.size(), is(2));
         assertThat(frozenCollection, hasItem((SuiteLevelEntry) new TestCaseRepo.TestCaseEntry("shouldBar", "Bar")));
@@ -52,8 +53,8 @@ public class VersioningEntryRepoTest {
     @Test
     public void shouldKeepVersionFrozenAcrossDumpAndReload() throws InterruptedException, ClassNotFoundException, IOException {
         sortedList(repo.list("foo"));
-        repo.update("shouldFoo#Foo");
-        repo.update("shouldBaz#Quux");
+        repo.update(parseSingleEntry("shouldFoo#Foo"));
+        repo.update(parseSingleEntry("shouldBaz#Quux"));
         final Thread exitHook = factory.exitHook();
         exitHook.start();
         exitHook.join();

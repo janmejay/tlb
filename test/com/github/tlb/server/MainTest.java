@@ -2,6 +2,7 @@ package com.github.tlb.server;
 
 import com.github.tlb.TestUtil;
 import com.github.tlb.TlbConstants;
+import com.github.tlb.domain.SubsetSizeEntry;
 import com.github.tlb.server.repo.EntryRepoFactory;
 import com.github.tlb.server.repo.SubsetSizeRepo;
 import com.github.tlb.utils.SystemEnvironment;
@@ -14,7 +15,10 @@ import org.restlet.data.Protocol;
 import org.restlet.util.RouteList;
 import org.restlet.util.ServerList;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,7 +26,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
 import static com.github.tlb.server.repo.EntryRepoFactory.LATEST_VERSION;
-import static junit.framework.Assert.fail;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.Assert.assertThat;
@@ -111,10 +114,10 @@ public class MainTest {
         File dir = TestUtil.mkdirInPwd("tlb_store");
         File file = new File(dir, EntryRepoFactory.name("foo", LATEST_VERSION, EntryRepoFactory.SUBSET_SIZE));
         ObjectOutputStream outStream = new ObjectOutputStream(new FileOutputStream(file));
-        outStream.writeObject(new ArrayList<Integer>(Arrays.asList(1, 2, 3)));
+        outStream.writeObject(new ArrayList<SubsetSizeEntry>(Arrays.asList(new SubsetSizeEntry(1), new SubsetSizeEntry(2), new SubsetSizeEntry(3))));
         outStream.close();
         SubsetSizeRepo repo = factory.createSubsetRepo("foo", LATEST_VERSION);
-        assertThat((List<Integer>) repo.list(), is(Arrays.asList(1, 2, 3)));
+        assertThat((List<SubsetSizeEntry>) repo.list(), is(Arrays.asList(new SubsetSizeEntry(1), new SubsetSizeEntry(2), new SubsetSizeEntry(3))));
     }
 
     @Test
@@ -124,10 +127,10 @@ public class MainTest {
         EntryRepoFactory factory = main.repoFactory();
         File file = new File(tmpDir, EntryRepoFactory.name("quux", LATEST_VERSION, EntryRepoFactory.SUBSET_SIZE));
         ObjectOutputStream outStream = new ObjectOutputStream(new FileOutputStream(file));
-        outStream.writeObject(new ArrayList<Integer>(Arrays.asList(3, 2, 1)));
+        outStream.writeObject(new ArrayList<SubsetSizeEntry>(Arrays.asList(new SubsetSizeEntry(1), new SubsetSizeEntry(2), new SubsetSizeEntry(3))));
         outStream.close();
         SubsetSizeRepo repo = factory.createSubsetRepo("quux", LATEST_VERSION);
-        assertThat((List<Integer>) repo.list(), is(Arrays.asList(3, 2, 1)));
+        assertThat((List<SubsetSizeEntry>) repo.list(), is(Arrays.asList(new SubsetSizeEntry(1), new SubsetSizeEntry(2), new SubsetSizeEntry(3))));
     }
     
     @Test

@@ -1,6 +1,7 @@
 package com.github.tlb.server.repo;
 
 import com.github.tlb.TestUtil;
+import com.github.tlb.domain.SubsetSizeEntry;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -78,15 +79,15 @@ public class EntryRepoFactoryTest {
     @Test
     public void shouldBeAbleToLoadFromDumpedFile() throws ClassNotFoundException, IOException, InterruptedException {
         SubsetSizeRepo repo = factory.createSubsetRepo("foo", LATEST_VERSION);
-        repo.add("50");
-        repo.add("100");
-        repo.add("200");
+        repo.add(new SubsetSizeEntry(50));
+        repo.add(new SubsetSizeEntry(100));
+        repo.add(new SubsetSizeEntry(200));
         Thread exitHook = factory.exitHook();
         exitHook.start();
         exitHook.join();
         EntryRepoFactory otherFactoryInstance = new EntryRepoFactory(baseDir);
         SubsetSizeRepo otherRepo = otherFactoryInstance.createSubsetRepo("foo", LATEST_VERSION);
-        assertThat(otherRepo.list(), is((Collection<Integer>) Arrays.asList(50, 100, 200)));
+        assertThat(otherRepo.list(), is((Collection<SubsetSizeEntry>) Arrays.asList(new SubsetSizeEntry(50), new SubsetSizeEntry(100), new SubsetSizeEntry(200))));
     }
     
     @Test
@@ -124,10 +125,10 @@ public class EntryRepoFactoryTest {
     public void shouldUsePresentWorkingDirectoryAsDiskStorageRoot() throws IOException, ClassNotFoundException {
         File file = new File(baseDir, EntryRepoFactory.name("foo", LATEST_VERSION, EntryRepoFactory.SUBSET_SIZE));
         ObjectOutputStream outStream = new ObjectOutputStream(new FileOutputStream(file));
-        outStream.writeObject(new ArrayList<Integer>(Arrays.asList(1, 2, 3)));
+        outStream.writeObject(new ArrayList<SubsetSizeEntry>(Arrays.asList(new SubsetSizeEntry(1), new SubsetSizeEntry(2), new SubsetSizeEntry(3))));
         outStream.close();
         SubsetSizeRepo repo = factory.createSubsetRepo("foo", LATEST_VERSION);
-        assertThat(repo.list(), is((Collection<Integer>) Arrays.asList(1, 2, 3)));
+        assertThat(repo.list(), is((Collection<SubsetSizeEntry>) Arrays.asList(new SubsetSizeEntry(1), new SubsetSizeEntry(2), new SubsetSizeEntry(3))));
     }
     
     @Test
@@ -135,7 +136,7 @@ public class EntryRepoFactoryTest {
         SubsetSizeRepo fooRepo = factory.createSubsetRepo("foo", LATEST_VERSION);
         File file = new File(baseDir, EntryRepoFactory.name("foo", LATEST_VERSION, EntryRepoFactory.SUBSET_SIZE));
         ObjectOutputStream outStream = new ObjectOutputStream(new FileOutputStream(file));
-        outStream.writeObject(new ArrayList<Integer>(Arrays.asList(1, 2, 3)));
+        outStream.writeObject(new ArrayList<SubsetSizeEntry>(Arrays.asList(new SubsetSizeEntry(1), new SubsetSizeEntry(2), new SubsetSizeEntry(3))));
         outStream.close();
         assertThat(fooRepo.list().size(), is(0));
         assertThat(factory.createSubsetRepo("foo", LATEST_VERSION).list().size(), is(0));

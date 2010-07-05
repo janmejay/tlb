@@ -29,8 +29,8 @@ public abstract class VersioningEntryRepo<T extends SuiteLevelEntry> extends Sui
             if (version == null) {
                 version = getSubRepo(versionIdentifier);
                 if (!version.loadedData) {
-                    for (SuiteLevelEntry entry : list()) {
-                        version.update(entry.toString());
+                    for (T entry : list()) {
+                        version.update(entry);
                     }
                 }
                 versions.put(versionIdentifier, version);

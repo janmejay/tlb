@@ -2,6 +2,8 @@ package com.github.tlb.server.resources;
 
 import com.github.tlb.TestUtil;
 import com.github.tlb.TlbConstants;
+import com.github.tlb.domain.Entry;
+import com.github.tlb.domain.SubsetSizeEntry;
 import com.github.tlb.server.repo.EntryRepo;
 import com.github.tlb.server.repo.EntryRepoFactory;
 import com.github.tlb.server.repo.SubsetSizeRepo;
@@ -45,6 +47,11 @@ public class TlbResourceTest {
         protected EntryRepo getRepo(EntryRepoFactory repoFactory, String key) throws IOException, ClassNotFoundException {
             return repoFactory.createSubsetRepo(key, EntryRepoFactory.LATEST_VERSION);
         }
+
+        @Override
+        protected Entry parseEntry(Representation entity) throws IOException {
+            return new SubsetSizeEntry(Integer.parseInt(entity.getText()));
+        }
     }
 
     @Before
@@ -64,7 +71,7 @@ public class TlbResourceTest {
 
     @Test
     public void shouldRenderAllRecordsForGivenNamespace() throws ResourceException, IOException {
-        when(repo.list()).thenReturn(Arrays.asList(10, 12, 15));
+        when(repo.list()).thenReturn(Arrays.asList(new SubsetSizeEntry(10), new SubsetSizeEntry(12), new SubsetSizeEntry(15)));
         Representation actualRepresentation = tlbResource.represent(new Variant(MediaType.TEXT_PLAIN));
         assertThat(actualRepresentation.getText(), is("10\n12\n15\n"));
         verify(repo).list();
@@ -86,7 +93,7 @@ public class TlbResourceTest {
     public void shouldAddRecords() throws ResourceException {
         StringRepresentation representation = new StringRepresentation("14");
         tlbResource.acceptRepresentation(representation);
-        verify(repo).add("14");
+        verify(repo).add(new SubsetSizeEntry(14));
     }
     
     @Test
@@ -127,7 +134,7 @@ public class TlbResourceTest {
     public void shouldUpdateRecords() throws ResourceException {
         StringRepresentation representation = new StringRepresentation("14");
         tlbResource.storeRepresentation(representation);
-        verify(repo).update("14");
+        verify(repo).update(new SubsetSizeEntry(14));
     }
 
     @Test
