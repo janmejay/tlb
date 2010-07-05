@@ -57,6 +57,7 @@ public class TalkToTlbServerTest {
         clientEnv.put(TlbConstants.TlbServer.JOB_NAMESPACE, "job");
         clientEnv.put(TlbConstants.TlbServer.PARTITION_NUMBER, "4");
         clientEnv.put(TlbConstants.TlbServer.TOTAL_PARTITIONS, "15");
+        clientEnv.put(TlbConstants.TlbServer.JOB_VERSION, "foo");
         String url = "http://localhost:" + freePort;
         clientEnv.put(TlbConstants.TlbServer.URL, url);
         HttpClientParams params = new HttpClientParams();
@@ -112,7 +113,7 @@ public class TalkToTlbServerTest {
     }
 
     @Test
-    public void shouldBeAbleToFetchSuiteTimes() {
+    public void shouldBeAbleToFetchSuiteTimesUnaffectedByFurtherUpdates() {
         final String url = String.format("http://localhost:%s/job/suite_time", freePort);
         httpAction.put(url, "com.foo.Foo: 10");
         httpAction.put(url, "com.bar.Bar: 12");
@@ -126,6 +127,16 @@ public class TalkToTlbServerTest {
         assertThat(entryList, hasItem(new SuiteTimeEntry("com.baz.Baz", 17)));
         assertThat(entryList, hasItem(new SuiteTimeEntry("com.quux.Quux", 150)));
 
+        httpAction.put(url, "com.foo.Foo: 18");
+        httpAction.put(url, "com.foo.Bang: 103");
+
+        entryList = talkToTlb.getLastRunTestTimes();
+        assertThat(entryList.size(), is(4));
+        assertThat(entryList, hasItem(new SuiteTimeEntry("com.foo.Foo", 10)));
+        assertThat(entryList, hasItem(new SuiteTimeEntry("com.bar.Bar", 12)));
+        assertThat(entryList, hasItem(new SuiteTimeEntry("com.baz.Baz", 17)));
+        assertThat(entryList, hasItem(new SuiteTimeEntry("com.quux.Quux", 150)));
+
         clientEnv.put(TlbConstants.TlbServer.PARTITION_NUMBER, "2");
         entryList = talkToTlb.getLastRunTestTimes();
         assertThat(entryList.size(), is(4));
@@ -133,6 +144,16 @@ public class TalkToTlbServerTest {
         assertThat(entryList, hasItem(new SuiteTimeEntry("com.bar.Bar", 12)));
         assertThat(entryList, hasItem(new SuiteTimeEntry("com.baz.Baz", 17)));
         assertThat(entryList, hasItem(new SuiteTimeEntry("com.quux.Quux", 150)));
+
+        //should fetch latest for unknown version
+        clientEnv.put(TlbConstants.TlbServer.JOB_VERSION, "bar");
+        entryList = talkToTlb.getLastRunTestTimes();
+        assertThat(entryList.size(), is(5));
+        assertThat(entryList, hasItem(new SuiteTimeEntry("com.foo.Foo", 18)));
+        assertThat(entryList, hasItem(new SuiteTimeEntry("com.bar.Bar", 12)));
+        assertThat(entryList, hasItem(new SuiteTimeEntry("com.baz.Baz", 17)));
+        assertThat(entryList, hasItem(new SuiteTimeEntry("com.quux.Quux", 150)));
+        assertThat(entryList, hasItem(new SuiteTimeEntry("com.foo.Bang", 103)));
     }
 
     @Test

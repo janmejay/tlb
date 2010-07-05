@@ -14,7 +14,6 @@ import java.util.HashMap;
  * @understands running the server as a standalone process
  */
 public class Main {
-    public static final String DATA = "data";
     private final SystemEnvironment env;
 
     public Component init() {

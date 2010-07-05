@@ -3,6 +3,7 @@ package com.github.tlb.service;
 import com.github.tlb.TlbConstants;
 import com.github.tlb.domain.SuiteResultEntry;
 import com.github.tlb.domain.SuiteTimeEntry;
+import com.github.tlb.server.repo.EntryRepoFactory;
 import com.github.tlb.service.http.DefaultHttpAction;
 import com.github.tlb.service.http.HttpAction;
 import com.github.tlb.utils.SystemEnvironment;
@@ -23,6 +24,7 @@ public class TalkToTlbServer implements TalkToService {
     private final SystemEnvironment env;
     private final HttpAction httpAction;
 
+    //reflectively invoked by factory
     public TalkToTlbServer(SystemEnvironment systemEnvironment) {
         this(systemEnvironment, createHttpAction(systemEnvironment));
     }
@@ -44,7 +46,7 @@ public class TalkToTlbServer implements TalkToService {
     }
 
     public void testClassTime(String className, long time) {
-        httpAction.put(suiteTimeUrl(), String.format("%s: %s", className, time));
+        httpAction.put(getUrl(namespace(), EntryRepoFactory.SUITE_TIME), String.format("%s: %s", className, time));
     }
 
     public void testClassFailure(String className, boolean hasFailed) {
@@ -52,7 +54,7 @@ public class TalkToTlbServer implements TalkToService {
     }
 
     public List<SuiteTimeEntry> getLastRunTestTimes() {
-        return SuiteTimeEntry.parse(httpAction.get(suiteTimeUrl()));
+        return SuiteTimeEntry.parse(httpAction.get(getUrl(namespace(), EntryRepoFactory.SUITE_TIME, env.getProperty(TlbConstants.TlbServer.JOB_VERSION))));
     }
 
     public List<SuiteResultEntry> getLastRunFailedTests() {
@@ -60,7 +62,7 @@ public class TalkToTlbServer implements TalkToService {
     }
 
     public void publishSubsetSize(int size) {
-        httpAction.post(getUrl(jobName(), "subset_size"), String.valueOf(size));
+        httpAction.post(getUrl(jobName(), EntryRepoFactory.SUBSET_SIZE), String.valueOf(size));
     }
 
     public void clearSuiteTimeCachingFile() {
@@ -76,16 +78,17 @@ public class TalkToTlbServer implements TalkToService {
         return Integer.parseInt(env.getProperty(TlbConstants.TlbServer.TOTAL_PARTITIONS));
     }
 
-    private String getUrl(String name, String resourceType) {
-        return String.format("%s/%s/%s", env.getProperty(URL), name, resourceType);
-    }
-
-    private String suiteTimeUrl() {
-        return getUrl(namespace(), "suite_time");
+    private String getUrl(String... parts) {
+        final StringBuilder builder = new StringBuilder();
+        builder.append(env.getProperty(URL));
+        for (String part : parts) {
+            builder.append("/").append(part);
+        }
+        return builder.toString();
     }
 
     private String suiteResultUrl() {
-        return getUrl(namespace(), "suite_result");
+        return getUrl(namespace(), EntryRepoFactory.SUITE_RESULT);
     }
 
     private String jobName() {

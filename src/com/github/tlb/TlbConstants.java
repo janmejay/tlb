@@ -21,6 +21,7 @@ public interface TlbConstants {
         static final String URL = "TLB_URL";
         static final String PARTITION_NUMBER = "PARTITION_NUMBER";
         static final String TOTAL_PARTITIONS = "TOTAL_PARTITIONS";
+        static final String JOB_VERSION = "JOB_VERSION";
     }
 
     static final String PASSWORD = "TLB_PASSWORD";
