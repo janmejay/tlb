@@ -55,10 +55,9 @@ public class EntryRepoFactory implements Runnable {
     }
 
     EntryRepo findOrCreate(String namespace, String version, String type, Creator<? extends EntryRepo> creator) throws IOException, ClassNotFoundException {
-        EntryRepo repo;
         String identifier = name(namespace, version, type);
         synchronized (identifier.intern()) {
-            repo = repos.get(identifier);
+            EntryRepo repo = repos.get(identifier);
             if (repo == null) {
                 repo = creator.create();
                 repo.setFactory(this);
@@ -71,8 +70,8 @@ public class EntryRepoFactory implements Runnable {
                     repo.load(inStream);
                 }
             }
+            return repo;
         }
-        return repo;
     }
 
     private File dumpFile(String identifier) {
@@ -93,13 +92,14 @@ public class EntryRepoFactory implements Runnable {
     }
 
     public void run() {
-        synchronized (repos) {
-            for (String identifier : repos.keySet()) {
-                try {
+        for (String identifier : repos.keySet()) {
+            try {
+                //don't care about a couple entries not being persisted(at teardown), as client is capable of balancing on averages(treat like new suites)
+                synchronized (identifier.intern()) {
                     repos.get(identifier).diskDump(new ObjectOutputStream(new FileOutputStream(dumpFile(identifier))));
-                } catch (IOException e) {
-                    logger.log(Level.WARNING, String.format("disk dump of %s failed, tlb server may not be able to perform data dependent on next reboot.", identifier), e);
                 }
+            } catch (IOException e) {
+                logger.log(Level.WARNING, String.format("disk dump of %s failed, tlb server may not be able to perform data dependent on next reboot.", identifier), e);
             }
         }
     }
