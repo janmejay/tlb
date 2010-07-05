@@ -6,7 +6,7 @@ import java.io.ObjectOutputStream;
 import java.util.Collection;
 
 /**
- * @understands
+ * @understands storage and retrieval of records 
  */
 public interface EntryRepo<I,O> {
     Collection<O> list();

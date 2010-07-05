@@ -16,7 +16,7 @@ import org.restlet.resource.ResourceException;
 import org.restlet.resource.StringRepresentation;
 import org.restlet.resource.Variant;
 
-import java.io.*;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,10 +25,7 @@ import static junit.framework.Assert.fail;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.matchers.JUnitMatchers.hasItem;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class TlbResourceTest {
     private TlbResource tlbResource;
@@ -66,10 +63,23 @@ public class TlbResourceTest {
     }
 
     @Test
-    public void shouldRenderAllRecordsForGivenJobName() throws ResourceException, IOException {
+    public void shouldRenderAllRecordsForGivenNamespace() throws ResourceException, IOException {
         when(repo.list()).thenReturn(Arrays.asList(10, 12, 15));
         Representation actualRepresentation = tlbResource.represent(new Variant(MediaType.TEXT_PLAIN));
         assertThat(actualRepresentation.getText(), is("10\n12\n15\n"));
+        verify(repo).list();
+    }
+        
+    @Test
+    public void shouldThrowExceptionRaisedByRepoWhileListing() throws ResourceException, IOException, ClassNotFoundException {
+        @SuppressWarnings({"ThrowableInstanceNeverThrown"}) final RuntimeException listingException = new RuntimeException("test exception");
+        when(repo.list()).thenThrow(listingException);
+        try {
+            tlbResource.represent(new Variant(MediaType.TEXT_PLAIN));
+            fail("list exception should have been propagated");
+        } catch(Exception e) {
+            assertThat((RuntimeException) e.getCause(), sameInstance(listingException));
+        }
     }
 
     @Test
@@ -82,7 +92,7 @@ public class TlbResourceTest {
     @Test
     public void shouldPropagateExceptionIfAddFails() throws ResourceException, IOException {
         Representation representation = mock(Representation.class);
-        IOException exception = new IOException("test exception");
+        @SuppressWarnings({"ThrowableInstanceNeverThrown"}) IOException exception = new IOException("test exception");
         when(representation.getText()).thenThrow(exception);
         logFixture.startListening();
         try {

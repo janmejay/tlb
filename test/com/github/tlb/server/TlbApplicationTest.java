@@ -3,6 +3,7 @@ package com.github.tlb.server;
 import com.github.tlb.server.resources.SubsetSizeResource;
 import com.github.tlb.server.resources.SuiteResultResource;
 import com.github.tlb.server.resources.SuiteTimeResource;
+import com.github.tlb.server.resources.VersionedSuiteTimeResource;
 import org.junit.Before;
 import org.junit.Test;
 import org.restlet.*;
@@ -25,7 +26,7 @@ public class TlbApplicationTest {
     }
 
     @Test
-    public void shouldGenerateRouteForSubsetSize() {
+    public void shouldHaveRouteForSubsetSize() {
         HashMap<String, Restlet> routeMaping = getRoutePatternsAndResources();
         assertThat(routeMaping.keySet(), hasItem("/{namespace}/subset_size"));
         Restlet restlet = routeMaping.get("/{namespace}/subset_size");
@@ -33,15 +34,23 @@ public class TlbApplicationTest {
     }
 
     @Test
-    public void shouldGenerateRouteForSuiteTime() {
+    public void shouldHaveRouteForSuiteTime() {
         HashMap<String, Restlet> routeMaping = getRoutePatternsAndResources();
         assertThat(routeMaping.keySet(), hasItem("/{namespace}/suite_time"));
         Restlet restlet = routeMaping.get("/{namespace}/suite_time");
         assertThat(((Finder)restlet).getTargetClass().getName(), is(SuiteTimeResource.class.getName()));
     }
+    
+    @Test
+    public void shouldHaveRouteForVersionedSuiteTime() {
+        HashMap<String, Restlet> routeMaping = getRoutePatternsAndResources();
+        assertThat(routeMaping.keySet(), hasItem("/{namespace}/suite_time/{listing_version}"));
+        Restlet restlet = routeMaping.get("/{namespace}/suite_time/{listing_version}");
+        assertThat(((Finder)restlet).getTargetClass().getName(), is(VersionedSuiteTimeResource.class.getName()));
+    }
 
     @Test
-    public void shouldGenerateRouteForSuiteResult() {
+    public void shouldHaveRouteForSuiteResult() {
         HashMap<String, Restlet> routeMaping = getRoutePatternsAndResources();
         assertThat(routeMaping.keySet(), hasItem("/{namespace}/suite_result"));
         Restlet restlet = routeMaping.get("/{namespace}/suite_result");

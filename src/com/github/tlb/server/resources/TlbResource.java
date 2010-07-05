@@ -10,8 +10,12 @@ import org.restlet.data.Response;
 import org.restlet.resource.*;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static com.github.tlb.TlbConstants.Server.REQUEST_NAMESPACE;
 
 /**
  * @understands listing and modification of tlb resource
@@ -19,12 +23,14 @@ import java.util.logging.Logger;
 public abstract class TlbResource extends Resource {
     private static final Logger logger = Logger.getLogger(TlbResource.class.getName());
     protected EntryRepo repo;
+    private final Map<String, Object> reqAttrs;
 
     public TlbResource(Context context, Request request, Response response) {
         super(context, request, response);
         EntryRepoFactory repoFactory = (EntryRepoFactory) context.getAttributes().get(TlbConstants.Server.REPO_FACTORY);
-        String key = (String) request.getAttributes().get(TlbConstants.Server.REQUEST_NAMESPACE);
+        reqAttrs = request.getAttributes();
         getVariants().add(new Variant(MediaType.TEXT_PLAIN));
+        String key = strAttr(REQUEST_NAMESPACE);
         try {
             repo = getRepo(repoFactory, key);
         } catch (Exception e) {
@@ -33,12 +39,26 @@ public abstract class TlbResource extends Resource {
         }
     }
 
+    protected String strAttr(final String requestNamespace) {
+        return (String) reqAttrs.get(requestNamespace);
+    }
+
+    protected Collection getListing() throws IOException, ClassNotFoundException {
+        return repo.list();
+    }
+
     protected abstract EntryRepo getRepo(EntryRepoFactory repoFactory, String key) throws IOException, ClassNotFoundException;
 
     @Override
     public Representation represent(Variant variant) throws ResourceException {
         StringBuilder builder = new StringBuilder();
-        for (Object entry : repo.list()) {
+        final Collection listing;
+        try {
+            listing = getListing();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        for (Object entry : listing) {
             builder.append(entry).append("\n");
         }
         return new StringRepresentation(builder.toString(), MediaType.TEXT_PLAIN);

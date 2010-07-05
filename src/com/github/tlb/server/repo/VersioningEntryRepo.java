@@ -22,7 +22,7 @@ public abstract class VersioningEntryRepo<T extends SuiteLevelEntry> extends Sui
 
     public abstract VersioningEntryRepo<T> getSubRepo(String versionIdentifier) throws IOException, ClassNotFoundException;
 
-    public final Collection<T> list(String versionIdentifier) throws IOException, ClassNotFoundException {
+    public Collection<T> list(String versionIdentifier) throws IOException, ClassNotFoundException {
         VersioningEntryRepo<T> version;
         synchronized (this) {
             version = versions.get(versionIdentifier);

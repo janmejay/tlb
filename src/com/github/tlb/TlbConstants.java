@@ -23,18 +23,19 @@ public interface TlbConstants {
         static final String TOTAL_PARTITIONS = "TOTAL_PARTITIONS";
     }
 
-    final String PASSWORD = "TLB_PASSWORD";
-    final String USERNAME = "TLB_USERNAME";
-    final String TLB_CRITERIA = "TLB_CRITERIA";
-    final String TEST_SUBSET_SIZE_FILE = "tlb/subset_size";
-    final String CRITERIA_DEFAULTING_ORDER = "CRITERIA_DEFAULTING_ORDER";
-    final String TLB_TMP_DIR = "TLB_TMP_DIR";
-    final String TLB_ORDERER = "TLB_ORDERER";
+    static final String PASSWORD = "TLB_PASSWORD";
+    static final String USERNAME = "TLB_USERNAME";
+    static final String TLB_CRITERIA = "TLB_CRITERIA";
+    static final String TEST_SUBSET_SIZE_FILE = "tlb/subset_size";
+    static final String CRITERIA_DEFAULTING_ORDER = "CRITERIA_DEFAULTING_ORDER";
+    static final String TLB_TMP_DIR = "TLB_TMP_DIR";
+    static final String TLB_ORDERER = "TLB_ORDERER";
 
     public interface Server {
-        final String REPO_FACTORY = "repo_factory";
-        final String REQUEST_NAMESPACE = "namespace";
-        final String TLB_PORT = "TLB_PORT";
-        String TLB_STORE_DIR = "tlb_store";
+        static final String REPO_FACTORY = "repo_factory";
+        static final String REQUEST_NAMESPACE = "namespace";
+        static final String TLB_PORT = "TLB_PORT";
+        static final String TLB_STORE_DIR = "tlb_store";
+        static final String LISTING_VERSION = "listing_version";
     }
 }
