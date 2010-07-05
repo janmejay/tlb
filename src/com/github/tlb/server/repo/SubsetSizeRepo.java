@@ -20,6 +20,10 @@ public class SubsetSizeRepo implements EntryRepo<String, Integer> {
         return entries;
     }
 
+    public Collection<Integer> list(String version) throws IOException, ClassNotFoundException {
+        throw new UnsupportedOperationException("versioning not allowed");
+    }
+
     public void update(String entry) {
         throw new UnsupportedOperationException("update not allowed on repository");
     }
@@ -34,5 +38,13 @@ public class SubsetSizeRepo implements EntryRepo<String, Integer> {
 
     public void add(String entry) {
         entries.add(Integer.parseInt(entry));
+    }
+
+    public void setFactory(EntryRepoFactory factory) {
+        //doesn't need
+    }
+
+    public void setNamespace(String namespace) {
+        //doesn't need
     }
 }

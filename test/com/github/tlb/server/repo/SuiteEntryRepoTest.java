@@ -1,7 +1,7 @@
 package com.github.tlb.server.repo;
 
+import com.github.tlb.TestUtil;
 import com.github.tlb.domain.SuiteLevelEntry;
-import com.github.tlb.server.repo.SuiteEntryRepo;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,52 +14,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 public class SuiteEntryRepoTest {
-    private static class TestCaseEntry implements SuiteLevelEntry {
-        private final String testName;
-        private final String suiteName;
 
-        private TestCaseEntry(String testName, String suiteName) {
-            this.testName = testName;
-            this.suiteName = suiteName;
-        }
-
-        public String getName() {
-            return testName;
-        }
-
-        public String dump() {
-            return testName + "#" + suiteName;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            TestCaseEntry that = (TestCaseEntry) o;
-
-            if (suiteName != null ? !suiteName.equals(that.suiteName) : that.suiteName != null) return false;
-            if (testName != null ? !testName.equals(that.testName) : that.testName != null) return false;
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = testName != null ? testName.hashCode() : 0;
-            result = 31 * result + (suiteName != null ? suiteName.hashCode() : 0);
-            return result;
-        }
-    }
-
-    private static class TestCaseRepo extends SuiteEntryRepo<TestCaseEntry> {
-        @Override
-        public TestCaseEntry getEntry(String record) {
-            String[] nameAndHost = record.split("#");
-            return new TestCaseEntry(nameAndHost[0], nameAndHost[1]);
-        }
-    }
-    
     private TestCaseRepo testCaseRepo;
 
     @Before
@@ -81,10 +36,10 @@ public class SuiteEntryRepoTest {
     public void shouldRecordSuiteRecordWhenUpdated() {
         testCaseRepo.update("shouldBar#Bar");
         testCaseRepo.update("shouldFoo#Foo");
-        List<SuiteLevelEntry> entryList = sortedList();
+        List<SuiteLevelEntry> entryList = TestUtil.sortedList(testCaseRepo.list());
         assertThat(entryList.size(), is(2));
-        assertThat((TestCaseEntry) entryList.get(0), is(new TestCaseEntry("shouldBar", "Bar")));
-        assertThat((TestCaseEntry) entryList.get(1), is(new TestCaseEntry("shouldFoo", "Foo")));
+        assertThat((TestCaseRepo.TestCaseEntry) entryList.get(0), is(new TestCaseRepo.TestCaseEntry("shouldBar", "Bar")));
+        assertThat((TestCaseRepo.TestCaseEntry) entryList.get(1), is(new TestCaseRepo.TestCaseEntry("shouldFoo", "Foo")));
     }
 
     @Test
@@ -92,10 +47,10 @@ public class SuiteEntryRepoTest {
         testCaseRepo.update("shouldBar#Bar");
         testCaseRepo.update("shouldFoo#Foo");
         testCaseRepo.update("shouldBar#Foo");
-        List<SuiteLevelEntry> entryList = sortedList();
+        List<SuiteLevelEntry> entryList = TestUtil.sortedList(testCaseRepo.list());
         assertThat(entryList.size(), is(2));
-        assertThat((TestCaseEntry) entryList.get(0), is(new TestCaseEntry("shouldBar", "Foo")));
-        assertThat((TestCaseEntry) entryList.get(1), is(new TestCaseEntry("shouldFoo", "Foo")));
+        assertThat((TestCaseRepo.TestCaseEntry) entryList.get(0), is(new TestCaseRepo.TestCaseEntry("shouldBar", "Foo")));
+        assertThat((TestCaseRepo.TestCaseEntry) entryList.get(1), is(new TestCaseRepo.TestCaseEntry("shouldFoo", "Foo")));
     }
 
     @Test
@@ -107,22 +62,33 @@ public class SuiteEntryRepoTest {
         ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream(outStream.toByteArray()));
         ConcurrentHashMap<String, SuiteLevelEntry> subsetTimeEntries = (ConcurrentHashMap<String, SuiteLevelEntry>)inputStream.readObject();
         ConcurrentHashMap<String, SuiteLevelEntry> expected = new ConcurrentHashMap<String, SuiteLevelEntry>();
-        expected.put("shouldBar", new TestCaseEntry("shouldBar", "Bar"));
-        expected.put("shouldFoo", new TestCaseEntry("shouldFoo", "Foo"));
+        expected.put("shouldBar", new TestCaseRepo.TestCaseEntry("shouldBar", "Bar"));
+        expected.put("shouldFoo", new TestCaseRepo.TestCaseEntry("shouldFoo", "Foo"));
         assertThat(subsetTimeEntries, is(expected));
     }
 
     @Test
     public void shouldLoadFromInputStreamGiven() throws IOException, ClassNotFoundException {
-        ConcurrentHashMap<String, TestCaseEntry> toBeLoaded = new ConcurrentHashMap<String, TestCaseEntry>();
-        toBeLoaded.put("shouldBar", new TestCaseEntry("shouldBar", "Bar"));
-        toBeLoaded.put("shouldFoo", new TestCaseEntry("shouldFoo", "Foo"));
+        ConcurrentHashMap<String, TestCaseRepo.TestCaseEntry> toBeLoaded = new ConcurrentHashMap<String, TestCaseRepo.TestCaseEntry>();
+        toBeLoaded.put("shouldBar", new TestCaseRepo.TestCaseEntry("shouldBar", "Bar"));
+        toBeLoaded.put("shouldFoo", new TestCaseRepo.TestCaseEntry("shouldFoo", "Foo"));
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         new ObjectOutputStream(outStream).writeObject(toBeLoaded);
         ObjectInputStream inStream = new ObjectInputStream(new ByteArrayInputStream(outStream.toByteArray()));
         testCaseRepo.load(inStream);
-        assertThat(sortedList(), is(listOf(new TestCaseEntry("shouldBar", "Bar"), new TestCaseEntry("shouldFoo", "Foo"))));
+        assertThat(TestUtil.sortedList(testCaseRepo.list()), is(listOf(new TestCaseRepo.TestCaseEntry("shouldBar", "Bar"), new TestCaseRepo.TestCaseEntry("shouldFoo", "Foo"))));
+    }
+
+    @Test
+    public void shouldVersionListItself() {
+        testCaseRepo.update("shouldBar#Bar");
+        testCaseRepo.update("shouldFoo#Foo");
+        List<SuiteLevelEntry> entryList = TestUtil.sortedList(testCaseRepo.list());
+        assertThat(entryList.size(), is(2));
+        assertThat((TestCaseRepo.TestCaseEntry) entryList.get(0), is(new TestCaseRepo.TestCaseEntry("shouldBar", "Bar")));
+        assertThat((TestCaseRepo.TestCaseEntry) entryList.get(1), is(new TestCaseRepo.TestCaseEntry("shouldFoo", "Foo")));
+
     }
     
     private List<SuiteLevelEntry> listOf(SuiteLevelEntry ... entries) {
@@ -132,15 +98,4 @@ public class SuiteEntryRepoTest {
         }
         return list;
     }
-
-    private List<SuiteLevelEntry> sortedList() {
-        ArrayList<SuiteLevelEntry> entryList = new ArrayList<SuiteLevelEntry>(testCaseRepo.list());
-        Collections.sort(entryList, new Comparator<SuiteLevelEntry>() {
-            public int compare(SuiteLevelEntry o1, SuiteLevelEntry o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
-        return entryList;
-    }
-
 }

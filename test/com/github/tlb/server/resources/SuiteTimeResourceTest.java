@@ -2,7 +2,7 @@ package com.github.tlb.server.resources;
 
 import com.github.tlb.TlbConstants;
 import com.github.tlb.server.repo.EntryRepo;
-import com.github.tlb.server.EntryRepoFactory;
+import com.github.tlb.server.repo.EntryRepoFactory;
 import com.github.tlb.server.repo.SuiteTimeRepo;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,7 +49,7 @@ public class SuiteTimeResourceTest {
     public void shouldUseSuiteTimeRepo() throws IOException, ClassNotFoundException {
         EntryRepoFactory repoFactory = mock(EntryRepoFactory.class);
         SuiteTimeRepo expectedRepo = mock(SuiteTimeRepo.class);
-        when(repoFactory.createSuiteTimeRepo("namespace")).thenReturn(expectedRepo);
+        when(repoFactory.createSuiteTimeRepo("namespace", EntryRepoFactory.LATEST_VERSION)).thenReturn(expectedRepo);
         EntryRepo repo = suiteTimeResource.getRepo(repoFactory, "namespace");
         assertThat((SuiteTimeRepo)repo, sameInstance(expectedRepo));
     }

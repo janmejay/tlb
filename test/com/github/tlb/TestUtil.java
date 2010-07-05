@@ -1,6 +1,7 @@
 package com.github.tlb;
 
 import com.github.tlb.ant.JunitFileResource;
+import com.github.tlb.domain.SuiteLevelEntry;
 import com.github.tlb.utils.FileUtil;
 import com.github.tlb.utils.SystemEnvironment;
 import org.apache.commons.io.FileUtils;
@@ -82,6 +83,16 @@ public class TestUtil {
             }
         }
         throw new IllegalStateException("Failed to find a free port");
+    }
+
+    public static List<SuiteLevelEntry> sortedList(final Collection<? extends SuiteLevelEntry> list) {
+        ArrayList<SuiteLevelEntry> entryList = new ArrayList<SuiteLevelEntry>(list);
+        Collections.sort(entryList, new Comparator<SuiteLevelEntry>() {
+            public int compare(SuiteLevelEntry o1, SuiteLevelEntry o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        return entryList;
     }
 
     public static class LogFixture {

@@ -2,7 +2,7 @@ package com.github.tlb.server.resources;
 
 import com.github.tlb.TlbConstants;
 import com.github.tlb.server.repo.EntryRepo;
-import com.github.tlb.server.EntryRepoFactory;
+import com.github.tlb.server.repo.EntryRepoFactory;
 import com.github.tlb.server.repo.SubsetSizeRepo;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +33,7 @@ public class SubsetSizeResourceTest {
         HashMap<String, Object> attributeMap = new HashMap<String, Object>();
         attributeMap.put(TlbConstants.Server.REQUEST_NAMESPACE, "family_name");
         when(request.getAttributes()).thenReturn(attributeMap);
-        when(repoFactory.createSubsetRepo(TlbConstants.Server.REQUEST_NAMESPACE)).thenReturn(repo);
+        when(repoFactory.createSubsetRepo(TlbConstants.Server.REQUEST_NAMESPACE, EntryRepoFactory.LATEST_VERSION)).thenReturn(repo);
         subsetSizeResource = new SubsetSizeResource(context, request, mock(Response.class));
     }
 
@@ -51,7 +51,7 @@ public class SubsetSizeResourceTest {
     public void shouldUseSuiteTimeRepo() throws ClassNotFoundException, IOException {
         EntryRepoFactory repoFactory = mock(EntryRepoFactory.class);
         SubsetSizeRepo expectedRepo = mock(SubsetSizeRepo.class);
-        when(repoFactory.createSubsetRepo("namespace")).thenReturn(expectedRepo);
+        when(repoFactory.createSubsetRepo("namespace", EntryRepoFactory.LATEST_VERSION)).thenReturn(expectedRepo);
         EntryRepo repo = subsetSizeResource.getRepo(repoFactory, "namespace");
         assertThat((SubsetSizeRepo) repo, sameInstance(expectedRepo));
     }

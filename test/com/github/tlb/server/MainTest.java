@@ -2,6 +2,7 @@ package com.github.tlb.server;
 
 import com.github.tlb.TestUtil;
 import com.github.tlb.TlbConstants;
+import com.github.tlb.server.repo.EntryRepoFactory;
 import com.github.tlb.server.repo.SubsetSizeRepo;
 import com.github.tlb.utils.SystemEnvironment;
 import org.junit.Before;
@@ -20,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
+import static com.github.tlb.server.repo.EntryRepoFactory.LATEST_VERSION;
 import static junit.framework.Assert.fail;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsSame.sameInstance;
@@ -107,11 +109,11 @@ public class MainTest {
     public void shouldInitializeEntryRepoFactoryWithPresentWorkingDirectoryAsDiskStorageRoot() throws IOException, ClassNotFoundException {
         EntryRepoFactory factory = main.repoFactory();
         File dir = TestUtil.mkdirInPwd("tlb_store");
-        File file = new File(dir, EntryRepoFactory.name("foo", EntryRepoFactory.SUBSET_SIZE));
+        File file = new File(dir, EntryRepoFactory.name("foo", LATEST_VERSION, EntryRepoFactory.SUBSET_SIZE));
         ObjectOutputStream outStream = new ObjectOutputStream(new FileOutputStream(file));
         outStream.writeObject(new ArrayList<Integer>(Arrays.asList(1, 2, 3)));
         outStream.close();
-        SubsetSizeRepo repo = factory.createSubsetRepo("foo");
+        SubsetSizeRepo repo = factory.createSubsetRepo("foo", LATEST_VERSION);
         assertThat((List<Integer>) repo.list(), is(Arrays.asList(1, 2, 3)));
     }
 
@@ -120,11 +122,17 @@ public class MainTest {
         String tmpDir = TestUtil.createTempFolder().getAbsolutePath();
         systemEnv.put(TlbConstants.Server.TLB_STORE_DIR, tmpDir);
         EntryRepoFactory factory = main.repoFactory();
-        File file = new File(tmpDir, EntryRepoFactory.name("quux", EntryRepoFactory.SUBSET_SIZE));
+        File file = new File(tmpDir, EntryRepoFactory.name("quux", LATEST_VERSION, EntryRepoFactory.SUBSET_SIZE));
         ObjectOutputStream outStream = new ObjectOutputStream(new FileOutputStream(file));
         outStream.writeObject(new ArrayList<Integer>(Arrays.asList(3, 2, 1)));
         outStream.close();
-        SubsetSizeRepo repo = factory.createSubsetRepo("quux");
+        SubsetSizeRepo repo = factory.createSubsetRepo("quux", LATEST_VERSION);
         assertThat((List<Integer>) repo.list(), is(Arrays.asList(3, 2, 1)));
+    }
+    
+    @Test
+    public void shouldEscapeTheEscapeCharInName() {
+        assertThat(EntryRepoFactory.name("foo", "bar", "baz"), is("foo|bar|baz"));
+        assertThat(EntryRepoFactory.name("fo|o", "b|ar", "baz|"), is("fo||o|b||ar|baz||"));
     }
 }

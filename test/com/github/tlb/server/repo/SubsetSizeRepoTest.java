@@ -72,4 +72,14 @@ public class SubsetSizeRepoTest {
         subsetSizeRepo.load(inStream);
         assertListContents((List<Integer>) subsetSizeRepo.list());
     }
+    
+    @Test
+    public void shouldNotAllowVersioning() {
+        try {
+            subsetSizeRepo.list("crap");
+            fail("should not have allowed versioning");
+        } catch (Exception e) {
+            assertThat(e.getMessage(), is("versioning not allowed"));
+        }
+    }
 }

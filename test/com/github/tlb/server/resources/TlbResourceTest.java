@@ -3,7 +3,7 @@ package com.github.tlb.server.resources;
 import com.github.tlb.TestUtil;
 import com.github.tlb.TlbConstants;
 import com.github.tlb.server.repo.EntryRepo;
-import com.github.tlb.server.EntryRepoFactory;
+import com.github.tlb.server.repo.EntryRepoFactory;
 import com.github.tlb.server.repo.SubsetSizeRepo;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,7 +46,7 @@ public class TlbResourceTest {
 
         @Override
         protected EntryRepo getRepo(EntryRepoFactory repoFactory, String key) throws IOException, ClassNotFoundException {
-            return repoFactory.createSubsetRepo(key);
+            return repoFactory.createSubsetRepo(key, EntryRepoFactory.LATEST_VERSION);
         }
     }
 
@@ -60,7 +60,7 @@ public class TlbResourceTest {
         attributeMap = new HashMap<String, Object>();
         attributeMap.put(TlbConstants.Server.REQUEST_NAMESPACE, "identifier");
         when(request.getAttributes()).thenReturn(attributeMap);
-        when(repoFactory.createSubsetRepo("identifier")).thenReturn(repo);
+        when(repoFactory.createSubsetRepo("identifier", EntryRepoFactory.LATEST_VERSION)).thenReturn(repo);
         tlbResource = new TestTlbResource(context, request, mock(Response.class));
         logFixture = new TestUtil.LogFixture();
     }
@@ -128,7 +128,7 @@ public class TlbResourceTest {
     @Test
     public void shouldLogExceptionMessageIfFailsToGetRepo() throws ClassNotFoundException, IOException {
         repoFactory = mock(EntryRepoFactory.class);
-        when(repoFactory.createSubsetRepo("identifier")).thenThrow(new IOException("test exception"));
+        when(repoFactory.createSubsetRepo("identifier", EntryRepoFactory.LATEST_VERSION)).thenThrow(new IOException("test exception"));
         context.setAttributes(Collections.singletonMap(TlbConstants.Server.REPO_FACTORY, (Object) repoFactory));
         logFixture.startListening();
         try {

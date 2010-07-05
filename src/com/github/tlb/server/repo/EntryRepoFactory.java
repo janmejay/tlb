@@ -1,9 +1,4 @@
-package com.github.tlb.server;
-
-import com.github.tlb.server.repo.EntryRepo;
-import com.github.tlb.server.repo.SubsetSizeRepo;
-import com.github.tlb.server.repo.SuiteResultRepo;
-import com.github.tlb.server.repo.SuiteTimeRepo;
+package com.github.tlb.server.repo;
 
 import java.io.*;
 import java.util.Map;
@@ -19,12 +14,13 @@ public class EntryRepoFactory implements Runnable {
     public static final String SUBSET_SIZE = "subset_size";
     public static final String SUITE_TIME = "suite_time";
     public static final String SUITE_RESULT = "suite_result";
+    public static final String LATEST_VERSION = "LATEST";
     private static final Logger logger = Logger.getLogger(EntryRepoFactory.class.getName());
 
     private Map<String, EntryRepo> repos;
     private final String tlbStoreDir;
 
-    private static interface Creator<T> {
+    static interface Creator<T> {
         T create();
     }
 
@@ -33,38 +29,40 @@ public class EntryRepoFactory implements Runnable {
         repos = new ConcurrentHashMap<String, EntryRepo>();
     }
 
-    public SuiteResultRepo createSuiteResultRepo(String namespace) throws ClassNotFoundException, IOException {
-        return (SuiteResultRepo) findOrCreate(namespace, SUITE_RESULT, new Creator<EntryRepo>() {
-            public EntryRepo create() {
+    public SuiteResultRepo createSuiteResultRepo(final String namespace, final String version) throws ClassNotFoundException, IOException {
+        return (SuiteResultRepo) findOrCreate(namespace, version, SUITE_RESULT, new Creator<SuiteResultRepo>() {
+            public SuiteResultRepo create() {
                 return new SuiteResultRepo();
             }
         });
 
     }
 
-    public SuiteTimeRepo createSuiteTimeRepo(String namespace) throws ClassNotFoundException, IOException {
-        return (SuiteTimeRepo) findOrCreate(namespace, SUITE_TIME, new Creator<EntryRepo>() {
-            public EntryRepo create() {
+    public SuiteTimeRepo createSuiteTimeRepo(final String namespace, final String version) throws ClassNotFoundException, IOException {
+        return (SuiteTimeRepo) findOrCreate(namespace, version, SUITE_TIME, new Creator<SuiteTimeRepo>() {
+            public SuiteTimeRepo create() {
                 return new SuiteTimeRepo();
             }
         });
     }
 
-    public SubsetSizeRepo createSubsetRepo(String namespace) throws IOException, ClassNotFoundException {
-        return (SubsetSizeRepo) findOrCreate(namespace, SUBSET_SIZE, new Creator<EntryRepo>() {
-            public EntryRepo create() {
+    public SubsetSizeRepo createSubsetRepo(final String namespace, final String version) throws IOException, ClassNotFoundException {
+        return (SubsetSizeRepo) findOrCreate(namespace, version, SUBSET_SIZE, new Creator<SubsetSizeRepo>() {
+            public SubsetSizeRepo create() {
                 return new SubsetSizeRepo();
             }
         });
     }
 
-    private EntryRepo findOrCreate(String namespace, String type, Creator<? extends EntryRepo> creator) throws IOException, ClassNotFoundException {
+    EntryRepo findOrCreate(String namespace, String version, String type, Creator<? extends EntryRepo> creator) throws IOException, ClassNotFoundException {
         EntryRepo repo;
-        String identifier = name(namespace, type);
+        String identifier = name(namespace, version, type);
         synchronized (identifier.intern()) {
             repo = repos.get(identifier);
             if (repo == null) {
                 repo = creator.create();
+                repo.setFactory(this);
+                repo.setNamespace(namespace);
                 repos.put(identifier, repo);
 
                 File diskDump = dumpFile(identifier);
@@ -81,12 +79,12 @@ public class EntryRepoFactory implements Runnable {
         return new File(tlbStoreDir, identifier);
     }
 
-    static String name(String namespace, String type) {
-        return escape(namespace) + DELIMITER + escape(type);
+    public static String name(String namespace, String version, String type) {
+        return escape(namespace) + DELIMITER + escape(version) + DELIMITER + escape(type);
     }
 
-    private static String escape(String namespace) {
-        return namespace.replace(DELIMITER, DELIMITER + DELIMITER);
+    private static String escape(String str) {
+        return str.replace(DELIMITER, DELIMITER + DELIMITER);
     }
 
     @Deprecated //for tests only

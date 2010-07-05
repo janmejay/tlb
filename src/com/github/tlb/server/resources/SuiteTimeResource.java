@@ -1,7 +1,7 @@
 package com.github.tlb.server.resources;
 
 import com.github.tlb.server.repo.EntryRepo;
-import com.github.tlb.server.EntryRepoFactory;
+import com.github.tlb.server.repo.EntryRepoFactory;
 import org.restlet.Context;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
@@ -18,7 +18,7 @@ public class SuiteTimeResource extends TlbResource {
 
     @Override
     protected EntryRepo getRepo(EntryRepoFactory repoFactory, String key) throws ClassNotFoundException, IOException {
-        return repoFactory.createSuiteTimeRepo(key);
+        return repoFactory.createSuiteTimeRepo(key, EntryRepoFactory.LATEST_VERSION);
     }
 
     @Override

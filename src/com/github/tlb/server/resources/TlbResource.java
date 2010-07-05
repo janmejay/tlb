@@ -2,7 +2,7 @@ package com.github.tlb.server.resources;
 
 import com.github.tlb.TlbConstants;
 import com.github.tlb.server.repo.EntryRepo;
-import com.github.tlb.server.EntryRepoFactory;
+import com.github.tlb.server.repo.EntryRepoFactory;
 import org.restlet.Context;
 import org.restlet.data.MediaType;
 import org.restlet.data.Request;
