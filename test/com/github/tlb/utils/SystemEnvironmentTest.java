@@ -18,6 +18,35 @@ public class SystemEnvironmentTest {
     }
 
     @Test
+    public void shouldRecursivelyResolveVariables() throws Exception {
+        HashMap<String, String> map = new HashMap<String, String>();
+        map.put("foo", "bar");
+        map.put("bar", "oo");
+        map.put("baz", "baz-${foo}");
+        map.put("quux", "baz-${f${bar}}");
+        map.put("complex", "${quux}|${q${bang}}");
+        map.put("bang", "u${boom}");
+        map.put("boom", "u${axe}");
+        map.put("axe", "${X}");
+        map.put("X", "x");
+        SystemEnvironment env = new SystemEnvironment(map);
+        assertThat(env.getProperty("foo"), is("bar"));
+        assertThat(env.getProperty("baz"), is("baz-bar"));
+        assertThat(env.getProperty("quux"), is("baz-bar"));
+        assertThat(env.getProperty("complex"), is("baz-bar|baz-bar"));
+    }
+
+    @Test
+    public void shouldNotFailForTemplateCharactersAppearingWhileResolvingVariables() throws Exception {
+        HashMap<String, String> map = new HashMap<String, String>();
+        map.put("fo$o", "ba${r");
+        map.put("bar", "$o");
+        map.put("baz", "baz-${fo${bar}}");
+        SystemEnvironment env = new SystemEnvironment(map);
+        assertThat(env.getProperty("baz"), is("baz-ba${r"));
+    }
+
+    @Test
     public void shouldGetSystemEnvironmentVairableWhenNoMapPassed() throws Exception{
         SystemEnvironment env = new SystemEnvironment();
         assertThat(env.getProperty("HOME"), is(System.getProperty("user.home")));
