@@ -9,12 +9,15 @@ import org.restlet.data.Protocol;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * @understands running the server as a standalone process
  */
 public class Main {
     private final SystemEnvironment env;
+    private final Timer timer;
 
     public Component init() {
         Component component = new Component();
@@ -25,7 +28,16 @@ public class Main {
 
     Context appContext() {
         HashMap<String, Object> appMap = new HashMap<String, Object>();
-        EntryRepoFactory repoFactory = repoFactory();
+        final EntryRepoFactory repoFactory = repoFactory();
+
+        final int versionLifeInDays = Integer.parseInt(env.getProperty(TlbConstants.Server.VERSION_LIFE_IN_DAYS, "1"));
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                repoFactory.purgeVersionsOlderThan(versionLifeInDays);
+            }
+        }, 0, 1*24*60*60*1000);
+
         repoFactory.registerExitHook();
         appMap.put(TlbConstants.Server.REPO_FACTORY, repoFactory);
         Context applicationContext = new Context();
@@ -39,7 +51,12 @@ public class Main {
     }
 
     public Main(SystemEnvironment env) {
+        this(env, new Timer());
+    }
+
+    public Main(SystemEnvironment env, Timer timer) {
         this.env = env;
+        this.timer = timer;
     }
 
     public static void main(String[] args) {

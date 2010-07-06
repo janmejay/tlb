@@ -50,4 +50,8 @@ public class SubsetSizeRepo implements EntryRepo<SubsetSizeEntry> {
     public void setNamespace(String namespace) {
         //doesn't need
     }
+
+    public void setIdentifier(String type) {
+        //doesn't need
+    }
 }

@@ -1,15 +1,18 @@
 package com.github.tlb.server.repo;
 
 import com.github.tlb.domain.SuiteLevelEntry;
+import com.github.tlb.domain.TimeProvider;
 
 import java.io.IOException;
-
-import static com.github.tlb.server.repo.EntryRepoFactory.LATEST_VERSION;
 
 /**
  * @understands storage and retrival of test case to test suite mappings
  */
 public class TestCaseRepo extends VersioningEntryRepo<TestCaseRepo.TestCaseEntry> {
+    public TestCaseRepo(TimeProvider timeProvider) {
+        super(timeProvider);
+    }
+
     static class TestCaseEntry implements SuiteLevelEntry {
         private final String testName;
         private final String suiteName;
@@ -62,7 +65,7 @@ public class TestCaseRepo extends VersioningEntryRepo<TestCaseRepo.TestCaseEntry
     public TestCaseRepo getSubRepo(String versionIdentifier) throws IOException, ClassNotFoundException {
         return (TestCaseRepo) factory.findOrCreate(namespace, versionIdentifier, "test_case", new EntryRepoFactory.Creator<TestCaseRepo>() {
             public TestCaseRepo create() {
-                return new TestCaseRepo();
+                return new TestCaseRepo(new TimeProvider());
             }
         });
     }

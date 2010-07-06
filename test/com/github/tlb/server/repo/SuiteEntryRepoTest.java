@@ -2,6 +2,7 @@ package com.github.tlb.server.repo;
 
 import com.github.tlb.TestUtil;
 import com.github.tlb.domain.SuiteLevelEntry;
+import com.github.tlb.domain.TimeProvider;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -12,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static com.github.tlb.server.repo.TestCaseRepo.TestCaseEntry.parseSingleEntry;
 import static junit.framework.Assert.fail;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.Assert.assertThat;
 
 public class SuiteEntryRepoTest {
@@ -20,7 +22,22 @@ public class SuiteEntryRepoTest {
 
     @Before
     public void setUp() {
-        testCaseRepo = new TestCaseRepo();
+        testCaseRepo = new TestCaseRepo(new TimeProvider());
+    }
+
+    @Test
+    public void shouldStoreAttributesFactorySets() throws ClassNotFoundException, IOException {
+        final EntryRepoFactory factory = new EntryRepoFactory(TestUtil.createTempFolder());
+        final SuiteEntryRepo entryRepo = (SuiteEntryRepo) factory.findOrCreate("name_space", "version", "type", new EntryRepoFactory.Creator<SuiteEntryRepo>() {
+            public SuiteEntryRepo create() {
+                return new SuiteEntryRepo<TestCaseRepo.TestCaseEntry>() {
+                    public Collection<TestCaseRepo.TestCaseEntry> list(String version) throws IOException, ClassNotFoundException { return null; }
+                };
+            }
+        });
+        assertThat(entryRepo.factory, sameInstance(factory));
+        assertThat(entryRepo.namespace, is("name_space"));
+        assertThat(entryRepo.identifier, is("name_space|version|type"));
     }
 
     @Test

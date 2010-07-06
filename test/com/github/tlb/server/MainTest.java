@@ -19,18 +19,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
+import static com.github.tlb.TlbConstants.Server.VERSION_LIFE_IN_DAYS;
 import static com.github.tlb.server.repo.EntryRepoFactory.LATEST_VERSION;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 public class MainTest {
     private Main main;
@@ -137,5 +134,41 @@ public class MainTest {
     public void shouldEscapeTheEscapeCharInName() {
         assertThat(EntryRepoFactory.name("foo", "bar", "baz"), is("foo|bar|baz"));
         assertThat(EntryRepoFactory.name("fo|o", "b|ar", "baz|"), is("fo||o|b||ar|baz||"));
+    }
+
+    @Test
+    public void shouldSetTimerToPurgeOldVersions() {
+        final TimerTask[] tasks = new TimerTask[1];
+        final EntryRepoFactory repoFactory = mock(EntryRepoFactory.class);
+        final Timer timer = new Timer() {
+            @Override
+            public void schedule(TimerTask task, long delay, long period) {
+                tasks[0] = task;
+                assertThat(delay, is(0l));
+                assertThat(period, is(1*24*60*60*1000l));
+            }
+        };
+
+        new Main(new SystemEnvironment(systemEnv), timer) {
+            @Override
+            EntryRepoFactory repoFactory() {
+                return repoFactory;
+            }
+        }.init();
+
+        tasks[0].run();
+        verify(repoFactory).purgeVersionsOlderThan(1);
+
+        systemEnv.put(VERSION_LIFE_IN_DAYS, "3");
+
+        new Main(new SystemEnvironment(systemEnv), timer) {
+            @Override
+            EntryRepoFactory repoFactory() {
+                return repoFactory;
+            }
+        }.init();
+
+        tasks[0].run();
+        verify(repoFactory).purgeVersionsOlderThan(3);
     }
 }

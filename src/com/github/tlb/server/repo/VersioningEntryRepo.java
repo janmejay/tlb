@@ -1,11 +1,13 @@
 package com.github.tlb.server.repo;
 
 import com.github.tlb.domain.SuiteLevelEntry;
+import com.github.tlb.domain.TimeProvider;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.Collection;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -15,9 +17,26 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class VersioningEntryRepo<T extends SuiteLevelEntry> extends SuiteEntryRepo<T> {
     private boolean loadedData = false;
     private Map<String, VersioningEntryRepo<T>> versions;
+    private final TimeProvider timeProvider;
+    private GregorianCalendar createdAt;
 
-    protected VersioningEntryRepo() {
+    public VersioningEntryRepo(TimeProvider timeProvider) {
+        this.timeProvider = timeProvider;
+        createdAt = timeProvider.now();
         versions = new ConcurrentHashMap<String, VersioningEntryRepo<T>>();
+    }
+
+    public void purgeOldVersions(int versionLifeInDays) throws IOException {
+        final GregorianCalendar cal = timeProvider.now();
+        cal.add(GregorianCalendar.DAY_OF_WEEK, -versionLifeInDays);//this should be parametrized
+        final Date yesterday = cal.getTime();
+        for (String versionKeys : versions.keySet()) {
+            final VersioningEntryRepo<T> version = versions.get(versionKeys);
+            if (version.createdAt.getTime().before(yesterday)) {
+                versions.remove(versionKeys);
+                factory.purge(version.identifier);
+            }
+        }
     }
 
     public abstract VersioningEntryRepo<T> getSubRepo(String versionIdentifier) throws IOException, ClassNotFoundException;

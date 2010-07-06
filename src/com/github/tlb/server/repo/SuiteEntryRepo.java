@@ -16,6 +16,7 @@ public abstract class SuiteEntryRepo<T extends SuiteLevelEntry> implements Entry
     protected Map<String, T> suiteData;
     protected String namespace;
     protected EntryRepoFactory factory;
+    protected String identifier;
 
     public SuiteEntryRepo() {
         super();
@@ -40,6 +41,10 @@ public abstract class SuiteEntryRepo<T extends SuiteLevelEntry> implements Entry
 
     public final void setNamespace(String namespace) {
         this.namespace = namespace;
+    }
+
+    public void setIdentifier(String type) {
+        this.identifier = type;
     }
 
     public final void diskDump(ObjectOutputStream outStream) throws IOException {

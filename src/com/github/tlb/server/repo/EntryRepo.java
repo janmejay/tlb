@@ -26,4 +26,6 @@ public interface EntryRepo<T extends Entry> {
     void setFactory(EntryRepoFactory factory);
 
     void setNamespace(String namespace);
+
+    void setIdentifier(String type);
 }
