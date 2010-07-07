@@ -1,7 +1,8 @@
 package com.github.tlb.server.repo;
 
+import com.github.tlb.TlbConstants;
 import com.github.tlb.domain.TimeProvider;
-import com.github.tlb.utils.FileUtil;
+import com.github.tlb.utils.SystemEnvironment;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
@@ -10,6 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.github.tlb.TlbConstants.Server.TLB_STORE_DIR;
+
 /**
  * @understands creation of EntryRepo
  */
@@ -17,6 +20,7 @@ public class EntryRepoFactory implements Runnable {
     public static final String DELIMITER = "|";
     public static final String SUBSET_SIZE = "subset_size";
     public static final String SUITE_TIME = "suite_time";
+    public static final String SMOOTHING_SUITE_TIME = "smoothing_suite_time";
     public static final String SUITE_RESULT = "suite_result";
     public static final String LATEST_VERSION = "LATEST";
     private static final Logger logger = Logger.getLogger(EntryRepoFactory.class.getName());
@@ -24,16 +28,18 @@ public class EntryRepoFactory implements Runnable {
     private final Map<String, EntryRepo> repos;
     private final String tlbStoreDir;
     private final TimeProvider timeProvider;
+    private final double smoothingFactor;
 
     static interface Creator<T> {
         T create();
     }
 
-    public EntryRepoFactory(File tlbStoreDir) {
-        this(tlbStoreDir, new TimeProvider());
+    public EntryRepoFactory(SystemEnvironment env) {
+        this(new File(env.getProperty(TLB_STORE_DIR, TLB_STORE_DIR)), new TimeProvider(), Double.parseDouble(env.getProperty(TlbConstants.Server.SMOOTHING_FACTOR, "1")));
     }
 
-    EntryRepoFactory(File tlbStoreDir, TimeProvider timeProvider) {
+    EntryRepoFactory(File tlbStoreDir, TimeProvider timeProvider, double smoothingFactor) {
+        this.smoothingFactor = smoothingFactor;
         this.tlbStoreDir = tlbStoreDir.getAbsolutePath();
         repos = new ConcurrentHashMap<String, EntryRepo>();
         this.timeProvider = timeProvider;
@@ -70,13 +76,20 @@ public class EntryRepoFactory implements Runnable {
                 return new SuiteResultRepo();
             }
         });
-
     }
 
     public SuiteTimeRepo createSuiteTimeRepo(final String namespace, final String version) throws ClassNotFoundException, IOException {
         return (SuiteTimeRepo) findOrCreate(namespace, version, SUITE_TIME, new Creator<SuiteTimeRepo>() {
             public SuiteTimeRepo create() {
                 return new SuiteTimeRepo(timeProvider);
+            }
+        });
+    }
+
+    public SuiteTimeRepo createSmoothingSuiteTimeRepo(final String namespace, final String version) throws ClassNotFoundException, IOException {
+        return (SuiteTimeRepo) findOrCreate(namespace, version, SMOOTHING_SUITE_TIME, new Creator<SuiteTimeRepo>() {
+            public SuiteTimeRepo create() {
+                return new SmoothingSuiteTimeRepo(timeProvider, smoothingFactor);
             }
         });
     }

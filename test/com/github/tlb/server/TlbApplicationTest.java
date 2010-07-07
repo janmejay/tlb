@@ -1,9 +1,6 @@
 package com.github.tlb.server;
 
-import com.github.tlb.server.resources.SubsetSizeResource;
-import com.github.tlb.server.resources.SuiteResultResource;
-import com.github.tlb.server.resources.SuiteTimeResource;
-import com.github.tlb.server.resources.VersionedSuiteTimeResource;
+import com.github.tlb.server.resources.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.restlet.*;
@@ -49,6 +46,14 @@ public class TlbApplicationTest {
         assertThat(((Finder)restlet).getTargetClass().getName(), is(VersionedSuiteTimeResource.class.getName()));
     }
 
+    @Test
+    public void shouldHaveRouteForSmoothedSuiteTime() {
+        HashMap<String, Restlet> routeMaping = getRoutePatternsAndResources();
+        assertThat(routeMaping.keySet(), hasItem("/{namespace}/smoothed_suite_time"));
+        Restlet restlet = routeMaping.get("/{namespace}/smoothed_suite_time");
+        assertThat(((Finder)restlet).getTargetClass().getName(), is(SmoothingSuiteTimeResource.class.getName()));
+    }
+    
     @Test
     public void shouldHaveRouteForSuiteResult() {
         HashMap<String, Restlet> routeMaping = getRoutePatternsAndResources();

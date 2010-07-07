@@ -46,8 +46,7 @@ public class Main {
     }
 
     EntryRepoFactory repoFactory() {
-        File storeDir = new File(env.getProperty(TlbConstants.Server.TLB_STORE_DIR, TlbConstants.Server.TLB_STORE_DIR));
-        return new EntryRepoFactory(storeDir);
+        return new EntryRepoFactory(env);
     }
 
     public Main(SystemEnvironment env) {

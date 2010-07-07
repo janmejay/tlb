@@ -39,5 +39,6 @@ public interface TlbConstants {
         static final String TLB_STORE_DIR = "tlb_store";
         static final String LISTING_VERSION = "listing_version";
         static final String VERSION_LIFE_IN_DAYS = "VERSION_LIFE_IN_DAYS";
+        static final String SMOOTHING_FACTOR = "SMOOTHING_FACTOR";
     }
 }
