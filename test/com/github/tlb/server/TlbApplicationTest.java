@@ -53,7 +53,15 @@ public class TlbApplicationTest {
         Restlet restlet = routeMaping.get("/{namespace}/smoothed_suite_time");
         assertThat(((Finder)restlet).getTargetClass().getName(), is(SmoothingSuiteTimeResource.class.getName()));
     }
-    
+
+    @Test
+    public void shouldHaveRouteForVersionedSmoothedSuiteTime() {
+        HashMap<String, Restlet> routeMaping = getRoutePatternsAndResources();
+        assertThat(routeMaping.keySet(), hasItem("/{namespace}/smoothed_suite_time/{listing_version}"));
+        Restlet restlet = routeMaping.get("/{namespace}/smoothed_suite_time/{listing_version}");
+        assertThat(((Finder)restlet).getTargetClass().getName(), is(VersionedSmoothingSuiteTimeResource.class.getName()));
+    }
+
     @Test
     public void shouldHaveRouteForSuiteResult() {
         HashMap<String, Restlet> routeMaping = getRoutePatternsAndResources();
