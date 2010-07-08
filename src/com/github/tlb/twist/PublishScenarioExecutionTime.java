@@ -42,6 +42,11 @@ public class PublishScenarioExecutionTime extends Task {
     }
 
     @Override
+    public String getTaskName() {
+        return "publishTestTime";
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public void execute() throws BuildException {
         Iterator<File> reports = FileUtils.iterateFiles(new File(reportsDir + XML_REPORT_PATH), null, false);
