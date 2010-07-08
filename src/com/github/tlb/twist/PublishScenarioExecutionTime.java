@@ -14,6 +14,8 @@ import org.dom4j.Element;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * @understands task to publish the time taken to execute scenarios
@@ -48,8 +50,9 @@ public class PublishScenarioExecutionTime extends Task {
     @SuppressWarnings("unchecked")
     public void execute() throws BuildException {
         Iterator<File> reports = FileUtils.iterateFiles(new File(reportsDir + XML_REPORT_PATH), null, false);
-        while(reports.hasNext()) {
-            File report = reports.next();
+        List<File> reportFiles = reportFileList(reports);
+        talkToService.publishSubsetSize(reportFiles.size());
+        for (File report : reportFiles) {
             try {
                 Element element = XmlUtil.domFor(FileUtils.readFileToString(report));
                 Element testCase = (Element) element.selectSingleNode("//testcase");
@@ -58,6 +61,14 @@ public class PublishScenarioExecutionTime extends Task {
                 throw new RuntimeException("Could not read the twist report: " + report.getName(), e);
             }
         }
+    }
+
+    private List<File> reportFileList(Iterator<File> reports) {
+        List<File> foo = new ArrayList<File>();
+        while (reports.hasNext()) {
+            foo.add(reports.next());
+        }
+        return foo;
     }
 
     private long toSecond(Element testCase) {
