@@ -1,19 +1,17 @@
 package com.github.tlb.ant;
 
-import static com.github.tlb.TlbConstants.CRUISE_SERVER_URL;
+import static com.github.tlb.TlbConstants.Cruise.CRUISE_SERVER_URL;
 import static com.github.tlb.TlbConstants.TLB_CRITERIA;
 
 import com.github.tlb.TestUtil;
 import com.github.tlb.TlbFileResource;
 import com.github.tlb.splitter.CountBasedTestSplitterCriteria;
 import com.github.tlb.splitter.JobFamilyAwareSplitterCriteria;
-import com.github.tlb.factory.TlbFactory;
 import com.github.tlb.utils.FileUtil;
 import com.github.tlb.utils.SystemEnvironment;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.resources.FileResource;
-import com.github.tlb.ant.JunitFileResource;
 import com.github.tlb.orderer.TestOrderer;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.core.Is.is;
@@ -110,7 +108,7 @@ public class LoadBalancedFileSetTest {
 
     @Test
     public void shouldUseSystemPropertyToInstantiateCriteria() {
-        fileSet = new LoadBalancedFileSet(initEnvironment(TlbFactory.COUNT));
+        fileSet = new LoadBalancedFileSet(initEnvironment("com.github.tlb.splitter.CountBasedTestSplitterCriteria"));
         fileSet.setDir(projectDir);
         assertThat(fileSet.getSplitterCriteria(), instanceOf(CountBasedTestSplitterCriteria.class));
     }

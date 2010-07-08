@@ -1,7 +1,7 @@
 package com.github.tlb.splitter;
 
 import com.github.tlb.TlbFileResource;
-import com.github.tlb.service.TalkToCruise;
+import com.github.tlb.service.TalkToService;
 import com.github.tlb.utils.SystemEnvironment;
 
 import java.util.List;
@@ -17,9 +17,9 @@ public class CountBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriter
         super(env);
     }
 
-    CountBasedTestSplitterCriteria(TalkToCruise talkToCruise, SystemEnvironment env) {
+    CountBasedTestSplitterCriteria(TalkToService talkToService, SystemEnvironment env) {
         this(env);
-        talksToCruise(talkToCruise);
+        talksToService(talkToService);
     }
 
     /**
@@ -30,18 +30,18 @@ public class CountBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriter
      * where each of (2/7) is basically the rate at which we carry over the balance before we account for it.
      *
      * @param files
-     * @return filtered list
+     * @return filtered load
      */
     protected List<TlbFileResource> subset(List<TlbFileResource> files) {
-        int index = jobs.indexOf(jobName());
-        int splitRatio = files.size() / jobs.size();
-        int reminder = files.size() % jobs.size();
+        int index = talkToService.partitionNumber() - 1;
+        int splitRatio = files.size() / totalPartitions;
+        int reminder = files.size() % totalPartitions;
         logger.info(String.format("count balancing to approximately %s files per job with %s extra file to bucket", splitRatio, reminder));
 
-        double balance = (double) (reminder * (index + 1)) / jobs.size();
-        double lastBalance = (double) (reminder * index) / jobs.size();
+        double balance = (double) (reminder * (index + 1)) / totalPartitions;
+        double lastBalance = (double) (reminder * index) / totalPartitions;
         int startIndex = isFirst(index) ? 0 : index * splitRatio + (int) Math.floor(Math.abs(lastBalance));
-        int endIndex = isLast(jobs, index) ? files.size() : (index + 1) * splitRatio + (int) Math.floor(balance);
+        int endIndex = isLast(totalPartitions, index) ? files.size() : (index + 1) * splitRatio + (int) Math.floor(balance);
 
         return files.subList(startIndex, endIndex);
     }

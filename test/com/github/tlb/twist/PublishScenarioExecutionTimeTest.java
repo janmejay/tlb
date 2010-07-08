@@ -1,6 +1,7 @@
 package com.github.tlb.twist;
 
 import com.github.tlb.TestUtil;
+import com.github.tlb.service.TalkToCruise;
 import org.junit.Test;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -9,8 +10,6 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-
-import com.github.tlb.service.TalkToCruise;
 
 public class PublishScenarioExecutionTimeTest {
 

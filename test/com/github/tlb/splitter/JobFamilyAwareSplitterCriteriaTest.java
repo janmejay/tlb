@@ -2,6 +2,7 @@ package com.github.tlb.splitter;
 
 import com.github.tlb.TlbConstants;
 import com.github.tlb.TlbFileResource;
+import com.github.tlb.service.TalkToCruise;
 import org.junit.Test;
 import org.junit.Before;
 import org.junit.After;
@@ -14,7 +15,6 @@ import static org.mockito.Mockito.when;
 import static org.hamcrest.core.Is.is;
 import com.github.tlb.utils.SystemEnvironment;
 import com.github.tlb.TestUtil;
-import com.github.tlb.service.TalkToCruise;
 
 import java.util.*;
 import java.io.File;
@@ -35,9 +35,9 @@ public class JobFamilyAwareSplitterCriteriaTest {
     @Test
     public void testFilterShouldPublishNumberOfSuitesSelectedForRunning() {
         HashMap<String, String> envMap = new HashMap<String, String>();
-        envMap.put(TlbConstants.CRUISE_JOB_NAME, "build-1");
+        envMap.put(TlbConstants.Cruise.CRUISE_JOB_NAME, "build-1");
         TalkToCruise toCruise = mock(TalkToCruise.class);
-        when(toCruise.pearJobs()).thenReturn(Arrays.asList("build-1", "build-2", "build-3"));
+        when(toCruise.totalPartitions()).thenReturn(3);
 
         JobFamilyAwareSplitterCriteria criteria = new JobFamilyAwareSplitterCriteria(new SystemEnvironment(envMap)) {
             protected List<TlbFileResource> subset(List<TlbFileResource> fileResources) {
@@ -46,7 +46,7 @@ public class JobFamilyAwareSplitterCriteriaTest {
                 return Arrays.asList(foo, bar);
             }
         };
-        criteria.talksToCruise(toCruise);
+        criteria.talksToService(toCruise);
         logFixture.startListening();
         List<TlbFileResource> resources = criteria.filter(new ArrayList<TlbFileResource>());
         logFixture.assertHeard("got total of 0 files to balance");

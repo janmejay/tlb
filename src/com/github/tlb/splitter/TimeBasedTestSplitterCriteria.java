@@ -1,7 +1,8 @@
 package com.github.tlb.splitter;
 
 import com.github.tlb.TlbFileResource;
-import com.github.tlb.service.TalkToCruise;
+import com.github.tlb.domain.SuiteTimeEntry;
+import com.github.tlb.service.TalkToService;
 import com.github.tlb.utils.FileUtil;
 import com.github.tlb.utils.SystemEnvironment;
 
@@ -11,14 +12,14 @@ import java.util.logging.Logger;
 /**
  * @understands criteria for splitting tests based on time taken
  */
-public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteria implements TalksToCruise {
+public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteria implements TalksToService {
     private final FileUtil fileUtil;
     private static final Logger logger = Logger.getLogger(TimeBasedTestSplitterCriteria.class.getName());
     private static final String NO_HISTORICAL_DATA = "no historical test time data, aborting attempt to balance based on time";
 
-    public TimeBasedTestSplitterCriteria(TalkToCruise talkToCruise, SystemEnvironment env) {
+    public TimeBasedTestSplitterCriteria(TalkToService talkToService, SystemEnvironment env) {
         this(env);
-        talksToCruise(talkToCruise);
+        talksToService(talkToService);
     }
 
     public TimeBasedTestSplitterCriteria(SystemEnvironment env) {
@@ -27,19 +28,19 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
     }
 
     protected List<TlbFileResource> subset(List<TlbFileResource> fileResources) {
-        List<TestFile> testFiles = testFiles(jobs, fileResources);
-        Bucket thisBucket = buckets(jobs, testFiles);
+        List<TestFile> testFiles = testFiles(fileResources);
+        Bucket thisBucket = buckets(testFiles);
 
         return resourcesFrom(thisBucket);
     }
 
-    private Bucket buckets(List<String> jobs, List<TestFile> testFiles) {
+    private Bucket buckets(List<TestFile> testFiles) {
         Bucket thisBucket = null;
         List<Bucket> buckets = new ArrayList<Bucket>();
-
-        for (String job : jobs) {
-            Bucket bucket = new Bucket(job);
-            if (job.equals(jobName())) thisBucket = bucket;
+        int thisPartition = talkToService.partitionNumber();
+        for(int i = 1; i <= totalPartitions; i++) {
+            Bucket bucket = new Bucket(i);
+            if (i == thisPartition) thisBucket = bucket;
             buckets.add(bucket);
         }
 
@@ -55,10 +56,10 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
         }
     }
 
-    private List<TestFile> testFiles(List<String> jobs, List<TlbFileResource> fileResources) {
-        Map<String, String> classToTime = talkToCruise.getLastRunTestTimes(jobs);
-        logger.info(String.format("historical test time data has entries for %s suites", classToTime.size()));
-        if (classToTime.isEmpty()) {
+    private List<TestFile> testFiles(List<TlbFileResource> fileResources) {
+        List<SuiteTimeEntry> suiteTimeEntries = talkToService.getLastRunTestTimes();
+        logger.info(String.format("historical test time data has entries for %s suites", suiteTimeEntries.size()));
+        if (suiteTimeEntries.isEmpty()) {
             logger.warning(NO_HISTORICAL_DATA);
             throw new IllegalStateException(NO_HISTORICAL_DATA);
         }
@@ -73,15 +74,15 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
         List<TestFile> testFiles = new ArrayList<TestFile>();
         double totalTime = 0;
 
-        for (String testClass : classToTime.keySet()) {
-            String fileName = fileUtil.classFileRelativePath(testClass);
-            double time = Double.parseDouble(classToTime.get(testClass));
+        for (SuiteTimeEntry suiteTimeEntry : suiteTimeEntries) {
+            String fileName = fileUtil.classFileRelativePath(suiteTimeEntry.getName());
+            double time = suiteTimeEntry.getTime();
             totalTime += time;
             if (currentFileNames.remove(fileName)) testFiles.add(new TestFile(fileNameToResource.get(fileName), time));
         }
         logger.info(String.format("%s entries of historical test time data found relavent", testFiles.size()));
 
-        double avgTime = totalTime / classToTime.size();
+        double avgTime = totalTime / suiteTimeEntries.size();
 
         logger.info(String.format("encountered %s new files which don't have historical time data, used average time [ %s ] to balance", currentFileNames.size(), avgTime));
 
@@ -104,12 +105,12 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
 
     private class Bucket implements Comparable<Bucket> {
 
-        String name;
+        int partition;
         Double time = 0.0;
         List<TlbFileResource> files = new ArrayList<TlbFileResource>();
 
-        public Bucket(String name) {
-            this.name = name;
+        public Bucket(int partition) {
+            this.partition = partition;
         }
 
         public int compareTo(Bucket o) {

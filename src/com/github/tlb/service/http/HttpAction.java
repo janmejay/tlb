@@ -12,4 +12,6 @@ public interface HttpAction {
     String post(String url, Map<String,String> data);
 
     String put(String url, String data);
+
+    String post(String url, String data);
 }

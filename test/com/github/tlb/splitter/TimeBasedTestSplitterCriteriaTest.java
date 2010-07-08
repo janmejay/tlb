@@ -2,6 +2,8 @@ package com.github.tlb.splitter;
 
 import com.github.tlb.TestUtil;
 import com.github.tlb.TlbFileResource;
+import com.github.tlb.domain.SuiteTimeEntry;
+import com.github.tlb.service.TalkToService;
 import com.github.tlb.service.TalkToCruise;
 import com.github.tlb.utils.SystemEnvironment;
 import org.junit.Before;
@@ -15,18 +17,18 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.hamcrest.core.Is.is;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.HashMap;
 
 public class TimeBasedTestSplitterCriteriaTest {
 
-    private TalkToCruise talkToCruise;
+    private TalkToService talkToService;
     private TestUtil.LogFixture logFixture;
 
     @Before
     public void setUp() throws Exception {
-        talkToCruise = mock(TalkToCruise.class);
+        talkToService = mock(TalkToCruise.class);
         logFixture = new TestUtil.LogFixture();
     }
 
@@ -37,16 +39,17 @@ public class TimeBasedTestSplitterCriteriaTest {
 
     @Test
     public void shouldConsumeAllTestsWhenNoJobsToBalanceWith() {
-        when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1"));
+        when(talkToService.totalPartitions()).thenReturn(1);
+        when(talkToService.partitionNumber()).thenReturn(1);
 
-        SystemEnvironment env = TestUtil.initEnvironment("job-1");
+        SystemEnvironment env = new SystemEnvironment();
 
         TlbFileResource first = TestUtil.junitFileResource("first");
         TlbFileResource second = TestUtil.junitFileResource("second");
         TlbFileResource third = TestUtil.junitFileResource("third");
         List<TlbFileResource> resources = Arrays.asList(first, second, third);
 
-        TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToCruise, env);
+        TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToService, env);
         logFixture.startListening();
         assertThat(criteria.filter(resources), is(Arrays.asList(first, second, third)));
         logFixture.assertHeard("total jobs to distribute load [ 1 ]");
@@ -54,9 +57,10 @@ public class TimeBasedTestSplitterCriteriaTest {
 
     @Test
     public void shouldSplitTestsBasedOnTimeForTwoJob() {
-        when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2"));
-        HashMap<String, String> map = testTimes();
-        when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2"))).thenReturn(map);
+        when(talkToService.totalPartitions()).thenReturn(2);
+
+        List<SuiteTimeEntry> entries = testTimes();
+        when(talkToService.getLastRunTestTimes()).thenReturn(entries);
 
         TlbFileResource first = TestUtil.tlbFileResource("com/foo", "First");
         TlbFileResource second = TestUtil.tlbFileResource("com/foo", "Second");
@@ -64,18 +68,21 @@ public class TimeBasedTestSplitterCriteriaTest {
         TlbFileResource fourth = TestUtil.tlbFileResource("foo/baz", "Fourth");
         TlbFileResource fifth = TestUtil.tlbFileResource("foo/bar", "Fourth");
         List<TlbFileResource> resources = Arrays.asList(first, second, third, fourth, fifth);
+        when(talkToService.partitionNumber()).thenReturn(1);
 
-        TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-1"));
+        TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-1"));
         assertThat(criteria.filter(resources), is(Arrays.asList(second, first, third)));
 
-        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-2"));
+        when(talkToService.partitionNumber()).thenReturn(2);
+        criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-2"));
         assertThat(criteria.filter(resources), is(Arrays.asList(fourth, fifth)));
     }
 
     @Test
     public void shouldBombWhenNoTestTimeDataAvailable() {
-        when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4"));
-        when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2", "job-3", "job-4"))).thenReturn(new HashMap<String, String>());
+        when(talkToService.totalPartitions()).thenReturn(4);
+
+        when(talkToService.getLastRunTestTimes()).thenReturn(new ArrayList<SuiteTimeEntry>());
 
         TlbFileResource first = TestUtil.tlbFileResource("com/foo", "First");
         TlbFileResource second = TestUtil.tlbFileResource("com/foo", "Second");
@@ -84,18 +91,21 @@ public class TimeBasedTestSplitterCriteriaTest {
         TlbFileResource fifth = TestUtil.tlbFileResource("foo/bar", "Fourth");
         List<TlbFileResource> resources = Arrays.asList(first, second, third, fourth, fifth);
 
-
-        TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-1"));
+        when(talkToService.partitionNumber()).thenReturn(1);
+        TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-1"));
         logFixture.startListening();
         assertAbortsForNoHistoricalTimeData(resources, criteria);
 
-        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-2"));
+        when(talkToService.partitionNumber()).thenReturn(2);
+        criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-2"));
         assertAbortsForNoHistoricalTimeData(resources, criteria);
 
-        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-3"));
+        when(talkToService.partitionNumber()).thenReturn(3);
+        criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-3"));
         assertAbortsForNoHistoricalTimeData(resources, criteria);
 
-        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-4"));
+        when(talkToService.partitionNumber()).thenReturn(4);
+        criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-4"));
         assertAbortsForNoHistoricalTimeData(resources, criteria);
     }
 
@@ -113,9 +123,8 @@ public class TimeBasedTestSplitterCriteriaTest {
 
     @Test
     public void shouldSplitTestsBasedOnTimeForFourJobs() {
-        when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "job-4"));
-        HashMap<String, String> map = testTimes();
-        when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2", "job-3", "job-4"))).thenReturn(map);
+        when(talkToService.totalPartitions()).thenReturn(4);
+        when(talkToService.getLastRunTestTimes()).thenReturn(testTimes());
 
         TlbFileResource first = TestUtil.tlbFileResource("com/foo", "First");
         TlbFileResource second = TestUtil.tlbFileResource("com/foo", "Second");
@@ -124,24 +133,27 @@ public class TimeBasedTestSplitterCriteriaTest {
         TlbFileResource fifth = TestUtil.tlbFileResource("foo/bar", "Fourth");
         List<TlbFileResource> resources = Arrays.asList(first, second, third, fourth, fifth);
 
-        TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-1"));
+        when(talkToService.partitionNumber()).thenReturn(1);
+        TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-1"));
         assertThat(criteria.filter(resources), is(Arrays.asList(second)));
 
-        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-2"));
+        when(talkToService.partitionNumber()).thenReturn(2);
+        criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-2"));
         assertThat(criteria.filter(resources), is(Arrays.asList(fourth)));
 
-        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-3"));
+        when(talkToService.partitionNumber()).thenReturn(3);
+        criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-3"));
         assertThat(criteria.filter(resources), is(Arrays.asList(fifth)));
 
-        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-4"));
+        when(talkToService.partitionNumber()).thenReturn(4);
+        criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-4"));
         assertThat(criteria.filter(resources), is(Arrays.asList(first, third)));
     }
 
     @Test
     public void shouldDistributeUnknownTestsBasedOnAverageTime() throws Exception{
-        when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2"));
-        HashMap<String, String> map = testTimes();
-        when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2"))).thenReturn(map);
+        when(talkToService.totalPartitions()).thenReturn(2);
+        when(talkToService.getLastRunTestTimes()).thenReturn(testTimes());
 
         TlbFileResource first = TestUtil.tlbFileResource("com/foo", "First");
         TlbFileResource second = TestUtil.tlbFileResource("com/foo", "Second");
@@ -152,7 +164,8 @@ public class TimeBasedTestSplitterCriteriaTest {
         TlbFileResource secondNew = TestUtil.tlbFileResource("foo/quux", "Second");
         List<TlbFileResource> resources = Arrays.asList(first, second, third, fourth, fifth, firstNew, secondNew);
 
-        TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-1"));
+        when(talkToService.partitionNumber()).thenReturn(1);
+        TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-1"));
         logFixture.startListening();
         List<TlbFileResource> filteredResources = criteria.filter(resources);
         logFixture.assertHeard("got total of 7 files to balance");
@@ -164,7 +177,8 @@ public class TimeBasedTestSplitterCriteriaTest {
         assertThat(filteredResources.size(), is(4));
         assertThat(filteredResources, hasItems(second, first, third, secondNew));
 
-        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-2"));
+        when(talkToService.partitionNumber()).thenReturn(2);
+        criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-2"));
         filteredResources = criteria.filter(resources);
         logFixture.assertHeard("got total of 7 files to balance", 2);
         logFixture.assertHeard("total jobs to distribute load [ 2 ]", 2);
@@ -178,9 +192,8 @@ public class TimeBasedTestSplitterCriteriaTest {
 
     @Test
     public void shouldIgnoreDeletedTests() throws Exception{
-        when(talkToCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2"));
-        HashMap<String, String> map = testTimes();
-        when(talkToCruise.getLastRunTestTimes(Arrays.asList("job-1", "job-2"))).thenReturn(map);
+        when(talkToService.totalPartitions()).thenReturn(2);
+        when(talkToService.getLastRunTestTimes()).thenReturn(testTimes());
 
         TlbFileResource first = TestUtil.tlbFileResource("com/foo", "First");
         TlbFileResource second = TestUtil.tlbFileResource("com/foo", "Second");
@@ -188,7 +201,8 @@ public class TimeBasedTestSplitterCriteriaTest {
 
         List<TlbFileResource> resources = Arrays.asList(second, first, third);
 
-        TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-1"));
+        when(talkToService.partitionNumber()).thenReturn(1);
+        TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-1"));
         logFixture.startListening();
 
         assertThat(criteria.filter(resources), is(Arrays.asList(second)));
@@ -199,7 +213,8 @@ public class TimeBasedTestSplitterCriteriaTest {
         logFixture.assertHeard("encountered 0 new files which don't have historical time data, used average time [ 3.0 ] to balance");
         logFixture.assertHeard("assigned total of 1 files to [ job-1 ]");
 
-        criteria = new TimeBasedTestSplitterCriteria(talkToCruise, TestUtil.initEnvironment("job-2"));
+        when(talkToService.partitionNumber()).thenReturn(2);
+        criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-2"));
 
         assertThat(criteria.filter(resources), is(Arrays.asList(first, third)));
         logFixture.assertHeard("got total of 3 files to balance", 2);
@@ -210,13 +225,13 @@ public class TimeBasedTestSplitterCriteriaTest {
         logFixture.assertHeard("assigned total of 2 files to [ job-2 ]");
     }
 
-    private HashMap<String, String> testTimes() {
-        HashMap<String, String> map = new HashMap<String, String>();
-        map.put("com.foo.First", "2");
-        map.put("com.foo.Second", "5");
-        map.put("com.bar.Third", "1");
-        map.put("foo.baz.Fourth", "4");
-        map.put("foo.bar.Fourth", "3");
-        return map;
+    private List<SuiteTimeEntry> testTimes() {
+        List<SuiteTimeEntry> entries = new ArrayList<SuiteTimeEntry>();
+        entries.add(new SuiteTimeEntry("com.foo.First", 2l));
+        entries.add(new SuiteTimeEntry("com.foo.Second", 5l));
+        entries.add(new SuiteTimeEntry("com.bar.Third", 1l));
+        entries.add(new SuiteTimeEntry("foo.baz.Fourth", 4l));
+        entries.add(new SuiteTimeEntry("foo.bar.Fourth", 3l));
+        return entries;
     }
 }

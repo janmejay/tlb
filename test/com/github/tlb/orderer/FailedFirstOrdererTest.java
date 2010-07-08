@@ -4,18 +4,21 @@ import com.github.tlb.TestUtil;
 
 import static com.github.tlb.TestUtil.initEnvironment;
 import com.github.tlb.ant.JunitFileResource;
+import com.github.tlb.domain.SuiteResultEntry;
 import com.github.tlb.service.TalkToCruise;
-import com.github.tlb.splitter.TalksToCruise;
+import com.github.tlb.splitter.TalksToService;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertThat;
 import org.junit.Test;
 import org.junit.Before;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.Is.is;
 import org.apache.tools.ant.Project;
+import org.mockito.internal.verification.Times;
 
 import java.io.File;
 import java.util.List;
@@ -35,12 +38,12 @@ public class FailedFirstOrdererTest {
         project = new Project();
         baseDir = TestUtil.createTempFolder().getAbsolutePath();
         project.setBasedir(baseDir);
-        orderer.talksToCruise(toCruise);
+        orderer.talksToService(toCruise);
     }
 
     @Test
     public void shouldImplementTalksToCruise() throws Exception{
-        assertTrue("Failed first orderer must be talk to cruise aware", TalksToCruise.class.isAssignableFrom(FailedFirstOrderer.class));
+        assertTrue("Failed first orderer must be talk to cruise aware", TalksToService.class.isAssignableFrom(FailedFirstOrderer.class));
     }
 
     @Test
@@ -48,12 +51,12 @@ public class FailedFirstOrdererTest {
         JunitFileResource bazClass = junitFileResource(baseDir, "foo/bar/Baz.class");
         JunitFileResource quuxClass = junitFileResource(baseDir, "foo/baz/Quux.class");
         JunitFileResource bangClass = junitFileResource(baseDir, "foo/baz/Bang.class");
-        List<String> failedTests = Arrays.asList("baz.bang.Foo.class", "foo.bar.Bang.class");
-        when(toCruise.getJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3", "foo", "bar"));
-        when(toCruise.getLastRunFailedTests(Arrays.asList("job-1", "job-2", "job-3"))).thenReturn(failedTests);
+        List<SuiteResultEntry> failedTests = Arrays.asList(new SuiteResultEntry("baz.bang.Foo.class", true), new SuiteResultEntry("foo.bar.Bang.class", true));
+        when(toCruise.getLastRunFailedTests()).thenReturn(failedTests);
         List<JunitFileResource> fileList = Arrays.asList(bazClass, quuxClass, bangClass);
         Collections.sort(fileList, orderer);
         assertThat(fileList, is(Arrays.asList(bazClass, quuxClass, bangClass)));
+        verify(toCruise, new Times(1)).getLastRunFailedTests();
     }
 
     @Test
@@ -62,9 +65,8 @@ public class FailedFirstOrdererTest {
         JunitFileResource quuxClass = junitFileResource(baseDir, "foo/baz/Quux.class");
         JunitFileResource failedFooClass = junitFileResource(baseDir, "baz/bang/Foo.class");
         JunitFileResource failedBangClass = junitFileResource(baseDir, "foo/bar/Bang.class");
-        List<String> failedTests = Arrays.asList("baz.bang.Foo", "foo.bar.Bang");
-        when(toCruise.pearJobs()).thenReturn(Arrays.asList("job-1", "job-2", "job-3"));
-        when(toCruise.getLastRunFailedTests(Arrays.asList("job-1", "job-2", "job-3"))).thenReturn(failedTests);
+        List<SuiteResultEntry> failedTests = Arrays.asList(new SuiteResultEntry("baz.bang.Foo", true), new SuiteResultEntry("foo.bar.Bang", true));
+        when(toCruise.getLastRunFailedTests()).thenReturn(failedTests);
         List<JunitFileResource> fileList = Arrays.asList(bazClass, failedFooClass, quuxClass, failedBangClass);
         Collections.sort(fileList, orderer);
 
@@ -73,6 +75,7 @@ public class FailedFirstOrdererTest {
 
         assertThat(fileList.get(2), anyOf(is(bazClass), is(quuxClass)));
         assertThat(fileList.get(3), anyOf(is(bazClass), is(quuxClass)));
+        verify(toCruise, new Times(1)).getLastRunFailedTests();
     }
 
     private JunitFileResource junitFileResource(String baseDir, String classRelPath) {

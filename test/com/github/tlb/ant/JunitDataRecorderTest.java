@@ -1,11 +1,11 @@
 package com.github.tlb.ant;
 
 import com.github.tlb.TestUtil;
+import com.github.tlb.service.TalkToCruise;
 import org.junit.Test;
 import org.junit.Before;
 import org.apache.tools.ant.taskdefs.optional.junit.JUnitTest;
 import static org.mockito.Mockito.*;
-import com.github.tlb.service.TalkToCruise;
 
 public class JunitDataRecorderTest {
     private TalkToCruise talkToCruise;

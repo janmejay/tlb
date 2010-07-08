@@ -3,18 +3,25 @@ package com.github.tlb.service;
 import com.github.tlb.TlbConstants;
 
 import static com.github.tlb.TlbConstants.*;
+
+import com.github.tlb.domain.SuiteResultEntry;
+import com.github.tlb.domain.SuiteTimeEntry;
 import com.github.tlb.service.http.HttpAction;
+import com.github.tlb.service.http.DefaultHttpAction;
+import com.github.tlb.storage.TlbEntryRepository;
 import com.github.tlb.utils.FileUtil;
 import com.github.tlb.utils.SystemEnvironment;
 import com.github.tlb.utils.XmlUtil;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.URI;
+import org.apache.commons.httpclient.URIException;
+import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.params.HttpClientParams;
 import org.dom4j.Attribute;
 import org.dom4j.Element;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
@@ -25,7 +32,7 @@ import java.util.regex.Pattern;
 /**
  * @understands requesting and posting information to/from cruise
  */
-public class TalkToCruise {
+public class TalkToCruise implements TalkToService {
     private static final Logger logger = Logger.getLogger(TalkToCruise.class.getName());
 
     private final SystemEnvironment environment;
@@ -33,30 +40,58 @@ public class TalkToCruise {
     private static final String JOB_NAME = "name";
     protected static final String TEST_TIME_FILE = "tlb/test_time.properties";
     private static final Pattern STAGE_LOCATOR = Pattern.compile("(.*?)/\\d+/(.*?)/\\d+");
-    private static final Pattern SUITE_TIME_STRING = Pattern.compile("(.*?):\\s*(\\d+)");
     private Integer subsetSize;
     final String jobLocator;
     final String stageLocator;
-    final String testSubsetSizeFileLocator;
-    private final FileUtil fileUtil;
     public static final String FAILED_TESTS_FILE = "tlb/failed_tests";
-    public final String failedTestsListFileLocator;
 
     private static final String INT = "\\d+";
     private static final Pattern NUMBER_BASED_LOAD_BALANCED_JOB = Pattern.compile("(.*?)-(" + INT + ")");
     private static final String HEX = "[a-fA-F0-9]";
     private static final String UUID = HEX + "{8}-" + HEX + "{4}-" + HEX + "{4}-" + HEX + "{4}-" + HEX + "{12}";
     private static final Pattern UUID_BASED_LOAD_BALANCED_JOB = Pattern.compile("(.*?)-(" + UUID + ")");
+    final TlbEntryRepository subsetSizeRepository;
+    final TlbEntryRepository testTimesRepository;
+    final TlbEntryRepository failedTestsRepository;
+
+    public TalkToCruise(SystemEnvironment environment) {
+        this(environment, createHttpAction(environment));
+    }
+
+    private static HttpClient createHttpClient(SystemEnvironment environment) {
+        HttpClientParams params = new HttpClientParams();
+        if (environment.getProperty(USERNAME) != null) {
+            params.setAuthenticationPreemptive(true);
+            HttpClient client = new HttpClient(params);
+            client.getState().setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(environment.getProperty(USERNAME), environment.getProperty(PASSWORD)));
+            return client;
+        } else {
+            return new HttpClient(params);
+        }
+    }
+
+    private static URI createUri(SystemEnvironment environment) {
+        try {
+            return new URI(environment.getProperty(TlbConstants.Cruise.CRUISE_SERVER_URL), true);
+        } catch (URIException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static HttpAction createHttpAction(SystemEnvironment environment) {
+        return new DefaultHttpAction(createHttpClient(environment), createUri(environment));
+    }
 
     public TalkToCruise(SystemEnvironment environment, HttpAction httpAction) {
         this.environment = environment;
         this.httpAction = httpAction;
         subsetSize = null;
-        jobLocator = String.format("%s/%s/%s/%s/%s", p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_LABEL), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER), p(CRUISE_JOB_NAME));
-        testSubsetSizeFileLocator = String.format("%s/subset_size", jobLocator);
-        failedTestsListFileLocator = String.format("%s/failed_tests", jobLocator);
-        stageLocator = String.format("%s/%s/%s/%s", p(CRUISE_PIPELINE_NAME), p(CRUISE_PIPELINE_COUNTER), p(CRUISE_STAGE_NAME), p(CRUISE_STAGE_COUNTER));
-        fileUtil = new FileUtil(environment);
+        jobLocator = String.format("%s/%s/%s/%s/%s", p(Cruise.CRUISE_PIPELINE_NAME), p(Cruise.CRUISE_PIPELINE_LABEL), p(Cruise.CRUISE_STAGE_NAME), p(Cruise.CRUISE_STAGE_COUNTER), p(Cruise.CRUISE_JOB_NAME));
+        FileUtil fileUtil = new FileUtil(environment);
+        testTimesRepository = new TlbEntryRepository(fileUtil.tmpDir(), DigestUtils.md5Hex(jobLocator));
+        subsetSizeRepository = new TlbEntryRepository(fileUtil.tmpDir(), DigestUtils.md5Hex(String.format("%s/subset_size", jobLocator)));
+        failedTestsRepository = new TlbEntryRepository(fileUtil.tmpDir(), DigestUtils.md5Hex(String.format("%s/failed_tests", jobLocator)));
+        stageLocator = String.format("%s/%s/%s/%s", p(Cruise.CRUISE_PIPELINE_NAME), p(Cruise.CRUISE_PIPELINE_COUNTER), p(Cruise.CRUISE_STAGE_NAME), p(Cruise.CRUISE_STAGE_COUNTER));
     }
 
     public List<String> getJobs() {
@@ -80,7 +115,7 @@ public class TalkToCruise {
     }
 
     private Object cruiseUrl() {
-        String url = p(CRUISE_SERVER_URL);
+        String url = p(Cruise.CRUISE_SERVER_URL);
         if (url.endsWith("/")) {
             url = url.substring(0, url.length() - 1);
         }
@@ -93,36 +128,26 @@ public class TalkToCruise {
 
     public void testClassTime(String className, long time) {
         logger.info(String.format("recording run time for suite %s", className));
-        List<String> testTimes = cacheAndPersist(String.format("%s: %s\n", className, time), jobLocator);
+        testTimesRepository.appendLine(new SuiteTimeEntry(className, time).dump());
+        List<String> testTimes = testTimesRepository.load();
         if (subsetSize() == testTimes.size()) {
             logger.info(String.format("Posting test run times for %s suite to the cruise server.", subsetSize()));
-            postLinesToServer(testTimes, artifactFileUrl(TEST_TIME_FILE));
+            postLinesToServer(SuiteTimeEntry.dump(SuiteTimeEntry.parse(testTimes)), artifactFileUrl(TEST_TIME_FILE));
             clearSuiteTimeCachingFile();
         }
     }
 
-    private void postLinesToServer(List<String> testTimes, String url) {
-        StringBuffer buffer = new StringBuffer();
-        for (String testTime : testTimes) {
-            buffer.append(testTime);
-            buffer.append("\n");
-        }
-        httpAction.put(url, buffer.toString());
+    private void postLinesToServer(String buffer, String url) {
+        httpAction.put(url, buffer);
     }
 
     public void testClassFailure(String className, boolean hasFailed) {
-        persist(String.format("%s: %s\n", className, hasFailed), failedTestsListFileLocator);
-        List<String> runTests = cache(failedTestsListFileLocator);
-
+        failedTestsRepository.appendLine(new SuiteResultEntry(className, hasFailed).dump());
+        List<String> runTests = failedTestsRepository.load();
 
         if (subsetSize() == runTests.size()) {
-            List<String> failedTests = new ArrayList<String>();
-            for (String runTest : runTests) {
-                if (runTest.matches("(.+?)\\:\\strue$")) {
-                    failedTests.add(runTest.substring(0, runTest.indexOf(":")));
-                }
-            }
-            postLinesToServer(failedTests, artifactFileUrl(FAILED_TESTS_FILE));
+            List<SuiteResultEntry> resultEntries = SuiteResultEntry.parse(runTests);
+            postLinesToServer(SuiteResultEntry.dumpFailures(resultEntries), artifactFileUrl(FAILED_TESTS_FILE));
         }
     }
 
@@ -130,55 +155,19 @@ public class TalkToCruise {
         return String.format("%s/files/%s/%s", cruiseUrl(), jobLocator, atrifactFile);
     }
 
-    private List<String> cacheAndPersist(String line, String fileIdentifier) {
-        persist(line, fileIdentifier);
-        return cache(fileIdentifier);
-    }
-
-    List<String> cache(String fileIdentifier) {
-        File cacheFile = fileUtil.getUniqueFile(fileIdentifier);
-        FileInputStream in = null;
-        List<String> lines = null;
-        if (!cacheFile.exists()) {
-            return new ArrayList<String>();
-        }
-        try {
-            in = new FileInputStream(cacheFile);
-            lines = IOUtils.readLines(in);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            IOUtils.closeQuietly(in);
-        }
-        logger.info(String.format("Cached 3 lines from %s [ identified by: %s ], the last of which was [ %s ]", cacheFile.getAbsolutePath(), fileIdentifier, lines.get(lines.size() - 1)));
-        return lines;
-    }
-
-    void persist(String line, String fileIdentifier) {
-        File cacheFile = fileUtil.getUniqueFile(fileIdentifier);
-        FileOutputStream out = null;
-        try {
-            out = new FileOutputStream(cacheFile, true);
-            IOUtils.write(line, out);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            IOUtils.closeQuietly(out);
-        }
-        logger.info(String.format("Wrote [ %s ] to %s [ identified by: %s ]", line, fileUtil.getUniqueFile("foo"), fileIdentifier));
-    }
-
     private int subsetSize() {
         if (subsetSize == null) {
-            List<String> subsetSizes = cache(testSubsetSizeFileLocator);
-            String propertyValue = subsetSizes.get(subsetSizes.size() - 1);
-            subsetSize = Integer.parseInt(propertyValue);
+            subsetSize = Integer.parseInt(subsetSizeRepository.loadLastLine());
         }
         return subsetSize;
     }
 
-    public Map<String, String> getLastRunTestTimes(List<String> jobNames) {
-        return mergedProperties(tlbArtifactPayloadLines(lastRunArtifactUrls(jobNames, TEST_TIME_FILE)));
+    public List<SuiteTimeEntry> getLastRunTestTimes() {
+        return getLastRunTestTimes(pearJobs());
+    }
+
+    List<SuiteTimeEntry> getLastRunTestTimes(List<String> pearJobs) {
+        return SuiteTimeEntry.parse(tlbArtifactPayloadLines(lastRunArtifactUrls(pearJobs, TEST_TIME_FILE)));
     }
 
     private List<String> lastRunArtifactUrls(List<String> jobNames, String urlSuffix) {
@@ -188,17 +177,7 @@ public class TalkToCruise {
         return tlbArtifactUrls(jobLinks, jobNames, urlSuffix);
     }
 
-    private Map<String, String> mergedProperties(StringTokenizer suiteTimeLines) {
-        HashMap<String, String> suiteTimeMap = new HashMap<String, String>();
-        while (suiteTimeLines.hasMoreTokens()) {
-            String tuple = suiteTimeLines.nextToken();
-            Matcher matcher = SUITE_TIME_STRING.matcher(tuple);
-            if (matcher.matches()) suiteTimeMap.put(matcher.group(1), matcher.group(2));
-        }
-        return suiteTimeMap;
-    }
-
-    private StringTokenizer tlbArtifactPayloadLines(List<String> tlbTestTimeUrls) {
+    private String tlbArtifactPayloadLines(List<String> tlbTestTimeUrls) {
         StringBuffer buffer = new StringBuffer();
         for (String tlbTestTimeUrl : tlbTestTimeUrls) {
             try {
@@ -207,7 +186,7 @@ public class TalkToCruise {
                 continue; //FIXME!
             }
         }
-        return new StringTokenizer(buffer.toString(), "\n");
+        return buffer.toString();
     }
 
     private List<String> tlbArtifactUrls(List<Attribute> jobLinks, List<String> jobNames, String urlSuffix) {
@@ -241,39 +220,38 @@ public class TalkToCruise {
         if (!matcher.matches()) {
             return false;
         }
-        boolean samePipeline = environment.getProperty(CRUISE_PIPELINE_NAME).equals(matcher.group(1));
-        boolean sameStage = environment.getProperty(CRUISE_STAGE_NAME).equals(matcher.group(2));
+        boolean samePipeline = environment.getProperty(Cruise.CRUISE_PIPELINE_NAME).equals(matcher.group(1));
+        boolean sameStage = environment.getProperty(Cruise.CRUISE_STAGE_NAME).equals(matcher.group(2));
         return samePipeline && sameStage;
     }
 
     public void publishSubsetSize(int size) {
         String line = String.valueOf(size) + "\n";
-        persist(line, testSubsetSizeFileLocator);
+        subsetSizeRepository.appendLine(line);
         logger.info(String.format("Posting balanced subset size as %s to cruise server", size));
         httpAction.put(artifactFileUrl(TlbConstants.TEST_SUBSET_SIZE_FILE), line);
     }
 
     public void clearSuiteTimeCachingFile() {
-        for (String fileIdentifier : Arrays.asList(jobLocator, testSubsetSizeFileLocator, failedTestsListFileLocator)) {
+        for (TlbEntryRepository repository : Arrays.asList(subsetSizeRepository, testTimesRepository, failedTestsRepository)) {
             try {
-                FileUtils.forceDelete(fileUtil.getUniqueFile(fileIdentifier));
+                repository.cleanup();
             } catch (IOException e) {
                 logger.log(Level.WARNING, "could not delete suite time cache file: " + e.getMessage(), e);
             }
         }
     }
 
-    public List<String> getLastRunFailedTests(List<String> jobNames) {
-        StringTokenizer failedTestTokenizer = tlbArtifactPayloadLines(lastRunArtifactUrls(jobNames, FAILED_TESTS_FILE));
-        ArrayList<String> failedTestNames = new ArrayList<String>();
-        while(failedTestTokenizer.hasMoreTokens()) {
-            failedTestNames.add(failedTestTokenizer.nextToken());
-        }
-        return failedTestNames;
+    List<SuiteResultEntry> getLastRunFailedTests(List<String> jobNames) {
+        return SuiteResultEntry.parseFailures(tlbArtifactPayloadLines(lastRunArtifactUrls(jobNames, FAILED_TESTS_FILE)));
+    }
+
+    public List<SuiteResultEntry> getLastRunFailedTests() {
+        return getLastRunFailedTests(pearJobs());
     }
 
     protected String jobName() {
-        return environment.getProperty(TlbConstants.CRUISE_JOB_NAME);
+        return environment.getProperty(Cruise.CRUISE_JOB_NAME);
     }
 
     private String jobBaseName() {
@@ -307,5 +285,13 @@ public class TalkToCruise {
         List<String> jobs = jobsInTheSameFamily(getJobs());
         Collections.sort(jobs);
         return jobs;
+    }
+
+    public int partitionNumber() {
+        return pearJobs().indexOf(jobName()) + 1; //partition number is one based
+    }
+
+    public int totalPartitions() {
+        return pearJobs().size();
     }
 }

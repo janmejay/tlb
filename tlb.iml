@@ -6,6 +6,7 @@
       <sourceFolder url="file://$MODULE_DIR$/integration-test" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -26,6 +27,8 @@
           <root url="jar://$MODULE_DIR$/local/commons-httpclient-3.1-src.zip!/commons-httpclient-3.1/src/contrib" />
           <root url="jar://$MODULE_DIR$/local/commons-httpclient-3.1-src.zip!/commons-httpclient-3.1/src/test" />
           <root url="jar://$MODULE_DIR$/local/commons-httpclient-3.1-src.zip!/commons-httpclient-3.1/src/java" />
+          <root url="file://$MODULE_DIR$/local/com.noelios.restlet" />
+          <root url="file://$MODULE_DIR$/local/org.restlet" />
         </SOURCES>
         <jarDirectory url="file://$MODULE_DIR$/lib" recursive="false" />
       </library>
