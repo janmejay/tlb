@@ -1,6 +1,6 @@
 package com.github.tlb.server;
 
-import com.github.tlb.TlbConstants;
+import com.github.tlb.server.repo.EntryRepoFactory;
 import com.github.tlb.server.resources.*;
 import org.restlet.Application;
 import org.restlet.Context;
@@ -22,11 +22,13 @@ public class TlbApplication extends Application {
     @Override
     public Restlet createRoot() {
         Router router = new Router(getContext());
-        router.attach("/{" + REQUEST_NAMESPACE + "}/subset_size", SubsetSizeResource.class);
-        router.attach("/{" + REQUEST_NAMESPACE + "}/suite_time", SuiteTimeResource.class);
-        router.attach("/{" + REQUEST_NAMESPACE + "}/smoothed_suite_time", SmoothingSuiteTimeResource.class);
-        router.attach("/{" + REQUEST_NAMESPACE + "}/suite_time/{" + LISTING_VERSION +  "}", VersionedSuiteTimeResource.class);
-        router.attach("/{" + REQUEST_NAMESPACE + "}/suite_result", SuiteResultResource.class);
+
+        router.attach(String.format("/{%s}/%s", REQUEST_NAMESPACE, EntryRepoFactory.SUBSET_SIZE), SubsetSizeResource.class);
+        router.attach(String.format("/{%s}/%s", REQUEST_NAMESPACE, EntryRepoFactory.SUITE_TIME), SuiteTimeResource.class);
+        router.attach(String.format("/{%s}/%s", REQUEST_NAMESPACE, EntryRepoFactory.SMOOTHED_SUITE_TIME), SmoothingSuiteTimeResource.class);
+        router.attach(String.format("/{%s}/%s/{%s}", REQUEST_NAMESPACE, EntryRepoFactory.SUITE_TIME, LISTING_VERSION), VersionedSuiteTimeResource.class);
+        router.attach(String.format("/{%s}/%s", REQUEST_NAMESPACE, EntryRepoFactory.SUITE_RESULT), SuiteResultResource.class);
+        
         return router;
     }
 }

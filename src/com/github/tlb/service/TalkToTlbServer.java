@@ -46,7 +46,11 @@ public class TalkToTlbServer implements TalkToService {
     }
 
     public void testClassTime(String className, long time) {
-        httpAction.put(getUrl(namespace(), EntryRepoFactory.SUITE_TIME), String.format("%s: %s", className, time));
+        httpAction.put(getUrl(namespace(), suiteTimeRepoName()), String.format("%s: %s", className, time));
+    }
+
+    private String suiteTimeRepoName() {
+        return Boolean.parseBoolean(env.getProperty(TlbConstants.TlbServer.USE_SMOOTHING, "false")) ? EntryRepoFactory.SMOOTHED_SUITE_TIME : EntryRepoFactory.SUITE_TIME;
     }
 
     public void testClassFailure(String className, boolean hasFailed) {
@@ -54,7 +58,7 @@ public class TalkToTlbServer implements TalkToService {
     }
 
     public List<SuiteTimeEntry> getLastRunTestTimes() {
-        return SuiteTimeEntry.parse(httpAction.get(getUrl(namespace(), EntryRepoFactory.SUITE_TIME, env.getProperty(TlbConstants.TlbServer.JOB_VERSION))));
+        return SuiteTimeEntry.parse(httpAction.get(getUrl(namespace(), suiteTimeRepoName(), env.getProperty(TlbConstants.TlbServer.JOB_VERSION))));
     }
 
     public List<SuiteResultEntry> getLastRunFailedTests() {

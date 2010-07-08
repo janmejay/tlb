@@ -20,7 +20,7 @@ public class EntryRepoFactory implements Runnable {
     public static final String DELIMITER = "|";
     public static final String SUBSET_SIZE = "subset_size";
     public static final String SUITE_TIME = "suite_time";
-    public static final String SMOOTHING_SUITE_TIME = "smoothing_suite_time";
+    public static final String SMOOTHED_SUITE_TIME = "smoothed_suite_time";
     public static final String SUITE_RESULT = "suite_result";
     public static final String LATEST_VERSION = "LATEST";
     private static final Logger logger = Logger.getLogger(EntryRepoFactory.class.getName());
@@ -87,7 +87,7 @@ public class EntryRepoFactory implements Runnable {
     }
 
     public SuiteTimeRepo createSmoothingSuiteTimeRepo(final String namespace, final String version) throws ClassNotFoundException, IOException {
-        return (SuiteTimeRepo) findOrCreate(namespace, version, SMOOTHING_SUITE_TIME, new Creator<SuiteTimeRepo>() {
+        return (SuiteTimeRepo) findOrCreate(namespace, version, SMOOTHED_SUITE_TIME, new Creator<SuiteTimeRepo>() {
             public SuiteTimeRepo create() {
                 return new SmoothingSuiteTimeRepo(timeProvider, smoothingFactor);
             }
