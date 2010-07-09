@@ -1,17 +1,19 @@
 package com.github.tlb;
 
-import com.github.tlb.TlbConstants;
-import com.github.tlb.TlbFileResource;
 import com.github.tlb.ant.JunitFileResource;
+import com.github.tlb.domain.SuiteLevelEntry;
 import com.github.tlb.utils.FileUtil;
 import com.github.tlb.utils.SystemEnvironment;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.Project;
+
+import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.Socket;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.logging.Handler;
@@ -20,6 +22,9 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 public class TestUtil {
+    private static final int MIN_ANONYMOUS_PORT = 1024;
+    private static final int MAX_PORT_NUMBER = 65536;
+
     public static List<TlbFileResource> tlbFileResources(int ... numbers) {
         ArrayList<TlbFileResource> resources = new ArrayList<TlbFileResource>();
         for (int number : numbers) {
@@ -53,6 +58,43 @@ public class TestUtil {
         return file;
     }
 
+    public static File mkdirInPwd(String dirName) {
+        return mkdirIn(".", dirName);
+    }
+
+    public static File mkdirIn(String parent, String dirName) {
+        File file = new File(parent, dirName);
+        file.mkdirs();
+        return file;
+    }
+
+    public static String findFreePort() {
+        Random random = new Random(System.currentTimeMillis());
+        for(int i = 0; i < 10; i++) {
+            System.err.println("Attempting to find a free port...");
+            int port = MIN_ANONYMOUS_PORT + random.nextInt(MAX_PORT_NUMBER - MIN_ANONYMOUS_PORT);
+            System.err.println("Checking port number = " + port);
+            try {
+                new Socket("localhost", port);
+                System.err.println("Busy on port number = " + port);
+            } catch (IOException e) {
+                System.err.println("Using port = " + port);
+                return String.valueOf(port);
+            }
+        }
+        throw new IllegalStateException("Failed to find a free port");
+    }
+
+    public static List<SuiteLevelEntry> sortedList(final Collection<? extends SuiteLevelEntry> list) {
+        ArrayList<SuiteLevelEntry> entryList = new ArrayList<SuiteLevelEntry>(list);
+        Collections.sort(entryList, new Comparator<SuiteLevelEntry>() {
+            public int compare(SuiteLevelEntry o1, SuiteLevelEntry o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        return entryList;
+    }
+
     public static class LogFixture {
         private ArrayList<Logger> loggersRegisteredTo;
         private TestUtil.LogFixture.TestHandler handler;
@@ -64,6 +106,26 @@ public class TestUtil {
         public void clearHistory() {
             handler.clearHistory();
         }
+
+        public void assertHeardException(Exception expected) {
+            boolean matched = false;
+            for (Throwable actual : handler.execeptions) {
+                matched = match(actual, expected);
+                if (matched) break;
+            }
+            assertTrue(String.format("didn't find exception %s in heard throwables", expected), matched);
+        }
+
+        private boolean match(Throwable actual, Throwable expected) {
+            if (actual == null) {
+                return expected == null;
+            }
+            if (expected.getClass().equals(actual.getClass())) {
+                return actual.getMessage().equals(expected.getMessage()) && match(actual.getCause(), expected.getCause());
+            }
+            return false;
+        }
+
 
         public void assertHeard(String partOfMessage, int expectedOccurances) {
             int actualOccurances = totalOccurances(partOfMessage);
@@ -87,13 +149,19 @@ public class TestUtil {
 
         class TestHandler extends Handler {
             private ArrayList<String> messages;
+            private ArrayList<Throwable> execeptions;
 
             TestHandler() {
                 messages = new ArrayList<String>();
+                execeptions = new ArrayList<Throwable>();
             }
 
             public void publish(LogRecord record) {
                 messages.add(record.getMessage());
+                Throwable throwable = record.getThrown();
+                if (throwable != null) {
+                    execeptions.add(throwable);
+                }
             }
 
             public void flush() {
@@ -140,8 +208,8 @@ public class TestUtil {
 
     public static SystemEnvironment initEnvironment(String jobName) {
         Map<String, String> map = new HashMap<String, String>();
-        map.put(TlbConstants.CRUISE_JOB_NAME, jobName);
-        map.put(TlbConstants.CRUISE_STAGE_NAME, "stage-1");
+        map.put(TlbConstants.Cruise.CRUISE_JOB_NAME, jobName);
+        map.put(TlbConstants.Cruise.CRUISE_STAGE_NAME, "stage-1");
         return new SystemEnvironment(map);
     }
 

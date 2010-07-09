@@ -1,10 +1,10 @@
 package com.github.tlb.factory;
 
-import com.github.tlb.service.TalkToCruise;
-import com.github.tlb.service.http.DefaultHttpAction;
+import com.github.tlb.TlbConstants;
+import com.github.tlb.service.TalkToService;
+import com.github.tlb.splitter.TalksToService;
 import com.github.tlb.utils.SystemEnvironment;
 import com.github.tlb.splitter.TestSplitterCriteria;
-import com.github.tlb.splitter.TalksToCruise;
 import com.github.tlb.splitter.JobFamilyAwareSplitterCriteria;
 import com.github.tlb.orderer.TestOrderer;
 
@@ -14,13 +14,11 @@ import java.lang.reflect.InvocationTargetException;
  * @understands creating a criteria based on the class
  */
 public class TlbFactory<T> {
-    public static final String COUNT = "com.github.tlb.splitter.CountBasedTestSplitterCriteria";
-    public static final String TIME = "com.github.tlb.splitter.TimeBasedTestSplitterCriteria";
-    public static final String FAILED_FIRST = "com.github.tlb.orderer.FailedFirstOrderer";
     private Class<T> klass;
     private T defaultValue;
     private static TlbFactory<TestSplitterCriteria> criteriaFactory;
     private static TlbFactory<TestOrderer> testOrderer;
+    private static TlbFactory<TalkToService> talkToServiceFactory;
 
     TlbFactory(Class<T> klass, T defaultValue) {
         this.klass = klass;
@@ -45,19 +43,19 @@ public class TlbFactory<T> {
     <T> T getInstance(Class<? extends T> actualKlass, SystemEnvironment environment) {
         try {
             T criteria = actualKlass.getConstructor(SystemEnvironment.class).newInstance(environment);
-            if (TalksToCruise.class.isInstance(criteria)) {
-                TalkToCruise cruise = new TalkToCruise(environment, new DefaultHttpAction(environment));
-                ((TalksToCruise)criteria).talksToCruise(cruise);
+            if (TalksToService.class.isInstance(criteria)) {
+                TalkToService service = getTalkToService(environment);
+                ((TalksToService)criteria).talksToService(service);
             }
             return criteria;
         } catch (InvocationTargetException e) {
             throw new RuntimeException(e);
         } catch (NoSuchMethodException e) {
-            throw new IllegalArgumentException("Public constructor matching " + actualKlass.getName() + "(SystemEnvironment) was not found");
+            throw new IllegalArgumentException("Public constructor matching " + actualKlass.getName() + "(SystemEnvironment) was not found", e);
         } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException("Public constructor matching " + actualKlass.getName() + "(SystemEnvironment) was not found");
+            throw new IllegalArgumentException("Public constructor matching " + actualKlass.getName() + "(SystemEnvironment) was not found", e);
         } catch (InstantiationException e) {
-            throw new IllegalArgumentException("Unable to create abstract class " + actualKlass.getName());
+            throw new IllegalArgumentException("Unable to create abstract class " + actualKlass.getName(), e);
         }
     }
 
@@ -71,5 +69,11 @@ public class TlbFactory<T> {
         if (testOrderer == null)
             testOrderer = new TlbFactory<TestOrderer>(TestOrderer.class, TestOrderer.NO_OP);
         return testOrderer.getInstance(ordererName, environment);
+    }
+
+    public static TalkToService getTalkToService(SystemEnvironment environment) {
+        if (talkToServiceFactory == null)
+            talkToServiceFactory = new TlbFactory<TalkToService>(TalkToService.class, null);
+        return talkToServiceFactory.getInstance(environment.getProperty(TlbConstants.TALK_TO_SERVICE), environment);
     }
 }

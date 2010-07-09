@@ -8,10 +8,7 @@ import com.github.tlb.utils.SystemEnvironment;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
-import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.*;
 import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
@@ -22,7 +19,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 /**
- * @understands talking http protocol using http client
+ * @understands talking http
  */
 public class DefaultHttpAction implements HttpAction {
     private final HttpClient client;
@@ -34,31 +31,6 @@ public class DefaultHttpAction implements HttpAction {
         this.client = client;
         this.url = url;
         ssl = url.getScheme().equals("https");
-    }
-
-    public DefaultHttpAction(SystemEnvironment environment) {
-        this(createHttpClient(environment), createUri(environment));
-    }
-
-    private static URI createUri(SystemEnvironment environment) {
-        try {
-            return new URI(environment.getProperty(TlbConstants.CRUISE_SERVER_URL), true);
-        } catch (URIException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static HttpClient createHttpClient(SystemEnvironment environment) {
-        HttpClientParams params = new HttpClientParams();
-
-        if (environment.getProperty(USERNAME) != null) {
-            params.setAuthenticationPreemptive(true);
-            HttpClient client = new HttpClient(params);
-            client.getState().setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(environment.getProperty(USERNAME), environment.getProperty(PASSWORD)));
-            return client;
-        } else {
-            return new HttpClient(params);
-        }
     }
 
     /**
@@ -130,6 +102,26 @@ public class DefaultHttpAction implements HttpAction {
         }
     }
 
+    class FollowableRawPostRequest extends FollowableHttpRequest {
+        private String data;
+
+        protected FollowableRawPostRequest(DefaultHttpAction action, String data) {
+            super(action);
+            this.data = data;
+        }
+
+        public HttpMethodBase createMethod(String url) {
+            PostMethod method = new PostMethod(url);
+            try {
+                method.setRequestEntity(new StringRequestEntity(data, "text/plain", "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException(e);
+            }
+            return method;
+        }
+    }
+    
+
     public String get(String url) {
         FollowableGetRequest request = new FollowableGetRequest(this);
         return request.executeRequest(url);
@@ -137,6 +129,11 @@ public class DefaultHttpAction implements HttpAction {
 
     public String post(String url, Map<String,String> data) {
         FollowablePostRequest request = new FollowablePostRequest(this, data);
+        return request.executeRequest(url);
+    }
+
+    public String post(String url, String data) {
+        FollowableRawPostRequest request = new FollowableRawPostRequest(this, data);
         return request.executeRequest(url);
     }
 

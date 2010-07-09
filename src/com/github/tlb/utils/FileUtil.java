@@ -18,7 +18,7 @@ public class FileUtil {
         this.env = env;
     }
 
-    String tmpDir() {
+    public String tmpDir() {
         String tmpDir = env.getProperty(TLB_TMP_DIR);
         if (tmpDir == null) {
             tmpDir = System.getProperty(TMP_DIR);
