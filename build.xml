@@ -37,14 +37,14 @@
     </target>
 
     <target name="compile" depends="init">
-        <javac destdir="target/classes" target="1.5" source="1.5" debug="true">
+        <javac destdir="target/classes" target="1.5" source="1.5" debug="true" includeantruntime="false">
             <classpath refid="src.classpath"/>
             <src path="src"/>
         </javac>
     </target>
 
     <target name="compile-tests" depends="compile, init">
-        <javac destdir="target/test-classes" target="1.5" source="1.5">
+        <javac destdir="target/test-classes" target="1.5" source="1.5" includeantruntime="false">
             <classpath refid="test.classpath"/>
             <src path="test"/>
         </javac>
