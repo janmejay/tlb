@@ -1,62 +1,83 @@
 <project name="tlb" basedir="." default="all">
+    <property name="src.dir" location="src"/>
+    <property name="test.dir" location="test"/>
+    <property name="test-resources.dir" location="${test.dir}/resources"/>
+    <property name="integration-test.dir" location="integration-test"/>
+    <property name="lib.dir" location="lib"/>
+    <property name="test-lib.dir" location="test/lib"/>
+    <property name="target.dir" location="target"/>
+    <property name="classes.dir" location="${target.dir}/classes"/>
+    <property name="emma.dir" location="${target.dir}/emma"/>
+    <property name="test-classes.dir" location="${target.dir}/test-classes"/>
+    <property name="integration-test-classes.dir" location="${target.dir}/integration-test-classes"/>
+    <property name="reports.dir" location="${target.dir}/reports"/>
+    <property name="test-target-resources.dir" location="${test-classes.dir}/resources"/>
+
     <path id="dependencies">
-        <fileset dir="lib" includes="*.jar"/>
+        <fileset dir="${lib.dir}" includes="*.jar"/>
     </path>
 
     <path id="src.classpath">
         <path refid="dependencies"/>
-        <pathelement path="target/classes"/>
+        <pathelement path="${classes.dir}"/>
     </path>
 
     <path id="test.classpath">
         <path refid="src.classpath"/>
-        <pathelement path="target/test-classes"/>
-        <fileset dir="test/lib" includes="*.jar"/>
+        <pathelement path="${test-classes.dir}"/>
+        <fileset dir="${test-lib.dir}" includes="*.jar"/>
     </path>
 
     <path id="integration-test.classpath">
         <path refid="src.classpath"/>
-        <pathelement path="target/integration-test-classes"/>
-        <fileset dir="test/lib" includes="*.jar"/>
+        <pathelement path="${integration-test-classes.dir}"/>
+        <fileset dir="${test-lib.dir}" includes="*.jar"/>
     </path>
 
     <path id="dog.food.classpath">
-        <fileset dir="lib" includes="*.jar"/>
-        <fileset dir="target" includes="tlb*.jar"/>
+        <fileset dir="${lib.dir}" includes="*.jar"/>
+        <fileset dir="${target.dir}" includes="tlb*.jar"/>
     </path>
 
+    <path id="emma.classpath">
+        <pathelement location="test/build_lib/emma-2.0.5312.jar"/>
+        <pathelement location="test/build_lib/emma_ant-2.0.5312.jar"/>
+    </path>
+
+    <taskdef resource="emma_ant.properties" classpathref="emma.classpath"/>
+
     <target name="init">
-        <mkdir dir="target/classes"/>
-        <mkdir dir="target/test-classes"/>
-        <mkdir dir="target/integration-test-classes"/>
-        <mkdir dir="target/reports"/>
+        <mkdir dir="${classes.dir}"/>
+        <mkdir dir="${test-classes.dir}"/>
+        <mkdir dir="${integration-test-classes.dir}"/>
+        <mkdir dir="${reports.dir}"/>
     </target>
 
     <target name="clean">
-        <delete dir="target" includeemptydirs="true"/>
+        <delete dir="${target.dir}" includeemptydirs="true"/>
     </target>
 
     <target name="compile" depends="init">
-        <javac destdir="target/classes" target="1.5" source="1.5" debug="true" includeantruntime="false">
+        <javac destdir="${classes.dir}" target="1.5" source="1.5" debug="true" includeantruntime="false">
             <classpath refid="src.classpath"/>
-            <src path="src"/>
+            <src path="${src.dir}"/>
         </javac>
     </target>
 
     <target name="compile-tests" depends="compile, init">
-        <javac destdir="target/test-classes" target="1.5" source="1.5" includeantruntime="false">
+        <javac destdir="${test-classes.dir}" target="1.5" source="1.5" includeantruntime="false">
             <classpath refid="test.classpath"/>
-            <src path="test"/>
+            <src path="${test.dir}"/>
         </javac>
-        <copy todir="target/test-classes/resources">
-            <fileset dir="test/resources"/>
+        <copy todir="${test-target-resources.dir}">
+            <fileset dir="${test-resources.dir}"/>
         </copy>
     </target>
 
     <target name="compile-integration-tests" depends="compile, init">
-        <javac destdir="target/integration-test-classes" target="1.5" source="1.5">
+        <javac destdir="${integration-test-classes.dir}" target="1.5" source="1.5">
             <classpath refid="integration-test.classpath"/>
-            <src path="integration-test"/>
+            <src path="${integration-test.dir}"/>
         </javac>
     </target>
 
@@ -67,16 +88,16 @@
     </target>
 
     <target name="package.src" depends="init, -load.short.rev">
-        <jar destfile="target/tlb-g${short_rev}-src.jar">
+        <jar destfile="${target.dir}/tlb-g${short_rev}-src.jar">
             <fileset dir="src"/>
         </jar>
     </target>
 
     <target name="package.jar" depends="init, compile, -load.short.rev">
-        <property name="tlb_jar" value="target/tlb-g${short_rev}.jar"/>
+        <property name="tlb_jar" value="${target.dir}/tlb-g${short_rev}.jar"/>
         <jar destfile="${tlb_jar}">
-            <fileset dir="target/classes"/>
-            <fileset dir="src">
+            <fileset dir="${classes.dir}"/>
+            <fileset dir="${src.dir}">
                 <include name="commons-logging.properties"/>
             </fileset>
             <manifest>
@@ -87,37 +108,62 @@
 
     <target name="package" depends="clean, package.src, package.jar"/>
 
+    <target name="emma.instr" depends="compile">
+        <sequential>
+            <mkdir dir="${emma.dir}"/>
+            <property name="junit.fail.on.error" value="false"/>
+            <emma enabled="true">
+                <instr instrpath="${classes.dir}" destdir="${emma.dir}" metadatafile="${emma.dir}/metadata.emma" merge="true"/>
+            </emma>
+        </sequential>
+    </target>
+
     <target name="test" depends="compile, compile-tests">
         <junit failureproperty="test.failure" printsummary="yes" haltonfailure="true" fork="true">
+            <classpath location="${emma.dir}"/>
             <classpath refid="test.classpath"/>
-            <batchtest todir="target/reports">
-                <fileset dir="target/test-classes" includes="**/*Test.class*"/>
+
+            <classpath refid="emma.classpath"/>
+
+            <jvmarg value="-Demma.coverage.out.file=${emma.dir}/coverage.emma"/>
+            <jvmarg value="-Demma.coverage.out.merge=true"/>
+
+            <batchtest todir="${reports.dir}">
+                <fileset dir="${test-classes.dir}" includes="**/*Test.class*"/>
                 <formatter type="plain"/>
             </batchtest>
         </junit>
     </target>
 
+    <target name="coverage" depends="emma.instr, test">
+        <emma enabled="true">
+            <report sort="+name" metrics="method:85,block:90,line:90,class:90" sourcepath="${src.dir}">
+                <fileset dir="${emma.dir}">
+                    <include name="**/*.emma"/>
+                </fileset>
+                <html outfile="${emma.dir}/coverage.html"/>
+                <xml outfile="${emma.dir}/coverage.xml"/>
+            </report>
+        </emma>
+    </target>
+
     <target name="test.count_balanced" depends="package, compile-tests">
-        <typedef name="load-balanced-fileset" classname="com.github.tlb.ant.LoadBalancedFileSet"
-                 classpathref="dog.food.classpath"/>
-        <junit failureproperty="test.failure" printsummary="yes" haltonfailure="true" haltonerror="true"
-               showoutput="true" fork="true">
+        <typedef name="load-balanced-fileset" classname="com.github.tlb.ant.LoadBalancedFileSet" classpathref="dog.food.classpath"/>
+        <junit failureproperty="test.failure" printsummary="yes" haltonfailure="true" haltonerror="true" showoutput="true" fork="true">
             <classpath refid="test.classpath"/>
-            <batchtest todir="target/reports">
-                <load-balanced-fileset dir="target/test-classes" includes="**/*Test.class"/>
+            <batchtest todir="${reports.dir}">
+                <load-balanced-fileset dir="${test-classes.dir}" includes="**/*Test.class"/>
                 <formatter type="plain"/>
             </batchtest>
         </junit>
     </target>
 
     <target name="test.time_balanced" depends="package, compile-tests">
-        <typedef name="load-balanced-fileset" classname="com.github.tlb.ant.LoadBalancedFileSet"
-                 classpathref="dog.food.classpath"/>
-        <junit failureproperty="test.failure" printsummary="yes" haltonfailure="true" haltonerror="true"
-               showoutput="true" fork="true">
+        <typedef name="load-balanced-fileset" classname="com.github.tlb.ant.LoadBalancedFileSet" classpathref="dog.food.classpath"/>
+        <junit failureproperty="test.failure" printsummary="yes" haltonfailure="true" haltonerror="true" showoutput="true" fork="true">
             <classpath refid="test.classpath"/>
-            <batchtest todir="target/reports">
-                <load-balanced-fileset dir="target/test-classes" includes="**/*Test.class"/>
+            <batchtest todir="${reports.dir}">
+                <load-balanced-fileset dir="${test-classes.dir}" includes="**/*Test.class"/>
                 <formatter classname="com.github.tlb.ant.JunitDataRecorder"/>
                 <formatter type="plain"/>
             </batchtest>
@@ -130,13 +176,11 @@
             These tests are meant to play dummy 'to be run' tests, that tlb is being used to balance.
             These do not test much themselfs.
         </description>
-        <typedef name="load-balanced-fileset" classname="com.github.tlb.ant.LoadBalancedFileSet"
-                 classpathref="dog.food.classpath"/>
-        <junit failureproperty="test.failure" printsummary="yes" haltonfailure="true" haltonerror="true"
-               showoutput="true" fork="true">
+        <typedef name="load-balanced-fileset" classname="com.github.tlb.ant.LoadBalancedFileSet" classpathref="dog.food.classpath"/>
+        <junit failureproperty="test.failure" printsummary="yes" haltonfailure="true" haltonerror="true" showoutput="true" fork="true">
             <classpath refid="integration-test.classpath"/>
-            <batchtest todir="target/reports">
-                <load-balanced-fileset dir="target/integration-test-classes" includes="**/*Test.class"/>
+            <batchtest todir="${reports.dir}">
+                <load-balanced-fileset dir="${integration-test-classes.dir}" includes="**/*Test.class"/>
                 <formatter classname="com.github.tlb.ant.JunitDataRecorder"/>
                 <formatter type="plain"/>
             </batchtest>
