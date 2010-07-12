@@ -5,6 +5,7 @@
     <property name="integration-test.dir" location="integration-test"/>
     <property name="lib.dir" location="lib"/>
     <property name="test-lib.dir" location="test/lib"/>
+    <property name="build_lib.dir" location="build_lib"/>
     <property name="target.dir" location="target"/>
     <property name="classes.dir" location="${target.dir}/classes"/>
     <property name="emma.dir" location="${target.dir}/emma"/>
@@ -40,11 +41,20 @@
     </path>
 
     <path id="emma.classpath">
-        <pathelement location="test/build_lib/emma-2.0.5312.jar"/>
-        <pathelement location="test/build_lib/emma_ant-2.0.5312.jar"/>
+        <pathelement location="${build_lib.dir}/emma-2.0.5312.jar"/>
+        <pathelement location="${build_lib.dir}/emma_ant-2.0.5312.jar"/>
     </path>
 
     <taskdef resource="emma_ant.properties" classpathref="emma.classpath"/>
+
+    <property name="one-jar.dist.dir" value="./dist"/>
+    <property name="one-jar.version" value="0.96"/>
+
+    <taskdef name="onejar" classname="com.simontuffs.onejar.ant.OneJarTask">
+        <classpath>
+            <pathelement location="${build_lib.dir}/one-jar-ant-task-0.96.jar"/>
+        </classpath>
+    </taskdef>
 
     <target name="init">
         <mkdir dir="${classes.dir}"/>
@@ -104,6 +114,13 @@
                 <attribute name="Main-Class" value="com.github.tlb.server.Main"/>
             </manifest>
         </jar>
+
+        <onejar destfile="${target.dir}/tlb-all-g${short_rev}.jar">
+            <main jar="${tlb_jar}"/>
+            <lib>
+                <fileset dir="${lib.dir}"/>
+            </lib>
+        </onejar>
     </target>
 
     <target name="package" depends="clean, package.src, package.jar"/>
