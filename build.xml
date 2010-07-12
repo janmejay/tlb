@@ -211,5 +211,5 @@
         </java>
     </target>
 
-    <target name="all" depends="clean, test, package"/>
+    <target name="all" depends="clean, coverage, package"/>
 </project>
