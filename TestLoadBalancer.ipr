@@ -211,6 +211,55 @@
     <output url="file://$PROJECT_DIR$/out" />
   </component>
   <component name="ProjectRunConfigurationManager">
+    <configuration default="false" name="TlbBalancer" type="Application" factoryName="Application">
+      <extension name="snapshooter" />
+      <option name="MAIN_CLASS_NAME" value="com.github.tlb.Main" />
+      <option name="VM_PARAMETERS" value="" />
+      <option name="PROGRAM_PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="tlb" />
+      <envs>
+        <env name="TLB_URL" value="http://go03.thoughtworks.com:7019" />
+        <env name="JOB_VERSION" value="foo" />
+        <env name="TLB_JOB_NAME" value="jj_testing" />
+        <env name="TOTAL_PARTITIONS" value="2" />
+        <env name="PARTITION_NUMBER" value="2" />
+        <env name="TLB_CRITERIA" value="com.github.tlb.splitter.TimeBasedTestSplitterCriteria" />
+        <env name="TLB_ORDERER" value="com.github.tlb.orderer.FailedFirstOrderer" />
+        <env name="TALK_TO_SERVICE" value="com.github.tlb.service.TalkToTlbServer" />
+        <env name="TLB_APP" value="com.github.tlb.balancer.BalancerInitializer" />
+        <env name="TLB_BALANCER_PORT" value="3001" />
+      </envs>
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="41899" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method />
+    </configuration>
+    <configuration default="false" name="TlbServer" type="Application" factoryName="Application">
+      <extension name="snapshooter" />
+      <option name="MAIN_CLASS_NAME" value="com.github.tlb.Main" />
+      <option name="VM_PARAMETERS" value="" />
+      <option name="PROGRAM_PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="tlb" />
+      <envs />
+      <method />
+    </configuration>
     <configuration default="false" name="local_5005" type="Remote" factoryName="Remote">
       <option name="USE_SOCKET_TRANSPORT" value="true" />
       <option name="SERVER_MODE" value="false" />
