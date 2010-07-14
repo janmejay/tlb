@@ -6,10 +6,10 @@ import static com.github.tlb.TlbConstants.TLB_CRITERIA;
 import com.github.tlb.TestUtil;
 import com.github.tlb.TlbFileResource;
 import com.github.tlb.TlbSuiteFile;
-import com.github.tlb.TlbSuiteFileImpl;
 import com.github.tlb.splitter.CountBasedTestSplitterCriteria;
 import com.github.tlb.splitter.JobFamilyAwareSplitterCriteria;
 import com.github.tlb.utils.FileUtil;
+import com.github.tlb.utils.SuiteFileConvertor;
 import com.github.tlb.utils.SystemEnvironment;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
@@ -63,7 +63,8 @@ public class LoadBalancedFileSetTest {
 
         JobFamilyAwareSplitterCriteria criteria = mock(JobFamilyAwareSplitterCriteria.class);
         TlbFileResource fileResource = new JunitFileResource(included);
-        when(criteria.filter(any(List.class))).thenReturn(Arrays.asList(fileResource));
+        final SuiteFileConvertor convertor = new SuiteFileConvertor();
+        when(criteria.filterSuites(any(List.class))).thenReturn(convertor.toTlbSuiteFiles(Arrays.asList(fileResource)));
 
         fileSet = new LoadBalancedFileSet(criteria, TestOrderer.NO_OP);
         fileSet.setDir(projectDir);
@@ -84,7 +85,8 @@ public class LoadBalancedFileSetTest {
 
         JobFamilyAwareSplitterCriteria criteria = mock(JobFamilyAwareSplitterCriteria.class);
 
-        when(criteria.filter(any(List.class))).thenReturn(Arrays.asList((TlbFileResource) resourceOne, resourceTwo, resourceThree));
+        final SuiteFileConvertor convertor = new SuiteFileConvertor();
+        when(criteria.filterSuites(any(List.class))).thenReturn(convertor.toTlbSuiteFiles(Arrays.asList((TlbFileResource) resourceOne, resourceTwo, resourceThree)));
 
         fileSet = new LoadBalancedFileSet(criteria, new TestOrderer(new SystemEnvironment()) {
             public int compare(TlbSuiteFile o1, TlbSuiteFile o2) {

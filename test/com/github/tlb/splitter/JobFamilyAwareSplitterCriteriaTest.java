@@ -2,11 +2,11 @@ package com.github.tlb.splitter;
 
 import com.github.tlb.*;
 import com.github.tlb.service.TalkToCruise;
+import com.github.tlb.utils.SuiteFileConvertor;
 import org.junit.Test;
 import org.junit.Before;
 import org.junit.After;
 import static org.junit.Assert.assertThat;
-import com.github.tlb.ant.JunitFileResource;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -15,7 +15,6 @@ import static org.hamcrest.core.Is.is;
 import com.github.tlb.utils.SystemEnvironment;
 
 import java.util.*;
-import java.io.File;
 
 public class JobFamilyAwareSplitterCriteriaTest {
     private TestUtil.LogFixture logFixture;
@@ -46,7 +45,9 @@ public class JobFamilyAwareSplitterCriteriaTest {
         };
         criteria.talksToService(toCruise);
         logFixture.startListening();
-        List<TlbFileResource> resources = criteria.filter(new ArrayList<TlbFileResource>());
+        final SuiteFileConvertor convertor = new SuiteFileConvertor();
+        final List<TlbSuiteFile> suiteFiles = convertor.toTlbSuiteFiles(new ArrayList<TlbFileResource>());
+        List<TlbFileResource> resources = convertor.toTlbFileResources(criteria.filterSuites(suiteFiles));
         logFixture.assertHeard("got total of 0 files to balance");
         logFixture.assertHeard("total jobs to distribute load [ 3 ]");
         logFixture.assertHeard("assigned total of 2 files to [ build-1 ]");

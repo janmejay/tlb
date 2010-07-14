@@ -2,9 +2,11 @@ package com.github.tlb.splitter;
 
 import com.github.tlb.TestUtil;
 import com.github.tlb.TlbFileResource;
+import com.github.tlb.TlbSuiteFile;
 import com.github.tlb.domain.SuiteTimeEntry;
 import com.github.tlb.service.TalkToService;
 import com.github.tlb.service.TalkToCruise;
+import com.github.tlb.utils.SuiteFileConvertor;
 import com.github.tlb.utils.SystemEnvironment;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,7 +53,9 @@ public class TimeBasedTestSplitterCriteriaTest {
 
         TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToService, env);
         logFixture.startListening();
-        assertThat(criteria.filter(resources), is(Arrays.asList(first, second, third)));
+        final SuiteFileConvertor convertor = new SuiteFileConvertor();
+        final List<TlbSuiteFile> suiteFiles = convertor.toTlbSuiteFiles(resources);
+        assertThat(convertor.toTlbFileResources(criteria.filterSuites(suiteFiles)), is(Arrays.asList(first, second, third)));
         logFixture.assertHeard("total jobs to distribute load [ 1 ]");
     }
 
@@ -71,11 +75,15 @@ public class TimeBasedTestSplitterCriteriaTest {
         when(talkToService.partitionNumber()).thenReturn(1);
 
         TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-1"));
-        assertThat(criteria.filter(resources), is(Arrays.asList(second, first, third)));
+        final SuiteFileConvertor convertor1 = new SuiteFileConvertor();
+        final List<TlbSuiteFile> suiteFiles1 = convertor1.toTlbSuiteFiles(resources);
+        assertThat(convertor1.toTlbFileResources(criteria.filterSuites(suiteFiles1)), is(Arrays.asList(second, first, third)));
 
         when(talkToService.partitionNumber()).thenReturn(2);
         criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-2"));
-        assertThat(criteria.filter(resources), is(Arrays.asList(fourth, fifth)));
+        final SuiteFileConvertor convertor = new SuiteFileConvertor();
+        final List<TlbSuiteFile> suiteFiles = convertor.toTlbSuiteFiles(resources);
+        assertThat(convertor.toTlbFileResources(criteria.filterSuites(suiteFiles)), is(Arrays.asList(fourth, fifth)));
     }
 
     @Test
@@ -111,7 +119,9 @@ public class TimeBasedTestSplitterCriteriaTest {
 
     private void assertAbortsForNoHistoricalTimeData(List<TlbFileResource> resources, TimeBasedTestSplitterCriteria criteria) {
         try {
-            criteria.filter(resources);
+            final SuiteFileConvertor convertor = new SuiteFileConvertor();
+            final List<TlbSuiteFile> suiteFiles = convertor.toTlbSuiteFiles(resources);
+            convertor.toTlbFileResources(criteria.filterSuites(suiteFiles));
             fail("should have aborted, as no historical test time data was given");
         } catch (Exception e) {
             String message = "no historical test time data, aborting attempt to balance based on time";
@@ -135,19 +145,27 @@ public class TimeBasedTestSplitterCriteriaTest {
 
         when(talkToService.partitionNumber()).thenReturn(1);
         TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-1"));
-        assertThat(criteria.filter(resources), is(Arrays.asList(second)));
+        final SuiteFileConvertor convertor3 = new SuiteFileConvertor();
+        final List<TlbSuiteFile> suiteFiles3 = convertor3.toTlbSuiteFiles(resources);
+        assertThat(convertor3.toTlbFileResources(criteria.filterSuites(suiteFiles3)), is(Arrays.asList(second)));
 
         when(talkToService.partitionNumber()).thenReturn(2);
         criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-2"));
-        assertThat(criteria.filter(resources), is(Arrays.asList(fourth)));
+        final SuiteFileConvertor convertor2 = new SuiteFileConvertor();
+        final List<TlbSuiteFile> suiteFiles2 = convertor2.toTlbSuiteFiles(resources);
+        assertThat(convertor2.toTlbFileResources(criteria.filterSuites(suiteFiles2)), is(Arrays.asList(fourth)));
 
         when(talkToService.partitionNumber()).thenReturn(3);
         criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-3"));
-        assertThat(criteria.filter(resources), is(Arrays.asList(fifth)));
+        final SuiteFileConvertor convertor1 = new SuiteFileConvertor();
+        final List<TlbSuiteFile> suiteFiles1 = convertor1.toTlbSuiteFiles(resources);
+        assertThat(convertor1.toTlbFileResources(criteria.filterSuites(suiteFiles1)), is(Arrays.asList(fifth)));
 
         when(talkToService.partitionNumber()).thenReturn(4);
         criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-4"));
-        assertThat(criteria.filter(resources), is(Arrays.asList(first, third)));
+        final SuiteFileConvertor convertor = new SuiteFileConvertor();
+        final List<TlbSuiteFile> suiteFiles = convertor.toTlbSuiteFiles(resources);
+        assertThat(convertor.toTlbFileResources(criteria.filterSuites(suiteFiles)), is(Arrays.asList(first, third)));
     }
 
     @Test
@@ -167,7 +185,9 @@ public class TimeBasedTestSplitterCriteriaTest {
         when(talkToService.partitionNumber()).thenReturn(1);
         TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-1"));
         logFixture.startListening();
-        List<TlbFileResource> filteredResources = criteria.filter(resources);
+        final SuiteFileConvertor convertor1 = new SuiteFileConvertor();
+        final List<TlbSuiteFile> suiteFiles1 = convertor1.toTlbSuiteFiles(resources);
+        List<TlbFileResource> filteredResources = convertor1.toTlbFileResources(criteria.filterSuites(suiteFiles1));
         logFixture.assertHeard("got total of 7 files to balance");
         logFixture.assertHeard("total jobs to distribute load [ 2 ]");
         logFixture.assertHeard("historical test time data has entries for 5 suites");
@@ -179,7 +199,9 @@ public class TimeBasedTestSplitterCriteriaTest {
 
         when(talkToService.partitionNumber()).thenReturn(2);
         criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-2"));
-        filteredResources = criteria.filter(resources);
+        final SuiteFileConvertor convertor = new SuiteFileConvertor();
+        final List<TlbSuiteFile> suiteFiles = convertor.toTlbSuiteFiles(resources);
+        filteredResources = convertor.toTlbFileResources(criteria.filterSuites(suiteFiles));
         logFixture.assertHeard("got total of 7 files to balance", 2);
         logFixture.assertHeard("total jobs to distribute load [ 2 ]", 2);
         logFixture.assertHeard("historical test time data has entries for 5 suites", 2);
@@ -205,7 +227,9 @@ public class TimeBasedTestSplitterCriteriaTest {
         TimeBasedTestSplitterCriteria criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-1"));
         logFixture.startListening();
 
-        assertThat(criteria.filter(resources), is(Arrays.asList(second)));
+        final SuiteFileConvertor convertor1 = new SuiteFileConvertor();
+        final List<TlbSuiteFile> suiteFiles1 = convertor1.toTlbSuiteFiles(resources);
+        assertThat(convertor1.toTlbFileResources(criteria.filterSuites(suiteFiles1)), is(Arrays.asList(second)));
         logFixture.assertHeard("got total of 3 files to balance");
         logFixture.assertHeard("total jobs to distribute load [ 2 ]");
         logFixture.assertHeard("historical test time data has entries for 5 suites");
@@ -216,7 +240,9 @@ public class TimeBasedTestSplitterCriteriaTest {
         when(talkToService.partitionNumber()).thenReturn(2);
         criteria = new TimeBasedTestSplitterCriteria(talkToService, TestUtil.initEnvironment("job-2"));
 
-        assertThat(criteria.filter(resources), is(Arrays.asList(first, third)));
+        final SuiteFileConvertor convertor = new SuiteFileConvertor();
+        final List<TlbSuiteFile> suiteFiles = convertor.toTlbSuiteFiles(resources);
+        assertThat(convertor.toTlbFileResources(criteria.filterSuites(suiteFiles)), is(Arrays.asList(first, third)));
         logFixture.assertHeard("got total of 3 files to balance", 2);
         logFixture.assertHeard("total jobs to distribute load [ 2 ]", 2);
         logFixture.assertHeard("historical test time data has entries for 5 suites", 2);

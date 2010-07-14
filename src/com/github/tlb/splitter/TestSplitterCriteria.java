@@ -22,12 +22,6 @@ public abstract class TestSplitterCriteria {
 
     public abstract List<TlbSuiteFile> filterSuites(List<TlbSuiteFile> fileResources);
 
-    public List<TlbFileResource> filter(List<TlbFileResource> fileResources) {
-        final SuiteFileConvertor convertor = new SuiteFileConvertor();
-        final List<TlbSuiteFile> suiteFiles = convertor.toTlbSuiteFiles(fileResources);
-        return convertor.toTlbFileResources(filterSuites(suiteFiles));
-    }
-
     public void setDir(File dir) {
         this.dir = dir;
     }

@@ -1,5 +1,7 @@
 package com.github.tlb.twist;
 
+import com.github.tlb.TlbSuiteFile;
+import com.github.tlb.utils.SuiteFileConvertor;
 import org.junit.Test;
 import org.junit.After;
 import static org.junit.internal.matchers.IsCollectionContaining.hasItems;
@@ -30,7 +32,8 @@ public class LoadBalancedTwistSuiteTest {
         TestSplitterCriteria criteria = mock(TestSplitterCriteria.class);
 
         File folder = folder("folder");
-        when(criteria.filter(any(List.class))).thenReturn(scenarioResource(folder,1, 2));
+        final SuiteFileConvertor convertor = new SuiteFileConvertor();
+        when(criteria.filterSuites(any(List.class))).thenReturn(convertor.toTlbSuiteFiles(scenarioResource(folder,1, 2)));
 
         LoadBalancedTwistSuite suite = new LoadBalancedTwistSuite(criteria);
 
