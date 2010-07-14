@@ -134,4 +134,11 @@ public class FileUtilTest {
         File tmpDir = new File(tlbTmpDirPath);
         assertThat(tmpDir.exists(), is(false));
     }
+
+    @Test
+    public void shouldStripTheExtention() {
+        assertThat(FileUtil.stripExtension("foo.name"), is("foo"));
+        assertThat(FileUtil.stripExtension("foo.name.ext"), is("foo.name"));
+        assertThat(FileUtil.stripExtension("foo"), is("foo"));
+    }
 }

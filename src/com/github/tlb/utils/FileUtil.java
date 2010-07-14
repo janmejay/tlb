@@ -8,6 +8,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.List;
+import java.util.Iterator;
+import java.util.ArrayList;
 
 public class FileUtil {
     private SystemEnvironment env;
@@ -60,5 +63,18 @@ public class FileUtil {
         File file = new File(new File(tmpDir()), fileName);
         logger.info(String.format("unique file name %s translated to %s", seedString, file.getAbsolutePath()));
         return file;
+    }
+
+    public static List<File> toFileList(Iterator<File> reports) {
+        List<File> foo = new ArrayList<File>();
+        while (reports.hasNext()) {
+            foo.add(reports.next());
+        }
+        return foo;
+    }
+
+    public static String stripExtension(String fileName) {
+        int index = fileName.lastIndexOf(".") == -1 ? fileName.length() : fileName.lastIndexOf(".");
+        return fileName.substring(0, index);
     }
 }

@@ -1,8 +1,12 @@
 package com.github.tlb.twist;
 
 import com.github.tlb.TlbFileResource;
+import com.github.tlb.utils.FileUtil;
+import static com.github.tlb.utils.FileUtil.toFileList;
+import static com.github.tlb.utils.FileUtil.stripExtension;
 import com.github.tlb.splitter.TestSplitterCriteria;
 import org.apache.commons.io.FileUtils;
+import static org.apache.commons.io.FileUtils.iterateFiles;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,10 +26,28 @@ public class LoadBalancedTwistSuite {
     }
 
     public void balance(String scenariosFolder, String destinationLocation) {
-        Iterator<File> collection = FileUtils.iterateFiles(new File(scenariosFolder), null, false);
+        File folder = new File(scenariosFolder);
+        Iterator<File> collection = iterateFiles(folder, new String[] { "scn" }, false);
         List<TlbFileResource> resources = convertToTlbResource(collection);
         List<TlbFileResource> filtered = criteria.filter(resources);
         copyFilteredResources(destinationLocation, filtered);
+        copyAssociatedCSVResources(folder, new File(destinationLocation));
+    }
+
+    private void copyAssociatedCSVResources(File scenarioFolder, File destination) {
+        List<File> csvs = toFileList(iterateFiles(scenarioFolder, new String[]{"csv"}, false));
+        List<File> filteredScns = toFileList(iterateFiles(destination, null, false));
+        for (File csv : csvs) {
+            for (File filteredScn : filteredScns) {
+                if (stripExtension(filteredScn.getName()).equals(stripExtension(csv.getName()))) {
+                    try {
+                        FileUtils.copyFileToDirectory(csv, destination, true);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
     }
 
     private List<TlbFileResource> convertToTlbResource(Iterator<File> collection) {

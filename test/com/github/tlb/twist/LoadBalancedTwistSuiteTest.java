@@ -23,6 +23,7 @@ public class LoadBalancedTwistSuiteTest {
     @After
     public void tearDown() throws IOException {
         FileUtils.deleteDirectory(new File("destination"));
+        FileUtils.deleteDirectory(new File("folder"));
     }
 
     @Test
@@ -30,7 +31,9 @@ public class LoadBalancedTwistSuiteTest {
         TestSplitterCriteria criteria = mock(TestSplitterCriteria.class);
 
         File folder = folder("folder");
-        when(criteria.filter(any(List.class))).thenReturn(scenarioResource(folder,1, 2));
+
+        List<TlbFileResource> resources = scenarioResource(folder, 1, 2);
+        when(criteria.filter(any(List.class))).thenReturn(resources);
 
         LoadBalancedTwistSuite suite = new LoadBalancedTwistSuite(criteria);
 
@@ -40,6 +43,50 @@ public class LoadBalancedTwistSuiteTest {
         assertThat(destination.exists(), is(true));
         assertThat(destination.isDirectory(), is(true));
         assertThat(FileUtils.listFiles(destination, null, false).size(), is(2));
+    }
+
+    @Test
+    public void shouldCopyCSVAssociatedWithAScenario() throws Exception {
+        TestSplitterCriteria criteria = mock(TestSplitterCriteria.class);
+
+        File folder = folder("folder");
+        List<TlbFileResource> resources = scenarioResource(folder, 1, 2);
+        scenarioCSV(folder, 1);
+        when(criteria.filter(any(List.class))).thenReturn(resources);
+
+        LoadBalancedTwistSuite suite = new LoadBalancedTwistSuite(criteria);
+
+        suite.balance(folder.getAbsolutePath(), "destination");
+
+        File destination = new File("destination");
+        assertThat(destination.exists(), is(true));
+        assertThat(destination.isDirectory(), is(true));
+        assertThat(FileUtils.listFiles(destination, null, false).size(), is(3));
+    }
+
+    @Test
+    public void shouldNotCopyCSVIfNotAssociatedWithAFilteredScenario() throws Exception {
+        TestSplitterCriteria criteria = mock(TestSplitterCriteria.class);
+
+        File folder = folder("folder");
+        List<TlbFileResource> resources = scenarioResource(folder, 1, 2);
+        scenarioCSV(folder, 10);
+        when(criteria.filter(any(List.class))).thenReturn(resources);
+
+        LoadBalancedTwistSuite suite = new LoadBalancedTwistSuite(criteria);
+
+        suite.balance(folder.getAbsolutePath(), "destination");
+
+        File destination = new File("destination");
+        assertThat(destination.exists(), is(true));
+        assertThat(destination.isDirectory(), is(true));
+        assertThat(FileUtils.listFiles(destination, null, false).size(), is(2));
+    }
+
+    private void scenarioCSV(File folder, int name) throws IOException {
+        File file = new File(folder.getAbsolutePath(), "base" + name + ".csv");
+        file.createNewFile();
+        file.deleteOnExit();
     }
 
     private File folder(String name) {
@@ -52,7 +99,7 @@ public class LoadBalancedTwistSuiteTest {
     private List<TlbFileResource> scenarioResource(File folder, int... names) throws IOException {
         List<TlbFileResource> resources = new ArrayList<TlbFileResource>();
         for (int name : names) {
-            File file = new File(folder.getAbsolutePath(), "base" + name);
+            File file = new File(folder.getAbsolutePath(), "base" + name + ".scn");
             file.createNewFile();
             file.deleteOnExit();
             resources.add(new SceanrioFileResource(file));

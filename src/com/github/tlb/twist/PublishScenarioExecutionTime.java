@@ -2,10 +2,9 @@ package com.github.tlb.twist;
 
 import com.github.tlb.factory.TlbFactory;
 import com.github.tlb.service.TalkToService;
-import com.github.tlb.service.TalkToCruise;
-import com.github.tlb.service.http.DefaultHttpAction;
 import com.github.tlb.utils.SystemEnvironment;
 import com.github.tlb.utils.XmlUtil;
+import com.github.tlb.utils.FileUtil;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.BuildException;
 import org.apache.commons.io.FileUtils;
@@ -15,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
 
 /**
  * @understands task to publish the time taken to execute scenarios
@@ -50,7 +48,7 @@ public class PublishScenarioExecutionTime extends Task {
     @SuppressWarnings("unchecked")
     public void execute() throws BuildException {
         Iterator<File> reports = FileUtils.iterateFiles(new File(reportsDir + XML_REPORT_PATH), null, false);
-        List<File> reportFiles = reportFileList(reports);
+        List<File> reportFiles = FileUtil.toFileList(reports);
         talkToService.publishSubsetSize(reportFiles.size());
         for (File report : reportFiles) {
             try {
@@ -61,14 +59,6 @@ public class PublishScenarioExecutionTime extends Task {
                 throw new RuntimeException("Could not read the twist report: " + report.getName(), e);
             }
         }
-    }
-
-    private List<File> reportFileList(Iterator<File> reports) {
-        List<File> foo = new ArrayList<File>();
-        while (reports.hasNext()) {
-            foo.add(reports.next());
-        }
-        return foo;
     }
 
     private long toSecond(Element testCase) {
