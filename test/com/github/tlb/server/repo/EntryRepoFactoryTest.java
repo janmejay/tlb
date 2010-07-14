@@ -1,9 +1,12 @@
 package com.github.tlb.server.repo;
 
 import com.github.tlb.TestUtil;
+import com.github.tlb.TlbConstants;
 import com.github.tlb.domain.SubsetSizeEntry;
+import com.github.tlb.domain.SuiteResultEntry;
 import com.github.tlb.domain.SuiteTimeEntry;
 import com.github.tlb.domain.TimeProvider;
+import com.github.tlb.utils.SystemEnvironment;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -11,16 +14,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.GregorianCalendar;
+import java.util.*;
 
 import static com.github.tlb.server.repo.EntryRepoFactory.LATEST_VERSION;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.junit.matchers.JUnitMatchers.hasItem;
+import static org.junit.matchers.JUnitMatchers.hasItems;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -29,10 +30,17 @@ public class EntryRepoFactoryTest {
     private File baseDir;
     private TestUtil.LogFixture logFixture;
 
+    private SystemEnvironment env() {
+        final HashMap<String, String> env = new HashMap<String, String>();
+        env.put(TlbConstants.Server.TLB_STORE_DIR, baseDir.getAbsolutePath());
+        return new SystemEnvironment(env);
+    }
+
+
     @Before
     public void setUp() throws Exception {
         baseDir = TestUtil.createTempFolder();
-        factory = new EntryRepoFactory(baseDir);
+        factory = new EntryRepoFactory(env());
         logFixture = new TestUtil.LogFixture();
     }
 
@@ -55,9 +63,15 @@ public class EntryRepoFactoryTest {
         SubsetSizeRepo subsetRepo = factory.createSubsetRepo("dev", LATEST_VERSION);
         SuiteTimeRepo suiteTimeRepo = factory.createSuiteTimeRepo("dev", LATEST_VERSION);
         SuiteResultRepo suiteResultRepo = factory.createSuiteResultRepo("dev", LATEST_VERSION);
+        SuiteTimeRepo smoothingSuiteTimeRepo = factory.createSmoothingSuiteTimeRepo("dev", LATEST_VERSION);
         assertThat(factory.createSubsetRepo("dev", LATEST_VERSION), sameInstance(subsetRepo));
+        assertThat(subsetRepo, is(SubsetSizeRepo.class));
         assertThat(factory.createSuiteTimeRepo("dev", LATEST_VERSION), sameInstance(suiteTimeRepo));
+        assertThat(suiteTimeRepo, is(SuiteTimeRepo.class));
         assertThat(factory.createSuiteResultRepo("dev", LATEST_VERSION), sameInstance(suiteResultRepo));
+        assertThat(suiteResultRepo, is(SuiteResultRepo.class));
+        assertThat(factory.createSmoothingSuiteTimeRepo("dev", LATEST_VERSION), sameInstance(smoothingSuiteTimeRepo));
+        assertThat(smoothingSuiteTimeRepo, is(SmoothingSuiteTimeRepo.class));
     }
 
     @Test
@@ -83,16 +97,34 @@ public class EntryRepoFactoryTest {
     
     @Test
     public void shouldBeAbleToLoadFromDumpedFile() throws ClassNotFoundException, IOException, InterruptedException {
-        SubsetSizeRepo repo = factory.createSubsetRepo("foo", LATEST_VERSION);
-        repo.add(new SubsetSizeEntry(50));
-        repo.add(new SubsetSizeEntry(100));
-        repo.add(new SubsetSizeEntry(200));
+        SubsetSizeRepo subsetSizeRepo = factory.createSubsetRepo("foo", LATEST_VERSION);
+        subsetSizeRepo.add(new SubsetSizeEntry(50));
+        subsetSizeRepo.add(new SubsetSizeEntry(100));
+        subsetSizeRepo.add(new SubsetSizeEntry(200));
+
+        SuiteTimeRepo subsetTimeRepo = factory.createSuiteTimeRepo("bar", LATEST_VERSION);
+        subsetTimeRepo.update(new SuiteTimeEntry("foo.bar.Baz", 10));
+        subsetTimeRepo.update(new SuiteTimeEntry("bar.baz.Quux", 20));
+
+        SuiteResultRepo subsetResultRepo = factory.createSuiteResultRepo("baz", LATEST_VERSION);
+        subsetResultRepo.update(new SuiteResultEntry("foo.bar.Baz", true));
+        subsetResultRepo.update(new SuiteResultEntry("bar.baz.Quux", false));
+
+        SuiteTimeRepo smoothingSuiteTimeRepo = factory.createSmoothingSuiteTimeRepo("quux", LATEST_VERSION);
+        smoothingSuiteTimeRepo.update(new SuiteTimeEntry("foo.bar.Quux", 10));
+        smoothingSuiteTimeRepo.update(new SuiteTimeEntry("bar.baz.Bang", 20));
+
         Thread exitHook = factory.exitHook();
         exitHook.start();
         exitHook.join();
-        EntryRepoFactory otherFactoryInstance = new EntryRepoFactory(baseDir);
-        SubsetSizeRepo otherRepo = otherFactoryInstance.createSubsetRepo("foo", LATEST_VERSION);
-        assertThat(otherRepo.list(), is((Collection<SubsetSizeEntry>) Arrays.asList(new SubsetSizeEntry(50), new SubsetSizeEntry(100), new SubsetSizeEntry(200))));
+        EntryRepoFactory otherFactoryInstance = new EntryRepoFactory(env());
+        assertThat(otherFactoryInstance.createSubsetRepo("foo", LATEST_VERSION).list(), is((Collection<SubsetSizeEntry>) Arrays.asList(new SubsetSizeEntry(50), new SubsetSizeEntry(100), new SubsetSizeEntry(200))));
+        assertThat(otherFactoryInstance.createSuiteTimeRepo("bar", LATEST_VERSION).list().size(), is(2));
+        assertThat(otherFactoryInstance.createSuiteTimeRepo("bar", LATEST_VERSION).list(), hasItems(new SuiteTimeEntry("foo.bar.Baz", 10), new SuiteTimeEntry("bar.baz.Quux", 20)));
+        assertThat(otherFactoryInstance.createSuiteResultRepo("baz", LATEST_VERSION).list().size(), is(2));
+        assertThat(otherFactoryInstance.createSuiteResultRepo("baz", LATEST_VERSION).list(), hasItems(new SuiteResultEntry("foo.bar.Baz", true), new SuiteResultEntry("bar.baz.Quux", false)));
+        assertThat(otherFactoryInstance.createSmoothingSuiteTimeRepo("quux", LATEST_VERSION).list().size(), is(2));
+        assertThat(otherFactoryInstance.createSmoothingSuiteTimeRepo("quux", LATEST_VERSION).list(), hasItems(new SuiteTimeEntry("foo.bar.Quux", 10), new SuiteTimeEntry("bar.baz.Bang", 20)));
     }
     
     @Test
@@ -157,14 +189,14 @@ public class EntryRepoFactoryTest {
         factory.purge(fooRepo.identifier);
         fooRepo = factory.createSuiteTimeRepo("foo", LATEST_VERSION);
         assertThat(fooRepo.list().size(), is(0));
-        fooRepo = new EntryRepoFactory(baseDir).createSuiteTimeRepo("foo", LATEST_VERSION);
+        fooRepo = new EntryRepoFactory(env()).createSuiteTimeRepo("foo", LATEST_VERSION);
         assertThat(fooRepo.list().size(), is(0));
     }
 
     @Test
     public void shouldPurgeDiskDumpAndRepositoryOlderThanGivenTime() throws IOException, ClassNotFoundException, InterruptedException {
         final TimeProvider timeProvider = mock(TimeProvider.class);
-        final EntryRepoFactory factory = new EntryRepoFactory(baseDir, timeProvider);
+        final EntryRepoFactory factory = new EntryRepoFactory(baseDir, timeProvider, 1);
 
         SuiteTimeRepo repo = factory.createSuiteTimeRepo("foo", LATEST_VERSION);
         repo.update(new SuiteTimeEntry("foo.bar.Baz", 15));

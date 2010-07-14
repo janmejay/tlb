@@ -70,6 +70,11 @@ public class TlbResourceTest {
     }
 
     @Test
+    public void shouldAcceptPlainText() {
+        assertThat(tlbResource.getVariants().get(0).getMediaType(), is(MediaType.TEXT_PLAIN));
+    }
+
+    @Test
     public void shouldRenderAllRecordsForGivenNamespace() throws ResourceException, IOException {
         when(repo.list()).thenReturn(Arrays.asList(new SubsetSizeEntry(10), new SubsetSizeEntry(12), new SubsetSizeEntry(15)));
         Representation actualRepresentation = tlbResource.represent(new Variant(MediaType.TEXT_PLAIN));

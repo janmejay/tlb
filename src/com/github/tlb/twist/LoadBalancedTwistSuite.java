@@ -1,10 +1,11 @@
 package com.github.tlb.twist;
 
 import com.github.tlb.TlbFileResource;
-import com.github.tlb.utils.FileUtil;
+import com.github.tlb.TlbSuiteFile;
+import com.github.tlb.splitter.TestSplitterCriteria;
+import com.github.tlb.utils.SuiteFileConvertor;
 import static com.github.tlb.utils.FileUtil.toFileList;
 import static com.github.tlb.utils.FileUtil.stripExtension;
-import com.github.tlb.splitter.TestSplitterCriteria;
 import org.apache.commons.io.FileUtils;
 import static org.apache.commons.io.FileUtils.iterateFiles;
 
@@ -29,7 +30,9 @@ public class LoadBalancedTwistSuite {
         File folder = new File(scenariosFolder);
         Iterator<File> collection = iterateFiles(folder, new String[] { "scn" }, false);
         List<TlbFileResource> resources = convertToTlbResource(collection);
-        List<TlbFileResource> filtered = criteria.filter(resources);
+        final SuiteFileConvertor convertor = new SuiteFileConvertor();
+        final List<TlbSuiteFile> suiteFiles = convertor.toTlbSuiteFiles(resources);
+        List<TlbFileResource> filtered = convertor.toTlbFileResources(criteria.filterSuites(suiteFiles));
         copyFilteredResources(destinationLocation, filtered);
         copyAssociatedCSVResources(folder, new File(destinationLocation));
     }

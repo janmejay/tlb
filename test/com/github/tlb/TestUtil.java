@@ -6,6 +6,11 @@ import com.github.tlb.utils.FileUtil;
 import com.github.tlb.utils.SystemEnvironment;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.Project;
+import org.restlet.Application;
+import org.restlet.Restlet;
+import org.restlet.Route;
+import org.restlet.Router;
+import org.restlet.util.RouteList;
 
 import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.core.Is.is;
@@ -93,6 +98,16 @@ public class TestUtil {
             }
         });
         return entryList;
+    }
+
+    public static HashMap<String, Restlet> getRoutePatternsAndResources(final Application app) {
+        Router router = (Router) app.createRoot();
+        RouteList routeList = router.getRoutes();
+        HashMap<String, Restlet> map = new HashMap<String, Restlet>();
+        for (Route route : routeList) {
+            map.put(route.getTemplate().getPattern(), route.getNext());
+        }
+        return map;
     }
 
     public static class LogFixture {

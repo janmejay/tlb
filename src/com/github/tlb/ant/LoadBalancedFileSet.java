@@ -2,6 +2,8 @@ package com.github.tlb.ant;
 
 import com.github.tlb.TlbConstants;
 import com.github.tlb.TlbFileResource;
+import com.github.tlb.TlbSuiteFile;
+import com.github.tlb.utils.SuiteFileConvertor;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.resources.FileResource;
 import com.github.tlb.orderer.TestOrderer;
@@ -48,8 +50,13 @@ public class LoadBalancedFileSet extends FileSet {
             FileResource fileResource = files.next();
             matchedFiles.add(new JunitFileResource(fileResource));
         }
-        List<TlbFileResource> matchedTlbFileResources = criteria.filter(matchedFiles);
-        Collections.sort(matchedTlbFileResources, orderer);
+
+        final SuiteFileConvertor convertor = new SuiteFileConvertor();
+        List<TlbSuiteFile> suiteFiles = convertor.toTlbSuiteFiles(matchedFiles);
+        suiteFiles = criteria.filterSuites(suiteFiles);
+        Collections.sort(suiteFiles, orderer);
+        List<TlbFileResource> matchedTlbFileResources = convertor.toTlbFileResources(suiteFiles);
+
         List<FileResource> matchedFileResources = new ArrayList<FileResource>();
         for (TlbFileResource matchedTlbFileResource : matchedTlbFileResources) {
             JunitFileResource fileResource = (JunitFileResource) matchedTlbFileResource;

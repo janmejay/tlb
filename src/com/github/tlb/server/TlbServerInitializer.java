@@ -5,9 +5,9 @@ import com.github.tlb.server.repo.EntryRepoFactory;
 import com.github.tlb.utils.SystemEnvironment;
 import org.restlet.Component;
 import org.restlet.Context;
+import org.restlet.Restlet;
 import org.restlet.data.Protocol;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -15,18 +15,20 @@ import java.util.TimerTask;
 /**
  * @understands running the server as a standalone process
  */
-public class Main {
+public class TlbServerInitializer extends ServerInitializer {
     private final SystemEnvironment env;
     private final Timer timer;
 
-    public Component init() {
-        Component component = new Component();
-        component.getServers().add(Protocol.HTTP, Integer.parseInt(env.getProperty(TlbConstants.Server.TLB_PORT, "7019")));
-        component.getDefaultHost().attach(new TlbApplication(appContext()));
-        return component;
+    public TlbServerInitializer(SystemEnvironment env) {
+        this(env, new Timer());
     }
 
-    Context appContext() {
+    public TlbServerInitializer(SystemEnvironment env, Timer timer) {
+        this.env = env;
+        this.timer = timer;
+    }
+
+    protected Restlet application() {
         HashMap<String, Object> appMap = new HashMap<String, Object>();
         final EntryRepoFactory repoFactory = repoFactory();
 
@@ -42,28 +44,15 @@ public class Main {
         appMap.put(TlbConstants.Server.REPO_FACTORY, repoFactory);
         Context applicationContext = new Context();
         applicationContext.setAttributes(appMap);
-        return applicationContext;
+        return new TlbApplication(applicationContext);
+    }
+
+    @Override
+    protected int appPort()  {
+        return Integer.parseInt(env.getProperty(TlbConstants.Server.TLB_PORT, "7019"));
     }
 
     EntryRepoFactory repoFactory() {
-        File storeDir = new File(env.getProperty(TlbConstants.Server.TLB_STORE_DIR, TlbConstants.Server.TLB_STORE_DIR));
-        return new EntryRepoFactory(storeDir);
-    }
-
-    public Main(SystemEnvironment env) {
-        this(env, new Timer());
-    }
-
-    public Main(SystemEnvironment env, Timer timer) {
-        this.env = env;
-        this.timer = timer;
-    }
-
-    public static void main(String[] args) {
-        try {
-            new Main(new SystemEnvironment()).init().start();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        return new EntryRepoFactory(env);
     }
 }

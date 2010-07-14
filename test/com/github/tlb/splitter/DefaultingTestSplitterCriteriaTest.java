@@ -2,7 +2,9 @@ package com.github.tlb.splitter;
 
 import com.github.tlb.TlbConstants;
 import com.github.tlb.TlbFileResource;
+import com.github.tlb.TlbSuiteFile;
 import com.github.tlb.ant.JunitFileResource;
+import com.github.tlb.utils.SuiteFileConvertor;
 import com.github.tlb.utils.SystemEnvironment;
 import static junit.framework.Assert.fail;
 import org.apache.tools.ant.Project;
@@ -31,7 +33,9 @@ public class DefaultingTestSplitterCriteriaTest {
 
         TlbFileResource foo = fileResource("foo");
         TlbFileResource bar = fileResource("bar");
-        List<TlbFileResource> filteredResources = criteria.filter(Arrays.asList(foo, bar));
+        final SuiteFileConvertor convertor = new SuiteFileConvertor();
+        final List<TlbSuiteFile> suiteFiles = convertor.toTlbSuiteFiles(Arrays.asList(foo, bar));
+        List<TlbFileResource> filteredResources = convertor.toTlbFileResources(criteria.filterSuites(suiteFiles));
         assertThat(filteredResources.size(), is(1));
         assertThat(filteredResources, hasItem(bar));
     }
@@ -42,7 +46,9 @@ public class DefaultingTestSplitterCriteriaTest {
 
         TlbFileResource foo = fileResource("foo");
         TlbFileResource bar = fileResource("bar");
-        List<TlbFileResource> filteredResources = criteria.filter(Arrays.asList(foo, bar));
+        final SuiteFileConvertor convertor = new SuiteFileConvertor();
+        final List<TlbSuiteFile> suiteFiles = convertor.toTlbSuiteFiles(Arrays.asList(foo, bar));
+        List<TlbFileResource> filteredResources = convertor.toTlbFileResources(criteria.filterSuites(suiteFiles));
         assertThat(filteredResources.size(), is(1));
         assertThat(filteredResources, hasItem(bar));
     }
@@ -61,7 +67,9 @@ public class DefaultingTestSplitterCriteriaTest {
         TlbFileResource foo = fileResource("foo");
         TlbFileResource bar = fileResource("bar");
         try {
-            criteria.filter(Arrays.asList(foo, bar));
+            final SuiteFileConvertor convertor = new SuiteFileConvertor();
+            final List<TlbSuiteFile> suiteFiles = convertor.toTlbSuiteFiles(Arrays.asList(foo, bar));
+            convertor.toTlbFileResources(criteria.filterSuites(suiteFiles));
             fail("should have raised exception as no usable criteria specified");
         } catch (Exception e) {
             assertThat(e.getMessage(), is("None of [com.github.tlb.splitter.test.UnusableCriteria1, com.github.tlb.splitter.test.UnusableCriteria2] could successfully split the test suites."));

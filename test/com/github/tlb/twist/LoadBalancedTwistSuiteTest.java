@@ -1,5 +1,7 @@
 package com.github.tlb.twist;
 
+import com.github.tlb.TlbSuiteFile;
+import com.github.tlb.utils.SuiteFileConvertor;
 import org.junit.Test;
 import org.junit.After;
 import static org.junit.internal.matchers.IsCollectionContaining.hasItems;
@@ -33,7 +35,8 @@ public class LoadBalancedTwistSuiteTest {
         File folder = folder("folder");
 
         List<TlbFileResource> resources = scenarioResource(folder, 1, 2);
-        when(criteria.filter(any(List.class))).thenReturn(resources);
+        final SuiteFileConvertor convertor = new SuiteFileConvertor();
+        when(criteria.filterSuites(any(List.class))).thenReturn(convertor.toTlbSuiteFiles(resources));
 
         LoadBalancedTwistSuite suite = new LoadBalancedTwistSuite(criteria);
 
@@ -52,7 +55,8 @@ public class LoadBalancedTwistSuiteTest {
         File folder = folder("folder");
         List<TlbFileResource> resources = scenarioResource(folder, 1, 2);
         scenarioCSV(folder, 1);
-        when(criteria.filter(any(List.class))).thenReturn(resources);
+        final SuiteFileConvertor convertor = new SuiteFileConvertor();
+        when(criteria.filterSuites(any(List.class))).thenReturn(convertor.toTlbSuiteFiles(resources));
 
         LoadBalancedTwistSuite suite = new LoadBalancedTwistSuite(criteria);
 
@@ -71,7 +75,8 @@ public class LoadBalancedTwistSuiteTest {
         File folder = folder("folder");
         List<TlbFileResource> resources = scenarioResource(folder, 1, 2);
         scenarioCSV(folder, 10);
-        when(criteria.filter(any(List.class))).thenReturn(resources);
+        final SuiteFileConvertor convertor = new SuiteFileConvertor();
+        when(criteria.filterSuites(any(List.class))).thenReturn(convertor.toTlbSuiteFiles(resources));
 
         LoadBalancedTwistSuite suite = new LoadBalancedTwistSuite(criteria);
 

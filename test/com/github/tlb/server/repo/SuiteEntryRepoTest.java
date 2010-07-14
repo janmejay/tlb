@@ -1,8 +1,10 @@
 package com.github.tlb.server.repo;
 
 import com.github.tlb.TestUtil;
+import com.github.tlb.TlbConstants;
 import com.github.tlb.domain.SuiteLevelEntry;
 import com.github.tlb.domain.TimeProvider;
+import com.github.tlb.utils.SystemEnvironment;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -27,7 +29,7 @@ public class SuiteEntryRepoTest {
 
     @Test
     public void shouldStoreAttributesFactorySets() throws ClassNotFoundException, IOException {
-        final EntryRepoFactory factory = new EntryRepoFactory(TestUtil.createTempFolder());
+        final EntryRepoFactory factory = new EntryRepoFactory(new SystemEnvironment(Collections.singletonMap(TlbConstants.Server.TLB_STORE_DIR, TestUtil.createTempFolder().getAbsolutePath())));
         final SuiteEntryRepo entryRepo = (SuiteEntryRepo) factory.findOrCreate("name_space", "version", "type", new EntryRepoFactory.Creator<SuiteEntryRepo>() {
             public SuiteEntryRepo create() {
                 return new SuiteEntryRepo<TestCaseRepo.TestCaseEntry>() {

@@ -5,6 +5,8 @@ import com.github.tlb.TlbFileResource;
 import java.util.List;
 import java.io.File;
 
+import com.github.tlb.TlbSuiteFile;
+import com.github.tlb.utils.SuiteFileConvertor;
 import com.github.tlb.utils.SystemEnvironment;
 
 /**
@@ -18,7 +20,7 @@ public abstract class TestSplitterCriteria {
         this.env = env;
     }
 
-    public abstract List<TlbFileResource> filter(List<TlbFileResource> fileResources);
+    public abstract List<TlbSuiteFile> filterSuites(List<TlbSuiteFile> fileResources);
 
     public void setDir(File dir) {
         this.dir = dir;

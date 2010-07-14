@@ -87,4 +87,10 @@ public class SuiteTimeEntry implements SuiteLevelEntry {
     public String toString() {
         return String.format("%s: %s", name, time);
     }
+
+    public SuiteTimeEntry smoothedWrt(SuiteTimeEntry newDataPoint, double alpha) {
+        if ( ! name.equals(newDataPoint.name)) throw new IllegalArgumentException(String.format("suite %s can not be smoothed with data point from %s", name, newDataPoint.name));
+        final double smoothedTime = alpha * newDataPoint.time + (1 - alpha) * time;
+        return new SuiteTimeEntry(name, Math.round(smoothedTime));
+    }
 }

@@ -39,4 +39,8 @@ public class SceanrioFileResource implements TlbFileResource {
     public int hashCode() {
         return file.hashCode();
     }
+
+    public String dump() {
+        throw new UnsupportedOperationException("not yet implemented");
+    }
 }

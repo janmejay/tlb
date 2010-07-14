@@ -15,7 +15,7 @@ import java.util.Collection;
 /**
  * @understands versioned run time of suite reported by job
  */
-public class VersionedSuiteTimeResource extends TlbResource {
+public class VersionedSuiteTimeResource extends VersionedResource {
     public VersionedSuiteTimeResource(Context context, Request request, Response response) {
         super(context, request, response);
     }
@@ -23,15 +23,5 @@ public class VersionedSuiteTimeResource extends TlbResource {
     @Override
     protected EntryRepo getRepo(EntryRepoFactory repoFactory, String key) throws ClassNotFoundException, IOException {
         return repoFactory.createSuiteTimeRepo(key, EntryRepoFactory.LATEST_VERSION);
-    }
-
-    @Override
-    protected Entry parseEntry(Representation entity) throws IOException {
-        throw new UnsupportedOperationException("parsing does not make sense, as mutation of versioned data is not allowed");
-    }
-
-    @Override
-    protected Collection getListing() throws IOException, ClassNotFoundException {
-        return repo.list(strAttr(TlbConstants.Server.LISTING_VERSION));
     }
 }

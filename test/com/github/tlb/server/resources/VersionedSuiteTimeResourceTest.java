@@ -50,37 +50,8 @@ public class VersionedSuiteTimeResourceTest {
     }
 
     @Test
-    public void shouldAllowPostRequests() {
-        assertThat(suiteTimeResource.allowPost(), is(false));
-    }
-
-    @Test
-    public void shouldNotAllowPutRequests() {
-        assertThat(suiteTimeResource.allowPut(), is(false));
-    }
-
-    @Test
     public void shouldUseSuiteTimeRepo() throws IOException, ClassNotFoundException {
         EntryRepo repo = suiteTimeResource.getRepo(factory, "namespace");
         assertThat((SuiteTimeRepo) repo, sameInstance(this.repo));
-    }
-
-    @Test
-    public void shouldRenderAllRecordsForGivenNamespaceAndVersion() throws ResourceException, IOException, ClassNotFoundException {
-        when(repo.list("foo")).thenReturn(Arrays.asList(new SuiteTimeEntry("foo.bar.Baz", 10), new SuiteTimeEntry("foo.bar.Quux", 20)));
-        attributeMap.put(TlbConstants.Server.LISTING_VERSION, "foo");
-        Representation actualRepresentation = suiteTimeResource.represent(new Variant(MediaType.TEXT_PLAIN));
-        assertThat(actualRepresentation.getText(), is("foo.bar.Baz: 10\nfoo.bar.Quux: 20\n"));
-        verify(repo).list("foo");
-    }
-
-    @Test
-    public void shouldNotSupportParsingOfEntryAsAddingToVersionedRepoIsNotPermitted() throws ResourceException, IOException {
-        try {
-            suiteTimeResource.parseEntry(new StringRepresentation("foo.bar.Baz: 120"));
-            fail("should not have parsed entry, as mutation of versioned data is not allowed");
-        } catch (Exception e) {
-            assertThat(e, is(UnsupportedOperationException.class));
-        }
     }
 }
