@@ -2,7 +2,9 @@ package com.github.tlb.splitter;
 
 import com.github.tlb.TlbConstants;
 import com.github.tlb.TlbFileResource;
+import com.github.tlb.TlbSuiteFile;
 import com.github.tlb.factory.TlbFactory;
+import com.github.tlb.utils.SuiteFileConvertor;
 import com.github.tlb.utils.SystemEnvironment;
 
 import java.util.ArrayList;
@@ -29,14 +31,11 @@ public class DefaultingTestSplitterCriteria extends TestSplitterCriteria {
         }
     }
 
-    private String[] criteriaNames(SystemEnvironment env) {
-        return env.getProperty(TlbConstants.CRITERIA_DEFAULTING_ORDER).split("\\s*:\\s*");
-    }
-
-    public List<TlbFileResource> filter(List<TlbFileResource> fileResources) {
+    @Override
+    public List<TlbSuiteFile> filterSuites(List<TlbSuiteFile> fileResources) {
         for (TestSplitterCriteria criteria : criterion) {
             try {
-                List<TlbFileResource> subset = criteria.filter(fileResources);
+                List<TlbSuiteFile> subset = criteria.filterSuites(fileResources);
                 logger.info(String.format("Used %s to balance.", criteria.getClass().getCanonicalName()));
                 return subset;
             } catch (Exception e) {
@@ -45,5 +44,9 @@ public class DefaultingTestSplitterCriteria extends TestSplitterCriteria {
             }
         }
         throw new IllegalStateException(String.format("None of %s could successfully split the test suites.", Arrays.asList(criteriaNames(env))));
+    }
+
+    private String[] criteriaNames(SystemEnvironment env) {
+        return env.getProperty(TlbConstants.CRITERIA_DEFAULTING_ORDER).split("\\s*:\\s*");
     }
 }

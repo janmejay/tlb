@@ -5,6 +5,8 @@ import static com.github.tlb.TlbConstants.TLB_CRITERIA;
 
 import com.github.tlb.TestUtil;
 import com.github.tlb.TlbFileResource;
+import com.github.tlb.TlbSuiteFile;
+import com.github.tlb.TlbSuiteFileImpl;
 import com.github.tlb.splitter.CountBasedTestSplitterCriteria;
 import com.github.tlb.splitter.JobFamilyAwareSplitterCriteria;
 import com.github.tlb.utils.FileUtil;
@@ -85,7 +87,7 @@ public class LoadBalancedFileSetTest {
         when(criteria.filter(any(List.class))).thenReturn(Arrays.asList((TlbFileResource) resourceOne, resourceTwo, resourceThree));
 
         fileSet = new LoadBalancedFileSet(criteria, new TestOrderer(new SystemEnvironment()) {
-            public int compare(TlbFileResource o1, TlbFileResource o2) {
+            public int compare(TlbSuiteFile o1, TlbSuiteFile o2) {
                 return 1;
             }
         });

@@ -1,6 +1,6 @@
 package com.github.tlb.splitter;
 
-import com.github.tlb.TlbFileResource;
+import com.github.tlb.TlbSuiteFile;
 import com.github.tlb.service.TalkToService;
 import com.github.tlb.utils.SystemEnvironment;
 
@@ -32,7 +32,7 @@ public class CountBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriter
      * @param files
      * @return filtered load
      */
-    protected List<TlbFileResource> subset(List<TlbFileResource> files) {
+    protected List<TlbSuiteFile> subset(List<TlbSuiteFile> files) {
         int index = talkToService.partitionNumber() - 1;
         int splitRatio = files.size() / totalPartitions;
         int reminder = files.size() % totalPartitions;

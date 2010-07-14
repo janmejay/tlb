@@ -1,7 +1,6 @@
 package com.github.tlb.splitter;
 
-import com.github.tlb.TlbConstants;
-import com.github.tlb.TlbFileResource;
+import com.github.tlb.*;
 import com.github.tlb.service.TalkToCruise;
 import org.junit.Test;
 import org.junit.Before;
@@ -14,7 +13,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.hamcrest.core.Is.is;
 import com.github.tlb.utils.SystemEnvironment;
-import com.github.tlb.TestUtil;
 
 import java.util.*;
 import java.io.File;
@@ -40,9 +38,9 @@ public class JobFamilyAwareSplitterCriteriaTest {
         when(toCruise.totalPartitions()).thenReturn(3);
 
         JobFamilyAwareSplitterCriteria criteria = new JobFamilyAwareSplitterCriteria(new SystemEnvironment(envMap)) {
-            protected List<TlbFileResource> subset(List<TlbFileResource> fileResources) {
-                TlbFileResource foo = new JunitFileResource(new File("foo"));
-                TlbFileResource bar = new JunitFileResource(new File("bar"));
+            protected List<TlbSuiteFile> subset(List<TlbSuiteFile> fileResources) {
+                TlbSuiteFile foo = new TlbSuiteFileImpl("foo");
+                TlbSuiteFile bar = new TlbSuiteFileImpl("bar");
                 return Arrays.asList(foo, bar);
             }
         };

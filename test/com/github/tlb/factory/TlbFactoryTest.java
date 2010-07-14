@@ -4,7 +4,10 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 
 import com.github.tlb.TlbConstants;
-import com.github.tlb.TlbFileResource;
+import com.github.tlb.TlbSuiteFile;
+import com.github.tlb.balancer.BalancerInitializer;
+import com.github.tlb.server.ServerInitializer;
+import com.github.tlb.server.TlbServerInitializer;
 import com.github.tlb.service.TalkToCruise;
 import com.github.tlb.service.TalkToTlbServer;
 import org.hamcrest.core.Is;
@@ -57,12 +60,22 @@ public class TlbFactoryTest {
     }
 
     @Test
+    public void shouldThrowExceptionIfClassByGivenNameNotAssignableToInterfaceFactoryIsCreatedWith() {
+        final TlbFactory<ServerInitializer> factory = new TlbFactory<ServerInitializer>(ServerInitializer.class, null);
+        try {
+            factory.getInstance("com.github.tlb.balancer.TlbClient", new SystemEnvironment());
+        } catch (Exception e) {
+            assertThat(e.getMessage(), is("Class 'com.github.tlb.balancer.TlbClient' is-not/does-not-implement 'interface com.github.tlb.server.ServerInitializer'"));
+        }
+    }
+    
+    @Test
     public void shouldThrowAnExceptionWhenTheCriteriaClassDoesNotImplementTestSplitterCriteria() {
         try {
             TlbFactory.getCriteria("java.lang.String", env("com.github.tlb.service.TalkToCruise"));
             fail("should not be able to create criteria that doesn't implement TestSplitterCriteria");
         } catch (IllegalArgumentException e) {
-            assertThat(e.getMessage(), is("Class 'java.lang.String' does not implement TestSplitterCriteria"));
+            assertThat(e.getMessage(), is("Class 'java.lang.String' is-not/does-not-implement 'class com.github.tlb.splitter.TestSplitterCriteria'"));
         }
     }
 
@@ -120,6 +133,24 @@ public class TlbFactoryTest {
         assertThat(talkToService, is(TalkToCruise.class));
     }
 
+    @Test
+    public void shouldReturnTlbServerRestletLauncher() {
+        ServerInitializer launcher = TlbFactory.getRestletLauncher("com.github.tlb.server.TlbServerInitializer", new SystemEnvironment(new HashMap<String, String>()));
+        assertThat(launcher, is(TlbServerInitializer.class));
+    }
+
+    @Test
+    public void shouldReturnBalancerRestletLauncher() {
+        ServerInitializer launcher = TlbFactory.getRestletLauncher("com.github.tlb.balancer.BalancerInitializer", new SystemEnvironment(new HashMap<String, String>()));
+        assertThat(launcher, is(BalancerInitializer.class));
+    }
+    
+    @Test
+    public void shouldReturnTlbServerRestletLauncherIfNoneGiven() {
+        ServerInitializer launcher = TlbFactory.getRestletLauncher(null, new SystemEnvironment(new HashMap<String, String>()));
+        assertThat(launcher, is(TlbServerInitializer.class));
+    }
+
     private SystemEnvironment env(String talkToService) {
         HashMap<String, String> map = new HashMap<String, String>();
         map.put(TlbConstants.Cruise.CRUISE_SERVER_URL, "https://localhost:8154/cruise");
@@ -137,7 +168,7 @@ public class TlbFactoryTest {
             super(env);
         }
 
-        protected List<TlbFileResource> subset(List<TlbFileResource> fileResources) {
+        protected List<TlbSuiteFile> subset(List<TlbSuiteFile> fileResources) {
             this.calledFilter = true;
             return null;
         }

@@ -7,7 +7,6 @@ import org.restlet.Component;
 import org.restlet.Context;
 import org.restlet.data.Protocol;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -15,7 +14,7 @@ import java.util.TimerTask;
 /**
  * @understands running the server as a standalone process
  */
-public class Main {
+public class TlbServerInitializer implements ServerInitializer {
     private final SystemEnvironment env;
     private final Timer timer;
 
@@ -49,20 +48,12 @@ public class Main {
         return new EntryRepoFactory(env);
     }
 
-    public Main(SystemEnvironment env) {
+    public TlbServerInitializer(SystemEnvironment env) {
         this(env, new Timer());
     }
 
-    public Main(SystemEnvironment env, Timer timer) {
+    public TlbServerInitializer(SystemEnvironment env, Timer timer) {
         this.env = env;
         this.timer = timer;
-    }
-
-    public static void main(String[] args) {
-        try {
-            new Main(new SystemEnvironment()).init().start();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }

@@ -1,6 +1,7 @@
 package com.github.tlb.splitter;
 
 import com.github.tlb.TlbFileResource;
+import com.github.tlb.TlbSuiteFile;
 import com.github.tlb.domain.SuiteTimeEntry;
 import com.github.tlb.service.TalkToService;
 import com.github.tlb.utils.FileUtil;
@@ -27,7 +28,7 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
         fileUtil = new FileUtil(env);
     }
 
-    protected List<TlbFileResource> subset(List<TlbFileResource> fileResources) {
+    protected List<TlbSuiteFile> subset(List<TlbSuiteFile> fileResources) {
         List<TestFile> testFiles = testFiles(fileResources);
         Bucket thisBucket = buckets(testFiles);
 
@@ -56,16 +57,16 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
         }
     }
 
-    private List<TestFile> testFiles(List<TlbFileResource> fileResources) {
+    private List<TestFile> testFiles(List<TlbSuiteFile> fileResources) {
         List<SuiteTimeEntry> suiteTimeEntries = talkToService.getLastRunTestTimes();
         logger.info(String.format("historical test time data has entries for %s suites", suiteTimeEntries.size()));
         if (suiteTimeEntries.isEmpty()) {
             logger.warning(NO_HISTORICAL_DATA);
             throw new IllegalStateException(NO_HISTORICAL_DATA);
         }
-        Map<String, TlbFileResource> fileNameToResource = new HashMap<String, TlbFileResource>();
+        Map<String, TlbSuiteFile> fileNameToResource = new HashMap<String, TlbSuiteFile>();
         Set<String> currentFileNames = new HashSet<String>();
-        for (TlbFileResource fileResource : fileResources) {
+        for (TlbSuiteFile fileResource : fileResources) {
             String name = fileResource.getName();
             currentFileNames.add(name);
             fileNameToResource.put(name, fileResource);
@@ -75,6 +76,7 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
         double totalTime = 0;
 
         for (SuiteTimeEntry suiteTimeEntry : suiteTimeEntries) {
+            //TODO: remove assumption that the suite time entry stores suite class name and not file name
             String fileName = fileUtil.classFileRelativePath(suiteTimeEntry.getName());
             double time = suiteTimeEntry.getTime();
             totalTime += time;
@@ -95,9 +97,9 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
         return testFiles;
     }
 
-    private List<TlbFileResource> resourcesFrom(Bucket bucket) {
-        List<TlbFileResource> resources = new ArrayList<TlbFileResource>();
-        for (TlbFileResource file : bucket.files) {
+    private ArrayList<TlbSuiteFile> resourcesFrom(Bucket bucket) {
+        ArrayList<TlbSuiteFile> resources = new ArrayList<TlbSuiteFile>();
+        for (TlbSuiteFile file : bucket.files) {
             resources.add(file);
         }
         return resources;
@@ -107,7 +109,7 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
 
         int partition;
         Double time = 0.0;
-        List<TlbFileResource> files = new ArrayList<TlbFileResource>();
+        List<TlbSuiteFile> files = new ArrayList<TlbSuiteFile>();
 
         public Bucket(int partition) {
             this.partition = partition;
@@ -124,10 +126,10 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
     }
 
     private class TestFile implements Comparable<TestFile> {
-        TlbFileResource fileName;
+        TlbSuiteFile fileName;
         Double time;
 
-        public TestFile(TlbFileResource fileName, Double time) {
+        public TestFile(TlbSuiteFile fileName, Double time) {
             this.fileName = fileName;
             this.time = time;
         }

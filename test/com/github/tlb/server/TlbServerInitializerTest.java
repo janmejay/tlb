@@ -29,8 +29,8 @@ import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
-public class MainTest {
-    private Main main;
+public class TlbServerInitializerTest {
+    private TlbServerInitializer initializer;
     private HashMap<String, String> systemEnv;
     private Context context = new Context();
 
@@ -38,19 +38,19 @@ public class MainTest {
     public void setUp() {
         systemEnv = new HashMap<String, String>();
         SystemEnvironment env = new SystemEnvironment(systemEnv);
-        main = new Main(env);
+        initializer = new TlbServerInitializer(env);
     }
 
     @Test
     public void shouldCreateApplicationContextWithRepoFactory() {
-        ConcurrentMap<String,Object> map = main.appContext().getAttributes();
+        ConcurrentMap<String,Object> map = initializer.appContext().getAttributes();
         assertThat(map.get(TlbConstants.Server.REPO_FACTORY), is(EntryRepoFactory.class));
     }
 
     @Test
     public void shouldInitializeTlbToRunOnConfiguredPort() {
         systemEnv.put(TlbConstants.Server.TLB_PORT, "1234");
-        Component component = main.init();
+        Component component = initializer.init();
         ServerList servers = component.getServers();
         assertThat(servers.size(), is(1));
         assertThat(servers.get(0).getPort(), is(1234));
@@ -60,7 +60,7 @@ public class MainTest {
 
     @Test
     public void shouldInitializeTlbWithDefaultPortIfNotGiven() {
-        Component component = main.init();
+        Component component = initializer.init();
         ServerList servers = component.getServers();
         assertThat(servers.size(), is(1));
         assertThat(servers.get(0).getPort(), is(7019));
@@ -69,7 +69,7 @@ public class MainTest {
 
     @Test
     public void shouldStartContextReturnedByInit() {
-        class TestMain extends Main {
+        class TestMain extends TlbServerInitializer {
             TestMain(SystemEnvironment env) {
                 super(env);
             }
@@ -89,7 +89,7 @@ public class MainTest {
     @Test
     public void shouldRegisterEntryRepoFactoryExitHook() {
         final EntryRepoFactory repoFactory = mock(EntryRepoFactory.class);
-        class TestMain extends Main {
+        class TestMain extends TlbServerInitializer {
             TestMain(SystemEnvironment env) {
                 super(env);
             }
@@ -107,7 +107,7 @@ public class MainTest {
 
     @Test
     public void shouldInitializeEntryRepoFactoryWithPresentWorkingDirectoryAsDiskStorageRoot() throws IOException, ClassNotFoundException {
-        EntryRepoFactory factory = main.repoFactory();
+        EntryRepoFactory factory = initializer.repoFactory();
         File dir = TestUtil.mkdirInPwd("tlb_store");
         File file = new File(dir, EntryRepoFactory.name("foo", LATEST_VERSION, EntryRepoFactory.SUBSET_SIZE));
         ObjectOutputStream outStream = new ObjectOutputStream(new FileOutputStream(file));
@@ -121,7 +121,7 @@ public class MainTest {
     public void shouldHonorDiskStorageRootOverride() throws IOException, ClassNotFoundException {
         String tmpDir = TestUtil.createTempFolder().getAbsolutePath();
         systemEnv.put(TlbConstants.Server.TLB_STORE_DIR, tmpDir);
-        EntryRepoFactory factory = main.repoFactory();
+        EntryRepoFactory factory = initializer.repoFactory();
         File file = new File(tmpDir, EntryRepoFactory.name("quux", LATEST_VERSION, EntryRepoFactory.SUBSET_SIZE));
         ObjectOutputStream outStream = new ObjectOutputStream(new FileOutputStream(file));
         outStream.writeObject(new ArrayList<SubsetSizeEntry>(Arrays.asList(new SubsetSizeEntry(1), new SubsetSizeEntry(2), new SubsetSizeEntry(3))));
@@ -149,7 +149,7 @@ public class MainTest {
             }
         };
 
-        new Main(new SystemEnvironment(systemEnv), timer) {
+        new TlbServerInitializer(new SystemEnvironment(systemEnv), timer) {
             @Override
             EntryRepoFactory repoFactory() {
                 return repoFactory;
@@ -161,7 +161,7 @@ public class MainTest {
 
         systemEnv.put(VERSION_LIFE_IN_DAYS, "3");
 
-        new Main(new SystemEnvironment(systemEnv), timer) {
+        new TlbServerInitializer(new SystemEnvironment(systemEnv), timer) {
             @Override
             EntryRepoFactory repoFactory() {
                 return repoFactory;

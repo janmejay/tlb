@@ -1,6 +1,8 @@
 package com.github.tlb.factory;
 
 import com.github.tlb.TlbConstants;
+import com.github.tlb.server.ServerInitializer;
+import com.github.tlb.server.TlbServerInitializer;
 import com.github.tlb.service.TalkToService;
 import com.github.tlb.splitter.TalksToService;
 import com.github.tlb.utils.SystemEnvironment;
@@ -19,6 +21,7 @@ public class TlbFactory<T> {
     private static TlbFactory<TestSplitterCriteria> criteriaFactory;
     private static TlbFactory<TestOrderer> testOrderer;
     private static TlbFactory<TalkToService> talkToServiceFactory;
+    private static TlbFactory<ServerInitializer> restletLauncherFactory;
 
     TlbFactory(Class<T> klass, T defaultValue) {
         this.klass = klass;
@@ -32,7 +35,7 @@ public class TlbFactory<T> {
         try {
             Class<?> criteriaClass = Class.forName(klassName);
             if(!klass.isAssignableFrom(criteriaClass)) {
-                throw new IllegalArgumentException("Class '" + klassName + "' does not implement TestSplitterCriteria");
+                throw new IllegalArgumentException("Class '" + klassName + "' is-not/does-not-implement '" + klass + "'");
             }
             return getInstance((Class<? extends T>) criteriaClass, environment);
         } catch (ClassNotFoundException e) {
@@ -75,5 +78,11 @@ public class TlbFactory<T> {
         if (talkToServiceFactory == null)
             talkToServiceFactory = new TlbFactory<TalkToService>(TalkToService.class, null);
         return talkToServiceFactory.getInstance(environment.getProperty(TlbConstants.TALK_TO_SERVICE), environment);
+    }
+
+    public static ServerInitializer getRestletLauncher(String restletLauncherName, SystemEnvironment environment) {
+        if (restletLauncherFactory == null)
+            restletLauncherFactory = new TlbFactory<ServerInitializer>(ServerInitializer.class, new TlbServerInitializer(environment));
+        return restletLauncherFactory.getInstance(restletLauncherName, environment);
     }
 }

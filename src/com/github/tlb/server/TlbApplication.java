@@ -11,7 +11,7 @@ import static com.github.tlb.TlbConstants.Server.LISTING_VERSION;
 import static com.github.tlb.TlbConstants.Server.REQUEST_NAMESPACE;
 
 /**
- * @understands restlet tlb application
+ * @understands restlet tlb application for tlb server
  */
 public class TlbApplication extends Application {
 
