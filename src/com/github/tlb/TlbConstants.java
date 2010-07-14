@@ -35,6 +35,10 @@ public interface TlbConstants {
 
     static final String TLB_APP = "TLB_APP";
 
+    public interface Balancer {
+        static final String TLB_BALANCER_PORT = "TLB_BALANCER_PORT";
+    }
+
     public interface Server {
         static final String REPO_FACTORY = "repo_factory";
         static final String REQUEST_NAMESPACE = "namespace";

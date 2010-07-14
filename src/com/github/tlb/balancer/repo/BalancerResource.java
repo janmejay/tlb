@@ -6,6 +6,7 @@ import com.github.tlb.balancer.TlbClient;
 import com.github.tlb.orderer.TestOrderer;
 import com.github.tlb.splitter.TestSplitterCriteria;
 import org.restlet.Context;
+import org.restlet.data.MediaType;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
 import org.restlet.resource.*;
@@ -27,6 +28,7 @@ public class BalancerResource extends Resource {
 
     public BalancerResource(Context context, Request request, Response response) {
         super(context, request, response);
+        getVariants().add(new Variant(MediaType.TEXT_PLAIN));
         orderer = (TestOrderer) context.getAttributes().get(TlbClient.Balancer.ORDERER);
         splitter = (TestSplitterCriteria) context.getAttributes().get(TlbClient.Balancer.SPLITTER);
     }

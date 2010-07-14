@@ -5,6 +5,7 @@ import com.github.tlb.server.repo.EntryRepoFactory;
 import com.github.tlb.utils.SystemEnvironment;
 import org.restlet.Component;
 import org.restlet.Context;
+import org.restlet.Restlet;
 import org.restlet.data.Protocol;
 
 import java.util.HashMap;
@@ -14,18 +15,20 @@ import java.util.TimerTask;
 /**
  * @understands running the server as a standalone process
  */
-public class TlbServerInitializer implements ServerInitializer {
+public class TlbServerInitializer extends ServerInitializer {
     private final SystemEnvironment env;
     private final Timer timer;
 
-    public Component init() {
-        Component component = new Component();
-        component.getServers().add(Protocol.HTTP, Integer.parseInt(env.getProperty(TlbConstants.Server.TLB_PORT, "7019")));
-        component.getDefaultHost().attach(new TlbApplication(appContext()));
-        return component;
+    public TlbServerInitializer(SystemEnvironment env) {
+        this(env, new Timer());
     }
 
-    Context appContext() {
+    public TlbServerInitializer(SystemEnvironment env, Timer timer) {
+        this.env = env;
+        this.timer = timer;
+    }
+
+    protected Restlet application() {
         HashMap<String, Object> appMap = new HashMap<String, Object>();
         final EntryRepoFactory repoFactory = repoFactory();
 
@@ -41,19 +44,15 @@ public class TlbServerInitializer implements ServerInitializer {
         appMap.put(TlbConstants.Server.REPO_FACTORY, repoFactory);
         Context applicationContext = new Context();
         applicationContext.setAttributes(appMap);
-        return applicationContext;
+        return new TlbApplication(applicationContext);
+    }
+
+    @Override
+    protected int appPort()  {
+        return Integer.parseInt(env.getProperty(TlbConstants.Server.TLB_PORT, "7019"));
     }
 
     EntryRepoFactory repoFactory() {
         return new EntryRepoFactory(env);
-    }
-
-    public TlbServerInitializer(SystemEnvironment env) {
-        this(env, new Timer());
-    }
-
-    public TlbServerInitializer(SystemEnvironment env, Timer timer) {
-        this.env = env;
-        this.timer = timer;
     }
 }

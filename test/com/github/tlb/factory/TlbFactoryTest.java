@@ -65,7 +65,7 @@ public class TlbFactoryTest {
         try {
             factory.getInstance("com.github.tlb.balancer.TlbClient", new SystemEnvironment());
         } catch (Exception e) {
-            assertThat(e.getMessage(), is("Class 'com.github.tlb.balancer.TlbClient' is-not/does-not-implement 'interface com.github.tlb.server.ServerInitializer'"));
+            assertThat(e.getMessage(), is("Class 'com.github.tlb.balancer.TlbClient' is-not/does-not-implement 'class com.github.tlb.server.ServerInitializer'"));
         }
     }
     

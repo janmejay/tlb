@@ -81,4 +81,9 @@ public class BalancerResourceTest {
         logFixture.assertHeard("failed to read request");
         logFixture.assertHeardException(requestReadException);
     }
+    
+    @Test
+    public void shouldAcceptPlainText() {
+        assertThat(balancerResource.getVariants().get(0).getMediaType(), is(MediaType.TEXT_PLAIN));
+    }
 }
