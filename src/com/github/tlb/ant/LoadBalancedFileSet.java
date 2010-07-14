@@ -50,10 +50,13 @@ public class LoadBalancedFileSet extends FileSet {
             FileResource fileResource = files.next();
             matchedFiles.add(new JunitFileResource(fileResource));
         }
+
         final SuiteFileConvertor convertor = new SuiteFileConvertor();
-        final List<TlbSuiteFile> suiteFiles = convertor.toTlbSuiteFiles(matchedFiles);
-        List<TlbFileResource> matchedTlbFileResources = convertor.toTlbFileResources(criteria.filterSuites(suiteFiles));
-        Collections.sort(matchedTlbFileResources, orderer);
+        List<TlbSuiteFile> suiteFiles = convertor.toTlbSuiteFiles(matchedFiles);
+        suiteFiles = criteria.filterSuites(suiteFiles);
+        Collections.sort(suiteFiles, orderer);
+        List<TlbFileResource> matchedTlbFileResources = convertor.toTlbFileResources(suiteFiles);
+
         List<FileResource> matchedFileResources = new ArrayList<FileResource>();
         for (TlbFileResource matchedTlbFileResource : matchedTlbFileResources) {
             JunitFileResource fileResource = (JunitFileResource) matchedTlbFileResource;
