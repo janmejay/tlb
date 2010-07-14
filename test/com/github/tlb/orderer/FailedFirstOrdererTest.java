@@ -57,7 +57,7 @@ public class FailedFirstOrdererTest {
         JunitFileResource bazClass = junitFileResource(baseDir, "foo/bar/Baz.class");
         JunitFileResource quuxClass = junitFileResource(baseDir, "foo/baz/Quux.class");
         JunitFileResource bangClass = junitFileResource(baseDir, "foo/baz/Bang.class");
-        List<SuiteResultEntry> failedTests = Arrays.asList(new SuiteResultEntry("baz.bang.Foo.class", true), new SuiteResultEntry("foo.bar.Bang.class", true));
+        List<SuiteResultEntry> failedTests = Arrays.asList(new SuiteResultEntry("baz/bang/Foo.class", true), new SuiteResultEntry("foo/bar/Bang.class", true));
         when(toCruise.getLastRunFailedTests()).thenReturn(failedTests);
         List<TlbFileResource> fileList = new ArrayList<TlbFileResource>(Arrays.asList(bazClass, quuxClass, bangClass));
         final SuiteFileConvertor convertor = new SuiteFileConvertor();
@@ -74,7 +74,7 @@ public class FailedFirstOrdererTest {
         JunitFileResource quuxClass = junitFileResource(baseDir, "foo/baz/Quux.class");
         JunitFileResource failedFooClass = junitFileResource(baseDir, "baz/bang/Foo.class");
         JunitFileResource failedBangClass = junitFileResource(baseDir, "foo/bar/Bang.class");
-        List<SuiteResultEntry> failedTests = Arrays.asList(new SuiteResultEntry("baz.bang.Foo", true), new SuiteResultEntry("foo.bar.Bang", true));
+        List<SuiteResultEntry> failedTests = Arrays.asList(new SuiteResultEntry("baz/bang/Foo.class", true), new SuiteResultEntry("foo/bar/Bang.class", true));
         when(toCruise.getLastRunFailedTests()).thenReturn(failedTests);
         List<TlbFileResource> fileList = new ArrayList<TlbFileResource>(Arrays.asList(bazClass, failedFooClass, quuxClass, failedBangClass));
         final SuiteFileConvertor convertor = new SuiteFileConvertor();

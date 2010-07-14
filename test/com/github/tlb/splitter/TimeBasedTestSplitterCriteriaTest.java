@@ -253,11 +253,11 @@ public class TimeBasedTestSplitterCriteriaTest {
 
     private List<SuiteTimeEntry> testTimes() {
         List<SuiteTimeEntry> entries = new ArrayList<SuiteTimeEntry>();
-        entries.add(new SuiteTimeEntry("com.foo.First", 2l));
-        entries.add(new SuiteTimeEntry("com.foo.Second", 5l));
-        entries.add(new SuiteTimeEntry("com.bar.Third", 1l));
-        entries.add(new SuiteTimeEntry("foo.baz.Fourth", 4l));
-        entries.add(new SuiteTimeEntry("foo.bar.Fourth", 3l));
+        entries.add(new SuiteTimeEntry("com/foo/First.class", 2l));
+        entries.add(new SuiteTimeEntry("com/foo/Second.class", 5l));
+        entries.add(new SuiteTimeEntry("com/bar/Third.class", 1l));
+        entries.add(new SuiteTimeEntry("foo/baz/Fourth.class", 4l));
+        entries.add(new SuiteTimeEntry("foo/bar/Fourth.class", 3l));
         return entries;
     }
 }

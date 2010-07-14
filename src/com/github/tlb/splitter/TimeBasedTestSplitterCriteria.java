@@ -76,8 +76,7 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
         double totalTime = 0;
 
         for (SuiteTimeEntry suiteTimeEntry : suiteTimeEntries) {
-            //TODO: remove assumption that the suite time entry stores suite class name and not file name
-            String fileName = fileUtil.classFileRelativePath(suiteTimeEntry.getName());
+            String fileName = suiteTimeEntry.getName();
             double time = suiteTimeEntry.getTime();
             totalTime += time;
             if (currentFileNames.remove(fileName)) testFiles.add(new TestFile(fileNameToResource.get(fileName), time));
