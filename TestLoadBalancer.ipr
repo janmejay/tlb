@@ -224,16 +224,17 @@
       <option name="PASS_PARENT_ENVS" value="true" />
       <module name="tlb" />
       <envs>
-        <env name="TLB_URL" value="http://go03.thoughtworks.com:7019" />
-        <env name="JOB_VERSION" value="foo" />
-        <env name="TLB_JOB_NAME" value="jj_testing" />
+        <env name="TLB_URL" value="http://localhost:7019" />
+        <env name="JOB_VERSION" value="bar" />
+        <env name="TLB_JOB_NAME" value="foo" />
         <env name="TOTAL_PARTITIONS" value="2" />
         <env name="PARTITION_NUMBER" value="2" />
-        <env name="TLB_CRITERIA" value="com.github.tlb.splitter.TimeBasedTestSplitterCriteria" />
+        <env name="TLB_CRITERIA" value="com.github.tlb.splitter.DefaultingTestSplitterCriteria" />
         <env name="TLB_ORDERER" value="com.github.tlb.orderer.FailedFirstOrderer" />
         <env name="TALK_TO_SERVICE" value="com.github.tlb.service.TalkToTlbServer" />
         <env name="TLB_APP" value="com.github.tlb.balancer.BalancerInitializer" />
         <env name="TLB_BALANCER_PORT" value="3001" />
+        <env name="CRITERIA_DEFAULTING_ORDER" value="com.github.tlb.splitter.TimeBasedTestSplitterCriteria:com.github.tlb.splitter.CountBasedTestSplitterCriteria" />
       </envs>
       <RunnerSettings RunnerId="Debug">
         <option name="DEBUG_PORT" value="41899" />
@@ -257,7 +258,17 @@
       <option name="ENV_VARIABLES" />
       <option name="PASS_PARENT_ENVS" value="true" />
       <module name="tlb" />
-      <envs />
+      <envs>
+        <env name="SMOOTHING_FACTOR" value="0.1" />
+      </envs>
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="46043" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="Run" />
       <method />
     </configuration>
     <configuration default="false" name="local_5005" type="Remote" factoryName="Remote">

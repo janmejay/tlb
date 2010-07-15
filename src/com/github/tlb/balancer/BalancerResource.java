@@ -33,10 +33,10 @@ public class BalancerResource extends Resource {
     }
 
     @Override
-    public Representation represent(Variant variant) throws ResourceException {
+    public void acceptRepresentation(Representation representation) throws ResourceException {
         List<TlbSuiteFile> suiteFiles = null;
         try {
-            suiteFiles = TlbSuiteFileImpl.parse(getRequest().getEntity().getText());
+            suiteFiles = TlbSuiteFileImpl.parse(representation.getText());
         } catch (IOException e) {
             final String message = "failed to read request";
             logger.log(Level.WARNING, message, e);
@@ -48,6 +48,16 @@ public class BalancerResource extends Resource {
         for (TlbSuiteFile suiteFile : suiteFilesSubset) {
             builder.append(suiteFile.dump());
         }
-        return new StringRepresentation(builder);
+        getResponse().setEntity(new StringRepresentation(builder));
+    }
+
+    @Override
+    public boolean allowGet() {
+        return false;
+    }
+
+    @Override
+    public boolean allowPost() {
+        return true;
     }
 }
