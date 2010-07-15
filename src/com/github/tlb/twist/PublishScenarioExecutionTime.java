@@ -2,10 +2,9 @@ package com.github.tlb.twist;
 
 import com.github.tlb.factory.TlbFactory;
 import com.github.tlb.service.TalkToService;
-import com.github.tlb.service.TalkToCruise;
-import com.github.tlb.service.http.DefaultHttpAction;
 import com.github.tlb.utils.SystemEnvironment;
 import com.github.tlb.utils.XmlUtil;
+import com.github.tlb.utils.FileUtil;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.BuildException;
 import org.apache.commons.io.FileUtils;
@@ -14,6 +13,7 @@ import org.dom4j.Element;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @understands task to publish the time taken to execute scenarios
@@ -40,11 +40,17 @@ public class PublishScenarioExecutionTime extends Task {
     }
 
     @Override
+    public String getTaskName() {
+        return "publishTestTime";
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public void execute() throws BuildException {
         Iterator<File> reports = FileUtils.iterateFiles(new File(reportsDir + XML_REPORT_PATH), null, false);
-        while(reports.hasNext()) {
-            File report = reports.next();
+        List<File> reportFiles = FileUtil.toFileList(reports);
+        talkToService.publishSubsetSize(reportFiles.size());
+        for (File report : reportFiles) {
             try {
                 Element element = XmlUtil.domFor(FileUtils.readFileToString(report));
                 Element testCase = (Element) element.selectSingleNode("//testcase");

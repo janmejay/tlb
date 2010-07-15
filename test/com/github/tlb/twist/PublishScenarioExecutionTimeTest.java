@@ -25,6 +25,7 @@ public class PublishScenarioExecutionTimeTest {
         populateReports(reportsFolder);
 
         publishTime.execute();
+
         verify(cruise).testClassTime("Agent UI Auto Refresh.scn", 85822);
         verify(cruise).testClassTime("AgentsApi.scn", 77871);
     }

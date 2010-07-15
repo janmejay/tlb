@@ -66,6 +66,7 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
         }
         Map<String, TlbSuiteFile> fileNameToResource = new HashMap<String, TlbSuiteFile>();
         Set<String> currentFileNames = new HashSet<String>();
+        logger.info("The TLB Resources are: \n" + fileResources + "\n");
         for (TlbSuiteFile fileResource : fileResources) {
             String name = fileResource.getName();
             currentFileNames.add(name);
@@ -75,6 +76,7 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
         List<TestFile> testFiles = new ArrayList<TestFile>();
         double totalTime = 0;
 
+        logger.info("The suite entries are: \n" + suiteTimeEntries + "\n");
         for (SuiteTimeEntry suiteTimeEntry : suiteTimeEntries) {
             String fileName = suiteTimeEntry.getName();
             double time = suiteTimeEntry.getTime();
@@ -96,7 +98,7 @@ public class TimeBasedTestSplitterCriteria extends JobFamilyAwareSplitterCriteri
         return testFiles;
     }
 
-    private ArrayList<TlbSuiteFile> resourcesFrom(Bucket bucket) {
+    private List<TlbSuiteFile> resourcesFrom(Bucket bucket) {
         ArrayList<TlbSuiteFile> resources = new ArrayList<TlbSuiteFile>();
         for (TlbSuiteFile file : bucket.files) {
             resources.add(file);
