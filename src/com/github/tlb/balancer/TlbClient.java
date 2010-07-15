@@ -23,6 +23,7 @@ public class TlbClient extends Application {
 
         router.attach("/balance", BalancerResource.class);
         router.attach("/suite_time", SuiteTimeReporter.class);
+        router.attach("/suite_result", SuiteResultReporter.class);
 
         return router;
     }

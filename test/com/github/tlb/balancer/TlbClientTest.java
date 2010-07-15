@@ -32,10 +32,18 @@ public class TlbClientTest {
     }
 
     @Test
-    public void shouldHaveRouteForReportingSuiteTimes() {
+    public void shouldHaveRouteForReportingSuiteTime() {
         HashMap<String, Restlet> routeMaping = getRoutePatternsAndResources(app);
         assertThat(routeMaping.keySet(), hasItem("/suite_time"));
         Restlet restlet = routeMaping.get("/suite_time");
         assertThat(((Finder)restlet).getTargetClass().getName(), is(SuiteTimeReporter.class.getName()));
+    }
+
+    @Test
+    public void shouldHaveRouteForReportingSuiteResult() {
+        HashMap<String, Restlet> routeMaping = getRoutePatternsAndResources(app);
+        assertThat(routeMaping.keySet(), hasItem("/suite_result"));
+        Restlet restlet = routeMaping.get("/suite_result");
+        assertThat(((Finder)restlet).getTargetClass().getName(), is(SuiteResultReporter.class.getName()));
     }
 }
