@@ -89,7 +89,7 @@ public class LoadBalancedTwistSuiteTest {
     }
 
     private void scenarioCSV(File folder, int name) throws IOException {
-        File file = new File(folder.getAbsolutePath(), "base" + name + ".csv");
+        File file = new File(folder.getAbsolutePath(), "base" + name + ".scn.csv");
         file.createNewFile();
         file.deleteOnExit();
     }

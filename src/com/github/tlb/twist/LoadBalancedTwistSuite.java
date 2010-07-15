@@ -62,13 +62,13 @@ public class LoadBalancedTwistSuite {
     }
 
     private boolean scenarioHasAssociatedCSV(File filteredScn, File csv) {
-        return stripExtension(filteredScn.getName()).equals(stripExtension(csv.getName()));
+        return filteredScn.getName().equals(stripExtension(csv.getName()));
     }
 
     private void copyCsv(File scenario, File csv) {
         try {
             FileUtils.copyFileToDirectory(csv, scenario, true);
-            logger.info(String.format("Copied csv %s for scenario %s", csv.getName(), scenario.getName()));
+            logger.info(String.format("Copied csv %s to folder %s", csv.getName(), scenario.getName()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
