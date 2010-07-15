@@ -14,12 +14,15 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.logging.Logger;
 
 /**
- * @understands splitting Twist scenarios into groups
+ * @understands splitting Twist scenarios into groups:
  */
 @SuppressWarnings("unchecked")
 public class LoadBalancedTwistSuite {
+    private static final Logger logger = Logger.getLogger(LoadBalancedTwistSuite.class.getName());
+
     private TestSplitterCriteria criteria;
 
     public LoadBalancedTwistSuite(TestSplitterCriteria criteria) {
@@ -39,17 +42,35 @@ public class LoadBalancedTwistSuite {
 
     private void copyAssociatedCSVResources(File scenarioFolder, File destination) {
         List<File> csvs = toFileList(iterateFiles(scenarioFolder, new String[]{"csv"}, false));
-        List<File> filteredScns = toFileList(iterateFiles(destination, null, false));
+        List<File> filteredScns = toFileList(iterateFiles(destination, new String[] { "scn" }, false));
+        boolean wasAnyCSVCopied = false;
         for (File csv : csvs) {
             for (File filteredScn : filteredScns) {
-                if (stripExtension(filteredScn.getName()).equals(stripExtension(csv.getName()))) {
-                    try {
-                        FileUtils.copyFileToDirectory(csv, destination, true);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                if (scenarioHasAssociatedCSV(filteredScn, csv)) {
+                    copyCsv(destination, csv);
+                    wasAnyCSVCopied = true;
                 }
             }
+        }
+        logIfNotCopied(filteredScns, csvs, wasAnyCSVCopied);
+    }
+
+    private void logIfNotCopied(List<File> filteredScns, List<File> csvs, boolean wasAnyCSVCopied) {
+        if (!wasAnyCSVCopied) {
+            logger.info(String.format("Did not find any scenarios with associated CSVs. The scenarios are:\n%s\nThe csvs are:\n%s", filteredScns, csvs));
+        }
+    }
+
+    private boolean scenarioHasAssociatedCSV(File filteredScn, File csv) {
+        return stripExtension(filteredScn.getName()).equals(stripExtension(csv.getName()));
+    }
+
+    private void copyCsv(File scenario, File csv) {
+        try {
+            FileUtils.copyFileToDirectory(csv, scenario, true);
+            logger.info(String.format("Copied csv %s for scenario %s", csv.getName(), scenario.getName()));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
