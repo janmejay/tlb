@@ -78,6 +78,21 @@ public class FailedFirstOrdererTest {
         verify(toCruise, new Times(1)).getLastRunFailedTests();
     }
 
+    @Test
+    public void shouldNotReorderPassedSuitesInspiteOfHavingResults() throws Exception{
+        JunitFileResource bazClass = junitFileResource(baseDir, "foo/bar/Baz.class");
+        JunitFileResource quuxClass = junitFileResource(baseDir, "foo/baz/Quux.class");
+        JunitFileResource reportedButPassedFooClass = junitFileResource(baseDir, "baz/bang/Foo.class");
+        JunitFileResource reportedButPassedBangClass = junitFileResource(baseDir, "foo/bar/Bang.class");
+        List<SuiteResultEntry> failedTests = Arrays.asList(new SuiteResultEntry("baz.bang.Foo", false), new SuiteResultEntry("foo.bar.Bang", false));
+        when(toCruise.getLastRunFailedTests()).thenReturn(failedTests);
+        List<JunitFileResource> fileList = Arrays.asList(bazClass, reportedButPassedFooClass, quuxClass, reportedButPassedBangClass);
+        Collections.sort(fileList, orderer);
+
+        assertThat(fileList, is(Arrays.asList(bazClass, reportedButPassedFooClass, quuxClass, reportedButPassedBangClass)));
+        verify(toCruise, new Times(1)).getLastRunFailedTests();
+    }
+    
     private JunitFileResource junitFileResource(String baseDir, String classRelPath) {
         JunitFileResource bazClass = new JunitFileResource(project, classRelPath);
         bazClass.setBaseDir(new File(baseDir));
