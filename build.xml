@@ -111,7 +111,7 @@
                 <include name="commons-logging.properties"/>
             </fileset>
             <manifest>
-                <attribute name="Main-Class" value="com.github.tlb.server.Main"/>
+                <attribute name="Main-Class" value="com.github.tlb.Main"/>
             </manifest>
         </jar>
 
@@ -205,7 +205,7 @@
     </target>
 
     <target name="server" depends="package.jar">
-        <java fork="true" classname="com.github.tlb.server.Main">
+        <java fork="true" classname="com.github.tlb.Main">
             <classpath path="${tlb_jar}"/>
             <classpath refid="dependencies"/>
         </java>

@@ -1,6 +1,7 @@
 package com.github.tlb.orderer;
 
-import com.github.tlb.TlbFileResource;
+import com.github.tlb.TlbSuiteFile;
+import com.github.tlb.TlbSuiteFileImpl;
 import com.github.tlb.domain.SuiteResultEntry;
 import com.github.tlb.service.TalkToService;
 import com.github.tlb.splitter.TalksToService;
@@ -23,11 +24,11 @@ public class FailedFirstOrderer extends TestOrderer implements TalksToService {
         fileUtil = new FileUtil(environment);
     }
 
-    public int compare(TlbFileResource o1, TlbFileResource o2) {
+    public int compare(TlbSuiteFile o1, TlbSuiteFile o2) {
         if (failedTestFiles == null) {
             failedTestFiles = new ArrayList<String>();
             for (SuiteResultEntry failedSuiteEntry : toService.getLastRunFailedTests()) {
-                if (failedSuiteEntry.hasFailed()) failedTestFiles.add(fileUtil.classFileRelativePath(failedSuiteEntry.getName()));
+                if (failedSuiteEntry.hasFailed()) failedTestFiles.add(failedSuiteEntry.getName());
             }
         }
         if (failedTestFiles.contains(o1.getName()))

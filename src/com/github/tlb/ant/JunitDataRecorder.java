@@ -1,9 +1,8 @@
 package com.github.tlb.ant;
 
 import com.github.tlb.factory.TlbFactory;
-import com.github.tlb.service.TalkToCruise;
 import com.github.tlb.service.TalkToService;
-import com.github.tlb.service.http.DefaultHttpAction;
+import com.github.tlb.utils.FileUtil;
 import com.github.tlb.utils.SystemEnvironment;
 import junit.framework.AssertionFailedError;
 import junit.framework.Test;
@@ -21,9 +20,11 @@ import java.util.logging.Logger;
 public class JunitDataRecorder implements JUnitResultFormatter {
     private static final Logger logger = Logger.getLogger(JunitDataRecorder.class.getName());
     private TalkToService talkToService;
+    private final SystemEnvironment environment;
+    private final FileUtil fileUtil;
 
-    public JunitDataRecorder(TalkToService talkToService) {
-        this.talkToService = talkToService;
+    public JunitDataRecorder(TalkToService talkToService, SystemEnvironment environment) {
+        this(talkToService, environment, new FileUtil(environment));
     }
 
     public JunitDataRecorder() {//default constructor
@@ -31,18 +32,24 @@ public class JunitDataRecorder implements JUnitResultFormatter {
     }
 
     private JunitDataRecorder(SystemEnvironment systemEnvironment) {
-        this(TlbFactory.getTalkToService(systemEnvironment));
+        this(TlbFactory.getTalkToService(systemEnvironment), systemEnvironment);
+    }
+
+    JunitDataRecorder(TalkToService talkToService, SystemEnvironment environment, FileUtil fileUtil) {
+        this.talkToService = talkToService;
+        this.environment = environment;
+        this.fileUtil = fileUtil;
     }
 
     public void startTestSuite(JUnitTest jUnitTest) throws BuildException {}
 
     public void endTestSuite(JUnitTest jUnitTest) throws BuildException {
-        String suiteName = jUnitTest.getName();
+        String suiteFileName = fileUtil.classFileRelativePath(jUnitTest.getName());
         try {
-            talkToService.testClassFailure(suiteName, (jUnitTest.failureCount() + jUnitTest.errorCount()) > 0);
-            talkToService.testClassTime(suiteName, jUnitTest.getRunTime());
+            talkToService.testClassFailure(suiteFileName, (jUnitTest.failureCount() + jUnitTest.errorCount()) > 0);
+            talkToService.testClassTime(suiteFileName, jUnitTest.getRunTime());
         } catch (Exception e) {
-            logger.log(Level.WARNING, String.format("recording suite time failed for %s, gobbling exception, things may not work too well for the next run", suiteName), e);
+            logger.log(Level.WARNING, String.format("recording suite time failed for %s, gobbling exception, things may not work too well for the next run", suiteFileName), e);
         }
     }
 

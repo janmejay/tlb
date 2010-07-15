@@ -4,7 +4,8 @@ import com.github.tlb.TestUtil;
 import com.github.tlb.TlbConstants;
 import com.github.tlb.domain.SuiteResultEntry;
 import com.github.tlb.domain.SuiteTimeEntry;
-import com.github.tlb.server.Main;
+import com.github.tlb.server.ServerInitializer;
+import com.github.tlb.server.TlbServerInitializer;
 import com.github.tlb.service.http.DefaultHttpAction;
 import com.github.tlb.utils.SystemEnvironment;
 import org.apache.commons.httpclient.HttpClient;
@@ -42,7 +43,7 @@ public class TalkToTlbServerTest {
         freePort = TestUtil.findFreePort();
         serverEnv.put(TlbConstants.Server.TLB_PORT, freePort);
         serverEnv.put(TlbConstants.Server.TLB_STORE_DIR, TestUtil.createTempFolder().getAbsolutePath());
-        Main main = new Main(new SystemEnvironment(serverEnv));
+        ServerInitializer main = new TlbServerInitializer(new SystemEnvironment(serverEnv));
         component = main.init();
         component.start();
     }

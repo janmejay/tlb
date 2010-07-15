@@ -6,7 +6,9 @@ import com.github.tlb.TlbFileResource;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.github.tlb.TlbSuiteFile;
 import com.github.tlb.service.TalkToService;
+import com.github.tlb.utils.SuiteFileConvertor;
 import com.github.tlb.utils.SystemEnvironment;
 
 /**
@@ -14,11 +16,12 @@ import com.github.tlb.utils.SystemEnvironment;
  */
 public abstract class JobFamilyAwareSplitterCriteria extends TestSplitterCriteria implements TalksToService {
     public static TestSplitterCriteria MATCH_ALL_FILE_SET = new JobFamilyAwareSplitterCriteria(null) {
-        public List<TlbFileResource> filter(List<TlbFileResource> fileResources) {
+        @Override
+        public List<TlbSuiteFile> filterSuites(List<TlbSuiteFile> fileResources) {
             return fileResources;
         }
 
-        protected List<TlbFileResource> subset(List<TlbFileResource> fileResources) {
+        protected List<TlbSuiteFile> subset(List<TlbSuiteFile> fileResources) {
             throw new RuntimeException("Should never reach here");
         }
     };
@@ -31,7 +34,8 @@ public abstract class JobFamilyAwareSplitterCriteria extends TestSplitterCriteri
         super(env);
     }
 
-    public List<TlbFileResource> filter(List<TlbFileResource> fileResources) {
+    @Override
+    public List<TlbSuiteFile> filterSuites(List<TlbSuiteFile> fileResources) {
         logger.info(String.format("got total of %s files to balance", fileResources.size()));
 
         totalPartitions = talkToService.totalPartitions();
@@ -40,13 +44,13 @@ public abstract class JobFamilyAwareSplitterCriteria extends TestSplitterCriteri
             return fileResources;
         }
 
-        List<TlbFileResource> subset = subset(fileResources);
+        List<TlbSuiteFile> subset = subset(fileResources);
         logger.info(String.format("assigned total of %s files to [ %s ]", subset.size(), env.getProperty(TlbConstants.Cruise.CRUISE_JOB_NAME)));
         talkToService.publishSubsetSize(subset.size());
         return subset;
     }
 
-    protected abstract List<TlbFileResource> subset(List<TlbFileResource> fileResources);
+    protected abstract List<TlbSuiteFile> subset(List<TlbSuiteFile> fileResources);
 
     public void talksToService(TalkToService service) {
        this.talkToService = service;
