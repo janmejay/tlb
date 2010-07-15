@@ -7,8 +7,6 @@ import com.github.tlb.splitter.CountBasedTestSplitterCriteria;
 import com.github.tlb.utils.SystemEnvironment;
 import org.junit.Before;
 import org.junit.Test;
-import org.restlet.Context;
-import org.restlet.data.MediaType;
 
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -33,8 +31,9 @@ public class BalancerInitializerTest {
         systemEnv.put(TlbConstants.TALK_TO_SERVICE, TalkToTlbServer.class.getCanonicalName());
         systemEnv.put(TlbConstants.TlbServer.URL, "http://foo.bar.com:7019");
         ConcurrentMap<String,Object> map = initializer.application().getContext().getAttributes();
-        assertThat(map.get(TlbClient.Balancer.SPLITTER), is(CountBasedTestSplitterCriteria.class));
-        assertThat(map.get(TlbClient.Balancer.ORDERER), is(FailedFirstOrderer.class));
+        assertThat(map.get(TlbClient.SPLITTER), is(CountBasedTestSplitterCriteria.class));
+        assertThat(map.get(TlbClient.ORDERER), is(FailedFirstOrderer.class));
+        assertThat(map.get(TlbClient.TALK_TO_SERVICE), is(TalkToTlbServer.class));
     }
 
     @Test

@@ -1,6 +1,5 @@
 package com.github.tlb.balancer;
 
-import com.github.tlb.balancer.repo.BalancerResource;
 import org.junit.Before;
 import org.junit.Test;
 import org.restlet.Context;
@@ -30,5 +29,13 @@ public class TlbClientTest {
         assertThat(routeMaping.keySet(), hasItem("/balance"));
         Restlet restlet = routeMaping.get("/balance");
         assertThat(((Finder)restlet).getTargetClass().getName(), is(BalancerResource.class.getName()));
+    }
+
+    @Test
+    public void shouldHaveRouteForReportingSuiteTimes() {
+        HashMap<String, Restlet> routeMaping = getRoutePatternsAndResources(app);
+        assertThat(routeMaping.keySet(), hasItem("/suite_time"));
+        Restlet restlet = routeMaping.get("/suite_time");
+        assertThat(((Finder)restlet).getTargetClass().getName(), is(SuiteTimeReporter.class.getName()));
     }
 }

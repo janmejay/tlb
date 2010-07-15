@@ -1,9 +1,8 @@
-package com.github.tlb.balancer.repo;
+package com.github.tlb.balancer;
 
 import com.github.tlb.TestUtil;
 import com.github.tlb.TlbSuiteFile;
 import com.github.tlb.TlbSuiteFileImpl;
-import com.github.tlb.balancer.TlbClient;
 import com.github.tlb.orderer.TestOrderer;
 import com.github.tlb.splitter.TestSplitterCriteria;
 import org.junit.Before;
@@ -41,8 +40,8 @@ public class BalancerResourceTest {
         criteria = mock(TestSplitterCriteria.class);
         orderer = mock(TestOrderer.class);
         final HashMap<String, Object> ctxMap = new HashMap<String, Object>();
-        ctxMap.put(TlbClient.Balancer.SPLITTER, criteria);
-        ctxMap.put(TlbClient.Balancer.ORDERER, orderer);
+        ctxMap.put(TlbClient.SPLITTER, criteria);
+        ctxMap.put(TlbClient.ORDERER, orderer);
         context.setAttributes(ctxMap);
         balancerResource = new BalancerResource(context, request, mock(Response.class));
         logFixture = new TestUtil.LogFixture();
