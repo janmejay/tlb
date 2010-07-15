@@ -124,6 +124,7 @@ public class EntryRepoFactory implements Runnable {
     }
 
     private File dumpFile(String identifier) {
+        new File(tlbStoreDir).mkdirs();
         return new File(tlbStoreDir, identifier);
     }
 

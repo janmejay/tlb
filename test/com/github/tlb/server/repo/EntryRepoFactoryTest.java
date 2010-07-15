@@ -6,14 +6,13 @@ import com.github.tlb.domain.SubsetSizeEntry;
 import com.github.tlb.domain.SuiteResultEntry;
 import com.github.tlb.domain.SuiteTimeEntry;
 import com.github.tlb.domain.TimeProvider;
+import com.github.tlb.utils.FileUtil;
 import com.github.tlb.utils.SystemEnvironment;
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.util.*;
 
 import static com.github.tlb.server.repo.EntryRepoFactory.LATEST_VERSION;
@@ -36,10 +35,9 @@ public class EntryRepoFactoryTest {
         return new SystemEnvironment(env);
     }
 
-
     @Before
     public void setUp() throws Exception {
-        baseDir = TestUtil.createTempFolder();
+        baseDir = new File(TestUtil.createTempFolder(), "test_case_tlb_store");
         factory = new EntryRepoFactory(env());
         logFixture = new TestUtil.LogFixture();
     }
@@ -156,9 +154,23 @@ public class EntryRepoFactoryTest {
     public void shouldFeedTheDiskDumpContentsToSubsetRepo() {
         TestUtil.createTempFolder();
     }
+    
+    @Test
+    public void shouldUseWorkingDirAsDiskStorageRootWhenNotGiven() throws IOException, ClassNotFoundException {
+        final File workingDirStorage = new File(TlbConstants.Server.TLB_STORE_DIR);
+        workingDirStorage.mkdirs();
+        File file = new File(workingDirStorage, EntryRepoFactory.name("foo", LATEST_VERSION, EntryRepoFactory.SUBSET_SIZE));
+        ObjectOutputStream outStream = new ObjectOutputStream(new FileOutputStream(file));
+        outStream.writeObject(new ArrayList<SubsetSizeEntry>(Arrays.asList(new SubsetSizeEntry(1), new SubsetSizeEntry(2), new SubsetSizeEntry(3))));
+        outStream.close();
+        EntryRepoFactory factory = new EntryRepoFactory(new SystemEnvironment(new HashMap<String, String>()));
+        SubsetSizeRepo repo = factory.createSubsetRepo("foo", LATEST_VERSION);
+        assertThat(repo.list(), is((Collection<SubsetSizeEntry>) Arrays.asList(new SubsetSizeEntry(1), new SubsetSizeEntry(2), new SubsetSizeEntry(3))));
+    }
 
     @Test
-    public void shouldUsePresentWorkingDirectoryAsDiskStorageRoot() throws IOException, ClassNotFoundException {
+    public void shouldLoadDiskDumpFromStorageRoot() throws IOException, ClassNotFoundException {
+        baseDir.mkdirs();
         File file = new File(baseDir, EntryRepoFactory.name("foo", LATEST_VERSION, EntryRepoFactory.SUBSET_SIZE));
         ObjectOutputStream outStream = new ObjectOutputStream(new FileOutputStream(file));
         outStream.writeObject(new ArrayList<SubsetSizeEntry>(Arrays.asList(new SubsetSizeEntry(1), new SubsetSizeEntry(2), new SubsetSizeEntry(3))));

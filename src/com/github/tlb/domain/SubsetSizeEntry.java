@@ -49,4 +49,11 @@ public class SubsetSizeEntry implements Entry {
     public static SubsetSizeEntry parseSingleEntry(String entryString) {
         return new SubsetSizeEntry(Integer.parseInt(entryString));
     }
+
+    @Override
+    public String toString() {
+        return "SubsetSizeEntry{" +
+                "size=" + size +
+                '}';
+    }
 }
